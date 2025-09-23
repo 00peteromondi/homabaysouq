@@ -1,0 +1,7 @@
+Django>=4.2,<5.0
+python-decouple
+crispy-forms
+crispy-bootstrap5
+gunicorn
+whitenoise
+psycopg2-binary

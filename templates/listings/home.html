@@ -1,0 +1,1440 @@
+{% extends 'base.html' %}
+{% load static custom_filters %}
+{% load crispy_forms_tags %}
+
+{% block title %}Home - HomaBay Souq{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section Styles */
+    .hero-section {
+        background: linear-gradient(135deg, 
+                        rgba(26, 115, 232, 0.85) 0%, 
+                        rgba(13, 71, 161, 0.85) 100%),
+                    url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1973&q=80');
+        background-size: cover;
+        background-position: center;
+        color: white;
+        padding: 7rem 0 5rem;
+        margin: -2rem -1rem 4rem;
+        border-radius: 0 0 2rem 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-content h1 {
+        font-weight: 800;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        margin-bottom: 1.5rem;
+        font-size: 3.2rem;
+    }
+
+    .hero-content p {
+        font-size: 1.35rem;
+        margin-bottom: 2.5rem;
+        opacity: 0.95;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .hero-stat {
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .hero-stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+
+    .hero-stat-label {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+
+    .hero-search {
+        max-width: 700px;
+        margin: 0 auto 2rem;
+    }
+
+    .hero-search .form-control {
+        border-radius: 50px;
+        padding: 1.25rem 1.75rem;
+        border: none;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+        font-size: 1.1rem;
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    .hero-search .btn {
+        border-radius: 50px;
+        padding: 1.25rem 2.5rem;
+        margin-left: 0.75rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        font-weight: 600;
+        font-size: 1.1rem;
+        background: var(--primary-gemini);
+        border: none;
+    }
+
+    .trending-tags {
+        margin-top: 2.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .trending-tags .badge {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        padding: 0.75rem 1.25rem;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .trending-tags .badge:hover {
+        background: rgba(255, 255, 255, 0.4);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Dynamic Hero Features */
+    .hero-features {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 3rem;
+        flex-wrap: wrap;
+    }
+
+    .hero-feature {
+        display: flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        padding: 1rem 1.5rem;
+        border-radius: 50px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .hero-feature i {
+        margin-right: 0.75rem;
+        font-size: 1.5rem;
+    }
+
+    /* Stats Section */
+    .stats-section {
+        padding: 3rem 0;
+        margin-bottom: 4rem;
+    }
+
+    .stats-card {
+        text-align: center;
+        padding: 2.5rem 1.5rem;
+        border-radius: 1.5rem;
+        transition: all 0.4s ease;
+        background: var(--navbar-bg);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        height: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .stats-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .stats-number {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--primary-gemini);
+        margin-bottom: 0.75rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .stats-label {
+        color: var(--text-color);
+        font-weight: 600;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+    }
+
+    /* Section Headers */
+    .section-header {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+
+    .section-title {
+        position: relative;
+        display: inline-block;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        color: var(--text-color);
+        font-size: 2.2rem;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 5px;
+        background: var(--primary-gemini);
+        border-radius: 10px;
+    }
+
+    .section-subtitle {
+        color: var(--text-color);
+        opacity: 0.8;
+        max-width: 700px;
+        margin: 0 auto;
+        font-size: 1.2rem;
+    }
+
+    /* Categories Section */
+    .category-card {
+        text-align: center;
+        padding: 2.5rem 1.5rem;
+        border-radius: 1.5rem;
+        transition: all 0.4s ease;
+        background: var(--navbar-bg);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        height: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .category-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: var(--primary-gemini);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s ease;
+    }
+
+    .category-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .category-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .category-icon {
+        font-size: 3.5rem;
+        color: var(--primary-gemini);
+        margin-bottom: 1.5rem;
+        display: block;
+        transition: all 0.3s ease;
+    }
+
+    .category-card:hover .category-icon {
+        transform: scale(1.1);
+    }
+
+    .category-card h5 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: var(--text-color);
+    }
+
+    .category-card p {
+        color: var(--text-color);
+        opacity: 0.8;
+        font-size: 0.95rem;
+        margin-bottom: 0;
+    }
+
+    .category-count {
+        display: inline-block;
+        background: var(--primary-gemini);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        margin-top: 1rem;
+    }
+
+    /* Listings Section */
+    .listings-carousel {
+        position: relative;
+        margin-bottom: 5rem;
+    }
+
+    .carousel-controls {
+        position: absolute;
+        top: -70px;
+        right: 0;
+        display: flex;
+        gap: 10px;
+    }
+
+    .carousel-control {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--navbar-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: var(--text-color);
+    }
+
+    .carousel-control:hover {
+        background: var(--primary-gemini);
+        color: white;
+    }
+
+    .listing-card {
+        overflow: hidden;
+        border-radius: 1.5rem;
+        transition: all 0.4s ease;
+        background: var(--navbar-bg);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        height: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        margin: 0 10px;
+    }
+
+    .listing-img-container {
+        position: relative;
+        overflow: hidden;
+        height: 220px;
+    }
+
+    .listing-img {
+        height: 100%;
+        width: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+    }
+
+    .listing-card:hover .listing-img {
+        transform: scale(1.1);
+    }
+
+    .category-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        border-radius: 50px;
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: var(--primary-gemini);
+        color: white;
+    }
+
+    .wishlist-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ccc;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .wishlist-btn:hover, .wishlist-btn.active {
+        color: var(--danger-gemini);
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    .listing-body {
+        padding: 1.5rem;
+    }
+
+    .listing-title {
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: var(--text-color);
+        font-size: 1.25rem;
+    }
+
+    .listing-description {
+        color: var(--text-color);
+        opacity: 0.8;
+        margin-bottom: 1.25rem;
+        font-size: 0.95rem;
+    }
+
+    .listing-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .price-tag {
+        font-weight: 800;
+        color: var(--primary-gemini);
+        font-size: 1.35rem;
+    }
+
+    .location-badge {
+        background: var(--body-bg);
+        color: var(--text-color);
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .listing-footer {
+        padding: 0 1.5rem 1.5rem;
+    }
+
+    /* New Sections */
+    .community-section {
+        padding: 5rem 0;
+        background: var(--body-bg);
+        margin-bottom: 5rem;
+    }
+
+    .community-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+
+    .community-stat {
+        text-align: center;
+        padding: 2rem;
+        border-radius: 1.5rem;
+        background: var(--navbar-bg);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .community-stat i {
+        font-size: 3rem;
+        color: var(--primary-gemini);
+        margin-bottom: 1rem;
+    }
+
+    .community-stat h3 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+    }
+
+    .community-stat p {
+        color: var(--text-color);
+        opacity: 0.8;
+    }
+
+    .testimonials-section {
+        padding: 5rem 0;
+        margin-bottom: 5rem;
+    }
+
+    .testimonial-card {
+        border-radius: 1.5rem;
+        padding: 2.5rem;
+        height: 100%;
+        background: var(--navbar-bg);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: all 0.4s ease;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        position: relative;
+    }
+
+    .testimonial-card::before {
+        content: """;
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        font-size: 5rem;
+        color: var(--primary-gemini);
+        opacity: 0.1;
+        font-family: Georgia, serif;
+        line-height: 1;
+    }
+
+    .testimonial-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .testimonial-text {
+        position: relative;
+        font-style: italic;
+        margin-bottom: 2rem;
+        padding: 0 1rem;
+        color: var(--text-color);
+        line-height: 1.7;
+        z-index: 1;
+    }
+
+    .testimonial-author {
+        display: flex;
+        align-items: center;
+    }
+
+    .testimonial-author img {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 1.25rem;
+        border: 3px solid var(--primary-gemini);
+    }
+
+    .testimonial-author-info h5 {
+        margin-bottom: 0.25rem;
+        color: var(--text-color);
+        font-weight: 700;
+    }
+
+    .testimonial-author-info small {
+        color: var(--text-color);
+        opacity: 0.8;
+    }
+
+    .blog-section {
+        padding: 5rem 0;
+        background: var(--body-bg);
+        margin-bottom: 5rem;
+    }
+
+    .blog-card {
+        border-radius: 1.5rem;
+        overflow: hidden;
+        background: var(--navbar-bg);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: all 0.4s ease;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        height: 100%;
+    }
+
+    .blog-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .blog-img {
+        height: 200px;
+        width: 100%;
+        object-fit: cover;
+    }
+
+    .blog-body {
+        padding: 1.5rem;
+    }
+
+    .blog-date {
+        color: var(--primary-gemini);
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .blog-title {
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--text-color);
+        font-size: 1.25rem;
+    }
+
+    .blog-excerpt {
+        color: var(--text-color);
+        opacity: 0.8;
+        margin-bottom: 1.5rem;
+    }
+
+    /* How It Works Section */
+    .how-it-works {
+        position: relative;
+        padding: 5rem 0;
+        margin-bottom: 5rem;
+    }
+
+    .step-card {
+        position: relative;
+        padding: 3rem 2rem 2.5rem;
+        border-radius: 1.5rem;
+        background: var(--navbar-bg);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        height: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        text-align: center;
+        transition: all 0.4s ease;
+    }
+
+    .step-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .step-number {
+        width: 70px;
+        height: 70px;
+        background: var(--primary-gemini);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.75rem;
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 5px 15px rgba(26, 115, 232, 0.3);
+    }
+
+    .step-card h4 {
+        margin-bottom: 1.25rem;
+        color: var(--text-color);
+        font-weight: 700;
+    }
+
+    .step-card p {
+        color: var(--text-color);
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+
+    /* CTA Section */
+    .cta-section {
+        background: var(--primary-gemini);
+        border-radius: 2rem;
+        overflow: hidden;
+        color: white;
+        position: relative;
+        padding: 5rem 2rem;
+        text-align: center;
+        margin-bottom: 5rem;
+    }
+
+    .cta-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .cta-content h2 {
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        font-size: 2.5rem;
+    }
+
+    .cta-content p {
+        font-size: 1.25rem;
+        margin-bottom: 2.5rem;
+        opacity: 0.9;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .cta-buttons .btn {
+        border-radius: 50px;
+        padding: 1rem 2.5rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin: 0 0.5rem 1rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Live Activity Section */
+    .live-activity {
+        background: var(--navbar-bg);
+        backdrop-filter: blur(10px);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        margin-bottom: 5rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .activity-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .activity-title {
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0;
+    }
+
+    .activity-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 1rem;
+        border: 2px solid var(--primary-gemini);
+    }
+
+    .activity-content {
+        flex: 1;
+    }
+
+    .activity-text {
+        margin-bottom: 0.25rem;
+        color: var(--text-color);
+    }
+
+    .activity-time {
+        font-size: 0.85rem;
+        color: var(--text-color);
+        opacity: 0.7;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 992px) {
+        .hero-content h1 {
+            font-size: 2.5rem;
+        }
+        
+        .hero-content p {
+            font-size: 1.2rem;
+        }
+        
+        .stats-number {
+            font-size: 2.75rem;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+        }
+        
+        .hero-stats {
+            flex-wrap: wrap;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .hero-section {
+            padding: 5rem 0;
+            margin-bottom: 3rem;
+        }
+        
+        .hero-content h1 {
+            font-size: 2.25rem;
+        }
+        
+        .hero-content p {
+            font-size: 1.1rem;
+        }
+        
+        .hero-search .btn {
+            margin-left: 0;
+            margin-top: 1rem;
+            width: 100%;
+        }
+        
+        .stats-number {
+            font-size: 2.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.75rem;
+        }
+        
+        .cta-content h2 {
+            font-size: 2rem;
+        }
+        
+        .cta-content p {
+            font-size: 1.1rem;
+        }
+        
+        .cta-buttons .btn {
+            display: block;
+            width: 100%;
+            margin: 0 0 1rem 0;
+        }
+
+        .carousel-controls {
+            position: static;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-features {
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+    .listing-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .listing-body {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .listing-meta {
+        margin-top: auto;
+    }
+    .listing-footer {
+        margin-top: auto;
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto text-center hero-content">
+                <h1 class="display-3 fw-bold">Buy and Sell in Homabay County</h1>
+                <p class="lead">Connect with local buyers and sellers. Find great deals, sell your items, and grow your business in Homabay.</p>
+                
+                <!-- Dynamic Stats -->
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <div class="hero-stat-number" id="hero-total-listings">{{ total_listings_count }}+</div>
+                        <div class="hero-stat-label">Active Listings</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-number" id="hero-total-users">{{ total_users_count }}+</div>
+                        <div class="hero-stat-label">Happy Users</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-number" id="hero-total-categories">{{ total_categories_count }}+</div>
+                        <div class="hero-stat-label">Categories</div>
+                    </div>
+                </div>
+                
+                <!-- Search Bar -->
+                <div class="hero-search">
+                    <form method="get" action="{% url 'all-listings' %}" class="d-flex flex-column flex-md-row">
+                        <input type="text" name="q" class="form-control me-md-3 mb-3 mb-md-0" placeholder="Search for items, brands, and categories..." value="{{ request.GET.q }}">
+                        <button class="btn btn-light" type="submit"><i class="bi bi-search me-2"></i> Search</button>
+                    </form>
+                </div>
+                
+                <!-- Trending Tags -->
+                <div class="trending-tags">
+                    {% for category in popular_categories %}
+                    <span class="badge">{{ category.name }}</span>
+                    {% endfor %}
+                </div>
+                
+                <!-- Hero Features -->
+                <div class="hero-features">
+                    <div class="hero-feature">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Secure Transactions</span>
+                    </div>
+                    <div class="hero-feature">
+                        <i class="bi bi-truck"></i>
+                        <span>Local Pickup Available</span>
+                    </div>
+                    <div class="hero-feature">
+                        <i class="bi bi-chat-dots"></i>
+                        <span>Direct Messaging</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="container">
+    <div class="stats-section">
+        <div class="row">
+            <div class="col-md-4 mb-4 mb-md-0">
+                <div class="stats-card">
+                    <div class="stats-number" id="total-listings">0</div>
+                    <div class="stats-label">Active Listings</div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4 mb-md-0">
+                <div class="stats-card">
+                    <div class="stats-number" id="total-users">0</div>
+                    <div class="stats-label">Registered Users</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card">
+                    <div class="stats-number" id="total-categories">0</div>
+                    <div class="stats-label">Categories</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="container mb-5" id="categories">
+    <div class="section-header">
+        <h2 class="section-title">Browse by Category</h2>
+        <p class="section-subtitle">Explore our wide range of categories to find exactly what you're looking for</p>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        {% for category in categories %}
+        <div class="col">
+            <a href="{% url 'all-listings' %}?category={{ category.id }}" class="text-decoration-none">
+                <div class="category-card">
+                    <i class="bi bi-{{ category.icon }} category-icon"></i>
+                    <h5>{{ category.name }}</h5>
+                    <p>{{ category.description }}.</p>
+                    <span class="category-count">{{ listings_count|get_item:category.id }} items</span>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Featured Listings Section -->
+<section class="container mb-5">
+    <div class="section-header">
+        <h2 class="section-title">
+            {% if selected_category %}
+                {{ selected_category.name }} Listings
+            {% else %}
+                Featured Listings
+            {% endif %}
+        </h2>
+        <p class="section-subtitle">
+            {% if selected_category %}
+                Discover the latest {{ selected_category.name }} from local sellers
+            {% else %}
+                Check out our most popular items from Homabay sellers
+            {% endif %}
+        </p>
+    </div>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        {% if selected_category %}
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-2"></i>Back to All Categories</a>
+        {% else %}
+            <a href="{% url 'all-listings' %}" class="btn btn-outline-primary">View All Listings</a>
+        {% endif %}
+    </div>
+    
+    {% if listings %}
+    <div class="listings-carousel">
+        <div class="carousel-controls">
+            <div class="carousel-control prev-btn">
+                <i class="bi bi-chevron-left"></i>
+            </div>
+            <div class="carousel-control next-btn">
+                <i class="bi bi-chevron-right"></i>
+            </div>
+        </div>
+        
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4" id="listings-container">
+            {% for listing in listings|slice:":8" %}
+            <div class="col d-flex">
+                <div class="listing-card d-flex flex-column h-100">
+                    <div class="listing-img-container">
+                        <img src="{{ listing.image.url }}" class="listing-img" alt="{{ listing.title }}">
+                        <span class="category-badge">{{ listing.category.name }}</span>
+                    </div>
+                    <div class="listing-body flex-grow-1">
+                        <h5 class="listing-title">{{ listing.title|truncatewords:5 }}</h5>
+                        <p class="listing-description">{{ listing.description|truncatewords:12 }}</p>
+                        <div class="listing-meta mt-auto">
+                            <span class="price-tag">KSh {{ listing.price }}</span>
+                            <span class="location-badge">{{ listing.get_location_display }}</span>
+                        </div>
+                    </div>
+                    <div class="listing-footer mt-auto">
+                        <a href="{% url 'listing-detail' listing.pk %}" class="btn btn-outline-primary w-100">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Show More Button if filtered by category -->
+    {% if selected_category and listings.count > 8 %}
+    <div class="text-center mt-5">
+        <a href="{% url 'all-listings' %}?category={{ selected_category.id }}" class="btn btn-primary btn-lg">View All {{ selected_category.name }} Listings</a>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-inboxes display-1 text-muted"></i>
+        <h3 class="mt-3">No listings found</h3>
+        <p class="text-muted">
+            {% if selected_category %}
+                No listings found in {{ selected_category.name }} category.
+            {% else %}
+                Be the first to create a listing in Homabay Souq
+            {% endif %}
+        </p>
+        {% if user.is_authenticated %}
+        <a href="{% url 'listing-create' %}" class="btn btn-primary mt-2">Create Listing</a>
+        {% else %}
+        <a href="{% url 'register' %}" class="btn btn-primary mt-2">Join Now</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</section>
+
+<!-- Community Stats Section -->
+<section class="community-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Our Growing Community</h2>
+            <p class="section-subtitle">Join thousands of users who are buying and selling in Homabay County</p>
+        </div>
+        
+        <div class="community-stats">
+            <div class="community-stat">
+                <i class="bi bi-people"></i>
+                <h3>{{ total_users_count }}+</h3>
+                <p>Active Users</p>
+            </div>
+            <div class="community-stat">
+                <i class="bi bi-grid"></i>
+                <h3>{{ total_listings_count }}+</h3>
+                <p>Listings</p>
+            </div>
+            <div class="community-stat">
+                <i class="bi bi-chat-dots"></i>
+                <h3>{{ total_messages_count }}+</h3>
+                <p>Messages Exchanged</p>
+            </div>
+            <div class="community-stat">
+                <i class="bi bi-hand-thumbs-up"></i>
+                <h3>{{ successful_transactions }}+</h3>
+                <p>Successful Transactions</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Live Activity Section -->
+<section class="container mb-5">
+    <div class="live-activity">
+        <div class="activity-header">
+            <h3 class="activity-title">Live Activity</h3>
+            <span class="badge bg-primary">Live</span>
+        </div>
+        <ul class="activity-list" id="activity-feed">
+            {% for activity in recent_activities %}
+            <li class="activity-item">
+                <img src="{{ activity.user.profile.profile_picture.url|default:'https://randomuser.me/api/portraits/men/41.jpg' }}" alt="User" class="activity-avatar">
+                <div class="activity-content">
+                    <p class="activity-text"><strong>{{ activity.user.username }}</strong> {{ activity.message }}</p>
+                    <small class="activity-time">{{ activity.timestamp|timesince }} ago</small>
+                </div>
+            </li>
+            {% empty %}
+            <li class="activity-item">
+                <img src="https://randomuser.me/api/portraits/men/41.jpg" alt="User" class="activity-avatar">
+                <div class="activity-content">
+                    <p class="activity-text"><strong>John Kamau</strong> just listed a <strong>Samsung Galaxy S21</strong> for KSh 25,000</p>
+                    <small class="activity-time">2 minutes ago</small>
+                </div>
+            </li>
+            <li class="activity-item">
+                <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="User" class="activity-avatar">
+                <div class="activity-content">
+                    <p class="activity-text"><strong>Sarah Achieng</strong> purchased <strong>Office Desk</strong> from <strong>James Otieno</strong></p>
+                    <small class="activity-time">15 minutes ago</small>
+                </div>
+            </li>
+            <li class="activity-item">
+                <img src="https://randomuser.me/api/portraits/men/22.jpg" alt="User" class="activity-avatar">
+                <div class="activity-content">
+                    <p class="activity-text"><strong>Mike Omondi</strong> is now selling <strong>Toyota Premio 2015</strong></p>
+                    <small class="activity-time">45 minutes ago</small>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="container mb-5" id="how-it-works">
+    <div class="how-it-works">
+        <div class="section-header">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">Selling and buying on HomaBay Souq is simple and secure</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h4>Create an Account</h4>
+                    <p>Sign up in minutes with your email or phone number. Verify your account to build trust with other users.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h4>List Your Item</h4>
+                    <p>Take clear photos, write a detailed description, and set a fair price for your item. It only takes a few minutes!</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h4>Connect with Buyers</h4>
+                    <p>Respond to inquiries, negotiate prices, and arrange meetups through our secure messaging system.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h4>Complete the Sale</h4>
+                    <p>Meet in a safe public place, exchange the item for payment, and leave a review to build your reputation.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">What Our Users Say</h2>
+            <p class="section-subtitle">Hear from people who have used HomaBay Souq to buy and sell items</p>
+        </div>
+        
+        <div class="row">
+            {% for testimonial in testimonials %}
+            <div class="col-md-4 mb-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-text">
+                        "{{ testimonial.content }}"
+                    </div>
+                    <div class="testimonial-author">
+                        <img src="{{ testimonial.user.profile.profile_picture.url|default:'https://randomuser.me/api/portraits/men/32.jpg' }}" alt="User">
+                        <div class="testimonial-author-info">
+                            <h5 class="mb-0">{{ testimonial.user.username }}</h5>
+                            <small>{{ testimonial.user.profile.location|default:"Homabay Town" }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-md-4 mb-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-text">
+                        "I sold my old laptop within a day of posting it on HomaBay Souq. The process was smooth and the buyer was from my neighborhood! The messaging system made it easy to coordinate the meetup."
+                    </div>
+                    <div class="testimonial-author">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User">
+                        <div class="testimonial-author-info">
+                            <h5 class="mb-0">James Omondi</h5>
+                            <small>Homabay Town</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-text">
+                        "As a small business owner, HomaBay Souq has helped me reach customers right here in Homabay. I've doubled my sales since I started using it. The categories are well organized making it easy for buyers to find my products."
+                    </div>
+                    <div class="testimonial-author">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User">
+                        <div class="testimonial-author-info">
+                            <h5 class="mb-0">Mary Atieno</h5>
+                            <small>Kendu Bay</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-text">
+                        "I found exactly the furniture I was looking for at a great price. The seller was just a few streets away from me. The verification system made me feel confident about the transaction. Highly recommend!"
+                    </div>
+                    <div class="testimonial-author">
+                        <img src="https://randomuser.me/api/portraits/men/22.jpg" alt="User">
+                        <div class="testimonial-author-info">
+                            <h5 class="mb-0">Peter Onyango</h5>
+                            <small>Rodi Kopany</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Blog Section -->
+<section class="blog-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Latest Tips & News</h2>
+            <p class="section-subtitle">Learn how to get the most out of HomaBay Souq with our helpful guides</p>
+        </div>
+        
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for post in blog_posts %}
+            <div class="col">
+                <div class="blog-card">
+                    <img src="{{ post.image.url|default:'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1973&q=80' }}" class="blog-img" alt="{{ post.title }}">
+                    <div class="blog-body">
+                        <div class="blog-date">{{ post.published_at|date:"M d, Y" }}</div>
+                        <h3 class="blog-title">{{ post.title }}</h3>
+                        <p class="blog-excerpt">{{ post.excerpt|truncatewords:20 }}</p>
+                        <a href="{{ post.get_absolute_url }}" class="btn btn-outline-primary">Read More</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-journal-text display-1 text-muted"></i>
+                <h3 class="mt-3">No blog posts yet</h3>
+                <p class="text-muted">Check back later for helpful tips and news about HomaBay Souq.</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if blog_posts %}
+        <div class="text-center mt-5">
+            <a href="{% url 'blog:post-list' %}" class="btn btn-primary">View All Blog Posts</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+<!-- Call to Action -->
+<section class="container mb-5">
+    <div class="cta-section">
+        <div class="cta-content">
+            <h2>Ready to Buy or Sell in Homabay?</h2>
+            <p>Join thousands of users who are already trading on HomaBay Souq. It's free to sign up and start buying or selling today!</p>
+            <div class="cta-buttons">
+                {% if user.is_authenticated %}
+                <a href="{% url 'listing-create' %}" class="btn btn-light">Create a Listing</a>
+                {% else %}
+                <a href="{% url 'register' %}" class="btn btn-light">Create Account</a>
+                <a href="{% url 'login' %}" class="btn btn-outline-light">Sign In</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Pass data from Django to JavaScript
+    const totalListings = {{ total_listings_count }};
+    const totalUsers = {{ total_users_count }};
+    const totalCategories = {{ total_categories_count }};
+    
+    // Animate stats counting
+    function animateValue(id, start, end, duration) {
+        var obj = document.getElementById(id);
+        if (!obj) return;
+        
+        var range = end - start;
+        var current = start;
+        var increment = end > start ? 1 : -1;
+        var stepTime = Math.abs(Math.floor(duration / range));
+        var timer = setInterval(function() {
+            current += increment;
+            obj.innerHTML = current.toLocaleString();
+            if (current == end) {
+                clearInterval(timer);
+            }
+        }, stepTime);
+    }
+    
+    // Run animations when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate stats if on homepage
+        if (document.getElementById('total-listings')) {
+            animateValue('total-listings', 0, totalListings, 2000);
+            animateValue('total-users', 0, totalUsers, 2000);
+            animateValue('total-categories', 0, totalCategories, 2000);
+        }
+        
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+        
+        // Wishlist functionality
+        const wishlistButtons = document.querySelectorAll('.wishlist-btn');
+        wishlistButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const icon = this.querySelector('i');
+                if (this.classList.contains('active')) {
+                    icon.classList.remove('bi-heart');
+                    icon.classList.add('bi-heart-fill');
+                    // Here you would typically make an AJAX call to add to wishlist
+                } else {
+                    icon.classList.remove('bi-heart-fill');
+                    icon.classList.add('bi-heart');
+                    // Here you would typically make an AJAX call to remove from wishlist
+                }
+            });
+        });
+        
+        // Simple carousel functionality for listings
+        const listingsContainer = document.getElementById('listings-container');
+        const listingCards = listingsContainer.querySelectorAll('.col');
+        const prevBtn = document.querySelector('.prev-btn');
+        const nextBtn = document.querySelector('.next-btn');
+        let currentPosition = 0;
+        
+        // Hide all listings initially except the first 4
+        for (let i = 4; i < listingCards.length; i++) {
+            listingCards[i].style.display = 'none';
+        }
+        
+        nextBtn.addEventListener('click', function() {
+            if (currentPosition < listingCards.length - 4) {
+                listingCards[currentPosition].style.display = 'none';
+                currentPosition++;
+                listingCards[currentPosition + 3].style.display = 'block';
+            }
+        });
+        
+        prevBtn.addEventListener('click', function() {
+            if (currentPosition > 0) {
+                listingCards[currentPosition + 3].style.display = 'none';
+                currentPosition--;
+                listingCards[currentPosition].style.display = 'block';
+            }
+        });
+        
+        // Simulate live activity updates
+        const activityFeed = document.getElementById('activity-feed');
+        const activities = [
+            {
+                avatar: 'https://randomuser.me/api/portraits/women/68.jpg',
+                text: '<strong>Grace Wanjiku</strong> just listed a <strong>Canon EOS Camera</strong> for KSh 38,000',
+                time: 'Just now'
+            },
+            {
+                avatar: 'https://randomuser.me/api/portraits/men/75.jpg',
+                text: '<strong>David Mwangi</strong> is interested in <strong>Sofa Set</strong> from <strong>Lucy Adhiambo</strong>',
+                time: '5 minutes ago'
+            },
+            {
+                avatar: 'https://randomuser.me/api/portraits/women/25.jpg',
+                text: '<strong>Esther Nyambura</strong> sold <strong>iPhone 12</strong> to <strong>Brian Kimathi</strong>',
+                time: '30 minutes ago'
+            }
+        ];
+        
+        let activityIndex = 0;
+        
+        // Function to add new activity
+        function addNewActivity() {
+            const activity = activities[activityIndex];
+            const newActivity = document.createElement('li');
+            newActivity.className = 'activity-item';
+            newActivity.innerHTML = `
+                <img src="${activity.avatar}" alt="User" class="activity-avatar">
+                <div class="activity-content">
+                    <p class="activity-text">${activity.text}</p>
+                    <small class="activity-time">${activity.time}</small>
+                </div>
+            `;
+            
+            activityFeed.prepend(newActivity);
+            
+            // Remove the last activity if there are more than 3
+            if (activityFeed.children.length > 3) {
+                activityFeed.removeChild(activityFeed.lastChild);
+            }
+            
+            // Add animation
+            newActivity.style.opacity = '0';
+            newActivity.style.transform = 'translateY(-20px)';
+            
+            setTimeout(() => {
+                newActivity.style.transition = 'all 0.5s ease';
+                newActivity.style.opacity = '1';
+                newActivity.style.transform = 'translateY(0)';
+            }, 10);
+            
+            activityIndex = (activityIndex + 1) % activities.length;
+        }
+        
+        // Add new activity every 30 seconds
+        setInterval(addNewActivity, 30000);
+        
+        // Add initial activity after page load
+        setTimeout(addNewActivity, 5000);
+    });
+</script>
+{% endblock %}

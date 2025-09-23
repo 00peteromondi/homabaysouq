@@ -1,0 +1,577 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomaBay Souq - {% block title %}Local Marketplace{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --primary-gemini: #1a73e8;
+            --danger-gemini: #D13438;
+            --light-bg: #f0f4f9;
+            --light-gradient: radial-gradient(at 100% 0%, #a2d2ff, #f0f4f9, #ffc8dd);
+            --light-navbar-bg: rgba(255, 255, 255, 0.7);
+            --light-text: #1f1f1f;
+            --light-sidebar-bg: linear-gradient(135deg, #a2d2ff 0%, #ffc8dd 100%);
+            --light-sidebar-link-hover: rgba(255, 255, 255, 0.4);
+            --light-sidebar-search-bg: rgba(255, 255, 255, 0.2);
+            --light-input-placeholder: rgba(31, 31, 31, 0.7);
+            --dark-bg: #1A1A1A;
+            --dark-gradient: radial-gradient(at 100% 0%, #2c3e50, #1A1A1A, #4a638a);
+            --dark-navbar-bg: rgba(26, 26, 26, 0.7);
+            --dark-text: #f0f4f9;
+            --dark-sidebar-bg: linear-gradient(135deg, #2c3e50 0%, #4a638a 100%);
+            --dark-sidebar-link-hover: rgba(255, 255, 255, 0.1);
+            --dark-sidebar-search-bg: rgba(255, 255, 255, 0.1);
+            --dark-input-placeholder: rgba(240, 244, 249, 0.7);
+            --footer-bg: #111111;
+            
+            /* Logo gradient colors - not affected by theme */
+            --logo-gradient-start: #2563eb;
+            --logo-gradient-end: #1d4ed8;
+        }
+
+        [data-theme="light"] {
+            --body-bg: var(--light-bg);
+            --body-gradient: var(--light-gradient);
+            --navbar-bg: var(--light-navbar-bg);
+            --text-color: var(--light-text);
+            --sidebar-bg: var(--light-sidebar-bg);
+            --sidebar-link-hover-bg: var(--light-sidebar-link-hover);
+            --sidebar-search-bg: var(--light-sidebar-search-bg);
+            --input-placeholder-color: var(--light-input-placeholder);
+            --footer-bg-color: #343a40;
+        }
+
+        [data-theme="dark"] {
+            --body-bg: var(--dark-bg);
+            --body-gradient: var(--dark-gradient);
+            --navbar-bg: var(--dark-navbar-bg);
+            --text-color: var(--dark-text);
+            --sidebar-bg: var(--dark-sidebar-bg);
+            --sidebar-link-hover-bg: var(--dark-sidebar-link-hover);
+            --sidebar-search-bg: var(--dark-sidebar-search-bg);
+            --input-placeholder-color: var(--dark-input-placeholder);
+            --footer-bg-color: #111111;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--body-bg);
+            background-image: var(--body-gradient);
+            background-attachment: fixed;
+            color: var(--text-color);
+            transition: background-color 0.3s ease;
+        }
+
+        /* Fixed Top Navbar */
+        .navbar {
+            backdrop-filter: blur(10px);
+            background-color: var(--navbar-bg);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+            z-index: 1000;
+            width: 95%; /* To maintain the floating effect on a closed sidebar */
+            left: 2.5%; /* To maintain the floating effect on a closed sidebar */
+            top: 1rem;
+            border-radius: 50px;
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+            transition: width 0.3s ease-in-out, left 0.3s ease-in-out, background-color 0.3s ease;
+        }
+        
+        /* Navbar icons and buttons */
+        .nav-link.icon-link i {
+            font-size: 1.25rem;
+            transition: color 0.2s ease;
+        }
+
+        .nav-link.icon-link:hover i {
+            color: var(--primary-gemini);
+        }
+
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Main Content Container that wraps main and footer */
+        .content-wrapper {
+            padding-top: 90px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+        
+        /* Fixed Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            overflow-y: auto;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            z-index: 999;
+        }
+        
+        body.sidebar-open .sidebar {
+            transform: translateX(0);
+        }
+
+        body.sidebar-open .content-wrapper {
+            margin-left: var(--sidebar-width);
+        }
+        
+        body.sidebar-open .navbar {
+            width: calc(100% - var(--sidebar-width));
+            left: var(--sidebar-width);
+            border-radius: 0;
+            top: 0;
+        }
+        
+        /* Custom scrollbar for aesthetics */
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        /* Sidebar Links and Search */
+        .sidebar-link {
+            color: var(--text-color);
+            padding: 0.75rem 1rem;
+            transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-link:hover {
+            background-color: var(--sidebar-link-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: var(--primary-gemini);
+        }
+
+        .sidebar-search .form-control {
+            border-radius: 50px;
+            background-color: var(--sidebar-search-bg);
+            border: none;
+            color: var(--text-color);
+        }
+        
+        .sidebar-search .form-control::placeholder {
+            color: var(--input-placeholder-color);
+        }
+
+        /* Search bar with icon inside */
+        .search-container-gemini {
+            position: relative;
+        }
+
+        .search-container-gemini .form-control {
+            padding-right: 2.5rem;
+            border-radius: 50px;
+            background-color: var(--sidebar-search-bg);
+            border: none;
+            color: var(--text-color);
+        }
+
+        .search-container-gemini .form-control::placeholder {
+            color: var(--input-placeholder-color);
+        }
+
+        .search-container-gemini .btn {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-color);
+            padding: 0 0.75rem;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--footer-bg-color);
+            color: #999;
+        }
+        
+        /* Logo with gradient that doesn't change with theme */
+        .navbar-brand.logo {
+            background: linear-gradient(135deg, var(--logo-gradient-start), var(--logo-gradient-end));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+        
+        /* Toast container styling */
+        #toast-container {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            z-index: 1050;
+            min-width: 300px;
+        }
+        
+        .toast {
+            backdrop-filter: blur(10px);
+            background-color: var(--navbar-bg);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Cart badge styling */
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            border-radius: 50%;
+            background: var(--danger-gemini);
+            color: white;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <div class="container-fluid">
+        <!-- Toast Messages Container -->
+        <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="toast align-items-center text-white bg-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+
+                            <i class="bi bi-{% if message.tags %}{{ message.tags }}{% else %}info-cirlce{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- Floating Navigation Bar -->
+        <nav class="navbar navbar-expand-lg navbar-light fixed-top shadow-lg">
+            <div class="container-fluid">
+                <button class="btn btn-link me-3 p-0" id="sidebar-toggle">
+                    <i class="bi bi-list fs-4"></i>
+                </button>
+                <a class="navbar-brand logo d-flex align-items-center fw-bold me-auto me-lg-0" href="{% url 'home' %}">
+                    <i class="bi bi-gem me-2" style="background: linear-gradient(135deg, var(--logo-gradient-start), var(--logo-gradient-end)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                    HomaBay Souq
+                </a>
+
+                <div class="d-none d-sm-block flex-grow-1 mx-4" style="max-width: 500px;">
+                    <form class="search-container-gemini" role="search" action="{% url 'all-listings' %}">
+                        <input class="form-control" name="q" type="search" placeholder="Search for products...">
+                        <button class="btn btn-link" type="submit"><i class="bi bi-search"></i></button>
+                    </form>
+                </div>
+                
+                <div class="d-flex align-items-center">
+                    {% if user.is_authenticated %}
+                    <!-- Cart Icon with Item Count -->
+                    <a href="{% url 'view_cart' %}" class="nav-link icon-link position-relative me-3">
+                        <i class="bi bi-cart3"></i>
+                        {% if cart_item_count and cart_item_count > 0 %}
+                        <span class="cart-badge">{{ cart_item_count }}</span>
+                        {% endif %}
+                    </a>
+                    
+                    <a href="#" class="nav-link icon-link position-relative me-3">
+                        <i class="bi bi-bell"></i>
+                        {% if notifications_count and notifications_count > 0 %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ notifications_count }}</span>
+                        {% endif %}
+                    </a>
+                    
+                    <a href="{% url 'inbox' %}" class="nav-link icon-link position-relative me-3">
+                        <i class="bi bi-chat-dots"></i>
+                        {% if unread_messages_count and unread_messages_count > 0 %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ unread_messages_count }}</span>
+                        {% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Theme Toggle Button -->
+                    <button class="btn btn-link me-3" id="theme-toggle">
+                        <i class="bi bi-sun-fill fs-5" id="theme-icon"></i>
+                    </button>
+
+                    {% if user.is_authenticated %}
+                    <div class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle d-flex align-items-center" role="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="{{ user.profile.profile_picture.url|default:'https://placehold.co/40x40/c2c2c2/1f1f1f?text=HS' }}" alt="{{ user.username }}" class="rounded-circle me-2" style="width: 32px; height: 32px;">
+                            <span class="fw-bold d-none d-lg-block">{{ user.username }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="profileDropdown">
+                            <li><a class="dropdown-item" href="{% url 'profile' user.pk %}"><i class="bi bi-person me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'view_cart' %}"><i class="bi bi-cart3 me-2"></i>Shopping Cart</a></li>
+                            <li><a class="dropdown-item" href="{% url 'order_list' %}"><i class="bi bi-bag me-2"></i>My Orders</a></li>
+                            <li><a class="dropdown-item" href="{% url 'inbox' %}"><i class="bi bi-chat-dots me-2"></i>Messages</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="post" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+                                    <button class="dropdown-item text-danger" type="submit"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-outline-primary me-2 rounded-pill">Login</a>
+                    <a href="{% url 'register' %}" class="btn btn-gemini-primary rounded-pill">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Permanent Sidebar -->
+        <aside id="sidebar" class="sidebar">
+            <div class="d-flex align-items-center justify-content-between mb-4 mt-2">
+                <a class="navbar-brand logo d-flex align-items-center fw-bold" href="{% url 'home' %}">
+                    <i class="bi bi-gem me-2" style="background: linear-gradient(135deg, var(--logo-gradient-start), var(--logo-gradient-end)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                    HomaBay Souq
+                </a>
+                <button type="button" class="btn-close" aria-label="Close" id="sidebar-close"></button>
+            </div>
+            <div class="sidebar-search mb-4">
+                <form class="position-relative" role="search" action="{% url 'all-listings' %}">
+                    <input class="form-control" name="q" type="search" placeholder="Search...">
+                    <button class="btn btn-link position-absolute top-50 end-0 translate-middle" type="submit"><i class="bi bi-search"></i></button>
+                </form>
+            </div>
+            
+            <ul class="nav flex-column sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link active" aria-current="page" href="{% url 'home' %}"><i class="bi bi-house-door me-2"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="{% url 'all-listings' %}"><i class="bi bi-grid-fill me-2"></i> Browse Listings</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="{% url 'listing-create' %}"><i class="bi bi-plus-circle me-2"></i> Sell Item</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="{% url 'blog:post-list' %}"><i class="bi bi-newspaper me-2"></i> Blog</a>
+                </li>
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="{% url 'view_cart' %}"><i class="bi bi-cart3 me-2"></i> Shopping Cart
+                        {% if cart_item_count and cart_item_count > 0 %}
+                        <span class="badge bg-primary rounded-pill ms-auto">{{ cart_item_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="{% url 'order_list' %}"><i class="bi bi-bag me-2"></i> My Orders</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="{% url 'profile' user.pk %}"><i class="bi bi-person me-2"></i> Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="{% url 'inbox' %}"><i class="bi bi-chat-dots me-2"></i> Messages
+                        {% if unread_messages_count and unread_messages_count > 0 %}
+                        <span class="badge bg-danger rounded-pill ms-auto">{{ unread_messages_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="{% url 'favorites' %}"><i class="bi bi-heart me-2"></i> Favorites</a>
+                </li>
+                <li class="nav-item mt-auto">
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-link sidebar-link w-100 text-start text-danger"><i class="bi bi-box-arrow-right me-2"></i> Logout</button>
+                    </form>
+                </li>
+                {% else %}
+                <li class="nav-item mt-auto">
+                    <a class="nav-link sidebar-link" href="{% url 'login' %}"><i class="bi bi-box-arrow-in-right me-2"></i> Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="{% url 'register' %}"><i class="bi bi-person-plus me-2"></i> Register</a>
+                </li>
+                {% endif %}
+            </ul>
+        </aside>
+
+        <!-- Main Content Area Wrapper -->
+        <div class="content-wrapper d-flex flex-column min-vh-100">
+            <main class="flex-grow-1 px-4 mb-5">
+                {% block content %}{% endblock %}
+            </main>
+            
+            <!-- Footer -->
+            <footer class="bg-dark text-white-50 py-5 mt-auto">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
+                            <h4 class="text-white fw-bold mb-3">HomaBay Souq</h4>
+                            <p class="text-white-50">The premier marketplace for buying and selling items in Homabay County. Connect with local buyers and sellers in your community.</p>
+                            <div class="d-flex mt-3 text-white">
+                                <a href="#" class="text-white me-3"><i class="bi bi-facebook"></i></a>
+                                <a href="#" class="text-white me-3"><i class="bi bi-twitter"></i></a>
+                                <a href="#" class="text-white me-3"><i class="bi bi-instagram"></i></a>
+                                <a href="#" class="text-white"><i class="bi bi-whatsapp"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
+                            <h4 class="text-white fw-bold mb-3">Quick Links</h4>
+                            <ul class="list-unstyled">
+                                <li><a href="{% url 'home' %}" class="text-white-50 text-decoration-none">Home</a></li>
+                                <li><a href="{% url 'all-listings' %}" class="text-white-50 text-decoration-none">Browse Listings</a></li>
+                                <li><a href="{% url 'listing-create' %}" class="text-white-50 text-decoration-none">Sell Item</a></li>
+                                <li><a href="{% url 'blog:post-list' %}" class="text-white-50 text-decoration-none">Blog</a></li>
+                                <li><a href="#" class="text-white-50 text-decoration-none">How It Works</a></li>
+                                <li><a href="#" class="text-white-50 text-decoration-none">Popular Items</a></li>
+
+                            </ul>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
+                            <h4 class="text-white fw-bold mb-3">Account</h4>
+                            <ul class="list-unstyled">
+                                {% if user.is_authenticated %}
+                                <li><a href="{% url 'profile' user.pk %}" class="text-white-50 text-decoration-none">Profile</a></li>
+                                <li><a href="{% url 'view_cart' %}" class="text-white-50 text-decoration-none">Shopping Cart</a></li>
+                                <li><a href="{% url 'order_list' %}" class="text-white-50 text-decoration-none">My Orders</a></li>
+                                <li><a href="{% url 'inbox' %}" class="text-white-50 text-decoration-none">Messages</a></li>
+                                <li><a href="{% url 'listing-create' %}" class="text-white-50 text-decoration-none">Sell Item</a></li>
+                                <li>
+                                    <form method="post" action="{% url 'logout' %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-link text-white-50 text-decoration-none p-0">Logout</button>
+                                    </form>
+                                </li>
+                                {% else %}
+                                <li><a href="{% url 'login' %}" class="text-white-50 text-decoration-none">Login</a></li>
+                                <li><a href="{% url 'register' %}" class="text-white-50 text-decoration-none">Register</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <h4 class="text-white fw-bold mb-3">Contact Info</h4>
+                            <p class="text-white-50"><i class="bi bi-geo-alt-fill me-2"></i> Homabay Town, Homabay County, Kenya</p>
+                            <p class="text-white-50 mt-1"><i class="bi bi-envelope-fill me-2"></i> info@homabaysouq.com</p>
+                            <p class="text-white-50 mt-1"><i class="bi bi-telephone-fill me-2"></i> +254 700 123 456</p>
+                            <p class="text-white-50 mt-1"><i class="bi bi-question-circle-fill me-2"></i> <a href="#" class="text-white-50 text-decoration-none">Help & Support</a></p>
+                        </div>
+                    </div>
+                    <hr class="border-secondary my-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center text-sm">
+                        <p class="mb-2 mb-md-0">&copy; 2025 HomaBay Souq. All rights reserved.</p>
+                        <div class="d-flex space-x-4">
+                            <a href="#" class="text-white-50 text-decoration-none">Privacy Policy</a>
+                            <a href="#" class="text-white-50 text-decoration-none">Terms of Service</a>
+                            <a href="#" class="text-white-50 text-decoration-none">Cookie Policy</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS for sidebar toggle and theme switching -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebarClose = document.getElementById('sidebar-close');
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const body = document.body;
+
+            // Load theme from localStorage or default to light
+            const storedTheme = localStorage.getItem('theme') || 'light';
+            body.setAttribute('data-theme', storedTheme);
+            if (storedTheme === 'dark') {
+                themeIcon.classList.replace('bi-sun-fill', 'bi-moon-fill');
+            }
+
+            // Sidebar toggle logic
+            const toggleSidebar = () => {
+                body.classList.toggle('sidebar-open');
+            };
+
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', toggleSidebar);
+            }
+
+            if (sidebarClose) {
+                sidebarClose.addEventListener('click', toggleSidebar);
+            }
+
+            // Theme switching logic
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    let currentTheme = body.getAttribute('data-theme');
+                    let newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                    body.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+
+                    if (newTheme === 'dark') {
+                        themeIcon.classList.replace('bi-sun-fill', 'bi-moon-fill');
+                    } else {
+                        themeIcon.classList.replace('bi-moon-fill', 'bi-sun-fill');
+                    }
+                });
+            }
+            
+            // Initialize toast messages
+            const toastElList = document.querySelectorAll('.toast');
+            const toastList = [...toastElList].map(toastEl => {
+                const toast = new bootstrap.Toast(toastEl, {
+                    autohide: true,
+                    delay: 5000
+                });
+                toast.show();
+                return toast;
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

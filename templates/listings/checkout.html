@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Checkout - HomaBay Souq{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'view_cart' %}">Cart</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Checkout</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-gradient-primary text-white py-3">
+                    <h4 class="mb-0"><i class="bi bi-truck me-2"></i> Shipping & Payment Details</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="checkoutForm">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.first_name|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.last_name|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.email|as_crispy_field }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.phone_number|as_crispy_field }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.address|as_crispy_field }}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.city|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.postal_code|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6 class="mb-3">Payment Method</h6>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="payment_method" id="mpesa" value="mpesa" checked>
+                                <label class="form-check-label d-flex align-items-center" for="mpesa">
+                                    <i class="bi bi-phone me-2 text-success"></i>
+                                    M-Pesa
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="payment_method" id="card" value="card">
+                                <label class="form-check-label d-flex align-items-center" for="card">
+                                    <i class="bi bi-credit-card me-2 text-primary"></i>
+                                    Credit/Debit Card
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="cash" value="cash">
+                                <label class="form-check-label d-flex align-items-center" for="cash">
+                                    <i class="bi bi-cash-coin me-2 text-warning"></i>
+                                    Cash on Delivery
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the <a href="#" class="text-primary">Terms of Service</a> and <a href="#" class="text-primary">Privacy Policy</a>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2" id="placeOrderBtn">
+                            <i class="bi bi-lock-fill me-2"></i> Place Order - KSh {{ cart.get_total_price }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow-lg border-0 sticky-top" style="top: 100px;">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0">Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="order-items mb-3">
+                        {% for item in cart.items.all %}
+                        <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                            <img src="{{ item.listing.image.url }}" 
+                                 alt="{{ item.listing.title }}"
+                                 class="rounded me-3"
+                                 width="50"
+                                 height="50"
+                                 style="object-fit: cover;">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ item.listing.title }}</h6>
+                                <small class="text-muted">Qty: {{ item.quantity }}</small>
+                            </div>
+                            <span class="fw-bold text-primary">KSh {{ item.get_total_price }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span>KSh {{ cart.get_total_price }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Shipping:</span>
+                        <span class="text-success">Free</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Tax:</span>
+                        <span>KSh 0.00</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total:</strong>
+                        <strong class="text-primary fs-5">KSh {{ cart.get_total_price }}</strong>
+                    </div>
+                    
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Free shipping within Homabay County. Orders are processed within 24 hours.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm border-0 mt-4">
+                <div class="card-body">
+                    <h6 class="mb-3">Need Help?</h6>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-telephone text-primary me-2"></i>
+                        <small>+254 700 123 456</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-envelope text-primary me-2"></i>
+                        <small>support@homabaysouq.com</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-clock text-primary me-2"></i>
+                        <small>Mon-Fri: 8AM-6PM</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, var(--primary-gemini) 0%, #0d47a1 100%) !important;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-gemini);
+    border-color: var(--primary-gemini);
+}
+
+.sticky-top {
+    z-index: 10;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkoutForm = document.getElementById('checkoutForm');
+    const placeOrderBtn = document.getElementById('placeOrderBtn');
+    
+    checkoutForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!document.getElementById('terms').checked) {
+            alert('Please agree to the Terms of Service and Privacy Policy');
+            return;
+        }
+        
+        // Show loading state
+        placeOrderBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Processing...';
+        placeOrderBtn.disabled = true;
+        
+        // Simulate payment processing
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+        
+        if (paymentMethod === 'mpesa') {
+            // Simulate M-Pesa prompt
+            simulateMpesaPayment();
+        } else {
+            // Submit form for other methods
+            this.submit();
+        }
+    });
+    
+    function simulateMpesaPayment() {
+        // Show M-Pesa simulation
+        const mpesaModal = new bootstrap.Modal(document.createElement('div'));
+        const modalHtml = `
+            <div class="modal fade" id="mpesaModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">M-Pesa Payment</h5>
+                        </div>
+                        <div class="modal-body text-center py-4">
+                            <i class="bi bi-phone text-success display-4 mb-3"></i>
+                            <h5>Check your phone</h5>
+                            <p class="text-muted">Enter your M-Pesa PIN to complete payment of KSh {{ cart.get_total_price }}</p>
+                            <div class="spinner-border text-success mt-3" role="status">
+                                <span class="visually-hidden">Processing...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        const modalElement = document.getElementById('mpesaModal');
+        const modal = new bootstrap.Modal(modalElement);
+        
+        modal.show();
+        
+        // Simulate payment processing
+        setTimeout(() => {
+            modal.hide();
+            checkoutForm.submit();
+        }, 3000);
+        
+        // Clean up modal
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            modalElement.remove();
+        });
+    }
+    
+    // Real-time form validation
+    const inputs = checkoutForm.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.value.trim() === '' && this.hasAttribute('required')) {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

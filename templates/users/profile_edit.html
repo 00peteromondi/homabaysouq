@@ -1,0 +1,433 @@
+<!-- templates/accounts/profile_edit.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Profile - HomaBay Souq{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-edit-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow);
+        border-radius: 1rem;
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .profile-pic-container {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 1.5rem;
+    }
+
+    .profile-pic-edit {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid var(--primary-gemini);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .upload-btn {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--primary-gemini);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid var(--card-bg);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .upload-btn:hover {
+        background-color: var(--primary-gemini-dark);
+        transform: scale(1.1);
+    }
+
+    .form-control, .form-select, .form-check-input {
+        background-color: var(--input-bg);
+        color: var(--text-color);
+        border: 1px solid var(--border-color);
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-gemini);
+        box-shadow: 0 0 0 0.25rem rgba(var(--primary-gemini-rgb), 0.25);
+    }
+    
+    .form-control::placeholder {
+        color: var(--text-muted);
+        opacity: 0.8;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-text {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    .btn-primary {
+        background-color: var(--primary-gemini);
+        border-color: var(--primary-gemini);
+        border-radius: 0.75rem;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--primary-gemini-dark);
+        border-color: var(--primary-gemini-dark);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+    }
+    
+    .btn-outline-secondary {
+        border-color: var(--border-color);
+        color: var(--text-color);
+        border-radius: 0.75rem;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: var(--light-bg);
+        border-color: var(--border-color);
+        color: var(--text-color);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .section-header {
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+    
+    .section-header h5 {
+        position: relative;
+        display: inline-block;
+        padding-right: 1rem;
+        background-color: var(--card-bg);
+        z-index: 1;
+        color: var(--text-color);
+    }
+    
+    .section-header p {
+        color: var(--text-muted);
+    }
+    
+    .section-header::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background-color: var(--primary-gemini);
+        border-radius: 3px;
+    }
+
+    .form-check-input {
+        background-color: var(--input-bg);
+        border: 1px solid var(--border-color);
+    }
+    
+    .form-check-input:checked {
+        background-color: var(--primary-gemini);
+        border-color: var(--primary-gemini);
+    }
+    
+    .form-check-input:focus {
+        border-color: var(--primary-gemini);
+        box-shadow: 0 0 0 0.25rem rgba(var(--primary-gemini-rgb), 0.25);
+    }
+    
+    .form-check-label {
+        color: var(--text-color);
+    }
+
+    /* Dark mode specific adjustments */
+    [data-theme="dark"] .form-control,
+    [data-theme="dark"] .form-select {
+        background-color: var(--input-bg-dark);
+        border-color: var(--border-color-dark);
+    }
+    
+    [data-theme="dark"] .btn-outline-secondary {
+        border-color: var(--border-color-dark);
+        color: var(--text-color-dark);
+    }
+    
+    [data-theme="dark"] .btn-outline-secondary:hover {
+        background-color: var(--light-bg-dark);
+        color: var(--text-color-dark);
+    }
+
+    @media (max-width: 768px) {
+        .profile-pic-container {
+            width: 120px;
+            height: 120px;
+        }
+        
+        .upload-btn {
+            width: 32px;
+            height: 32px;
+        }
+        
+        .profile-edit-card {
+            padding: 1.5rem !important;
+        }
+    }
+
+    /* Validation styles */
+    .is-invalid {
+        border-color: var(--danger) !important;
+    }
+    
+    .invalid-feedback {
+        color: var(--danger);
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Back Navigation -->
+    <div class="d-flex align-items-center mb-4">
+        <a href="{% url 'profile' user.pk %}" class="btn btn-sm btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <h4 class="mb-0" style="color: var(--text-color);">Edit Profile</h4>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="profile-edit-card p-4 p-md-5">
+                <form method="post" enctype="multipart/form-data" class="row g-4" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Profile Picture Section -->
+                    <div class="col-12 text-center">
+                        <div class="profile-pic-container">
+                            <img id="profile-pic-preview" src="{% if form.instance.profile_picture %}{{ form.instance.profile_picture.url }}{% else %}{% static 'images/default-profile.png' %}{% endif %}" class="profile-pic-edit" alt="Profile Picture">
+                            <label for="id_profile_picture" class="upload-btn" title="Change Profile Picture">
+                                <i class="bi bi-camera-fill"></i>
+                            </label>
+                            <input type="file" name="profile_picture" accept="image/*" id="id_profile_picture" class="d-none">
+                        </div>
+                        {% if form.profile_picture.errors %}
+                            <div class="invalid-feedback d-block">{{ form.profile_picture.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Basic Information Section -->
+                    <div class="col-12">
+                        <div class="section-header">
+                            <h5 class="mb-0">Basic Information</h5>
+                            <p class="text-muted mb-0">Update your public profile details</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                        <input type="text" name="first_name" value="{{ form.first_name.value|default:'' }}" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" id="{{ form.first_name.id_for_label }}" placeholder="Enter your first name">
+                        {% if form.first_name.errors %}
+                            <div class="invalid-feedback">{{ form.first_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                        <input type="text" name="last_name" value="{{ form.last_name.value|default:'' }}" class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" id="{{ form.last_name.id_for_label }}" placeholder="Enter your last name">
+                        {% if form.last_name.errors %}
+                            <div class="invalid-feedback">{{ form.last_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                        <input type="text" name="username" value="{{ form.username.value|default:'' }}" class="form-control {% if form.username.errors %}is-invalid{% endif %}" id="{{ form.username.id_for_label }}" placeholder="Choose a username">
+                        {% if form.username.errors %}
+                            <div class="invalid-feedback">{{ form.username.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                        <input type="email" name="email" value="{{ form.email.value|default:'' }}" class="form-control {% if form.email.errors %}is-invalid{% endif %}" id="{{ form.email.id_for_label }}" placeholder="Your email address">
+                        {% if form.email.errors %}
+                            <div class="invalid-feedback">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-12">
+                        <label for="{{ form.bio.id_for_label }}" class="form-label">Bio</label>
+                        <textarea name="bio" class="form-control {% if form.bio.errors %}is-invalid{% endif %}" id="{{ form.bio.id_for_label }}" rows="4" placeholder="Tell others about yourself">{{ form.bio.value|default:'' }}</textarea>
+                        {% if form.bio.errors %}
+                            <div class="invalid-feedback">{{ form.bio.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">Tell others about yourself (max 250 characters)</div>
+                        <div class="form-text text-end" id="bio-counter">0/250 characters</div>
+                    </div>
+                    
+                    <!-- Contact Information Section -->
+                    <div class="col-12 mt-4">
+                        <div class="section-header">
+                            <h5 class="mb-0">Contact Information</h5>
+                            <p class="text-muted mb-0">How others can reach you</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="{{ form.phone_number.id_for_label }}" class="form-label">Phone Number</label>
+                        <input type="text" name="phone_number" value="{{ form.phone_number.value|default:'' }}" class="form-control {% if form.phone_number.errors %}is-invalid{% endif %}" id="{{ form.phone_number.id_for_label }}" placeholder="e.g., +254712345678">
+                        {% if form.phone_number.errors %}
+                            <div class="invalid-feedback">{{ form.phone_number.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">Include country code if outside Kenya</div>
+                    </div>
+                    
+                    <!-- Privacy Settings Section -->
+                    <div class="col-12 mt-4">
+                        <div class="section-header">
+                            <h5 class="mb-0">Privacy Settings</h5>
+                            <p class="text-muted mb-0">Control who can see your information</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="show_contact_info" id="show_contact_info" {% if form.show_contact_info.value %}checked{% endif %}>
+                            <label class="form-check-label" for="show_contact_info">
+                                Show my contact information to other users
+                            </label>
+                        </div>
+                        <div class="form-text">When enabled, your phone number and email will be visible on your public profile</div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="col-12 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
+                        <div class="d-flex flex-column flex-md-row gap-3">
+                            <button type="submit" class="btn btn-primary flex-grow-1 flex-md-grow-0">Save Changes</button>
+                            <a href="{% url 'profile' user.pk %}" class="btn btn-outline-secondary flex-grow-1 flex-md-grow-0">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const fileInput = document.getElementById('id_profile_picture');
+        const profilePicPreview = document.getElementById('profile-pic-preview');
+
+        if (fileInput && profilePicPreview) {
+            fileInput.addEventListener('change', (event) => {
+                const [file] = event.target.files;
+                if (file) {
+                    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                        alert('Please select an image smaller than 5MB');
+                        fileInput.value = '';
+                        return;
+                    }
+                    
+                    profilePicPreview.src = URL.createObjectURL(file);
+                    
+                    // Clear the preview when the same file is selected again
+                    fileInput.addEventListener('click', function() {
+                        this.value = '';
+                    });
+                }
+            });
+        }
+        
+        // Add character counter for bio field
+        const bioField = document.getElementById('{{ form.bio.id_for_label }}');
+        const bioCounter = document.getElementById('bio-counter');
+        
+        if (bioField && bioCounter) {
+            function updateBioCounter() {
+                const maxLength = 250;
+                const currentLength = bioField.value.length;
+                bioCounter.textContent = `${currentLength}/${maxLength} characters`;
+                
+                if (currentLength > maxLength * 0.9) {
+                    bioCounter.classList.add('text-warning');
+                } else {
+                    bioCounter.classList.remove('text-warning');
+                }
+                
+                // Enforce max length
+                if (currentLength > maxLength) {
+                    bioField.value = bioField.value.substring(0, maxLength);
+                    updateBioCounter();
+                }
+            }
+            
+            bioField.addEventListener('input', updateBioCounter);
+            updateBioCounter();
+        }
+        
+        // Form validation
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                let isValid = true;
+                const inputs = form.querySelectorAll('input[required], textarea[required]');
+                
+                inputs.forEach(input => {
+                    if (!input.value.trim()) {
+                        isValid = false;
+                        input.classList.add('is-invalid');
+                        
+                        // Create error message if it doesn't exist
+                        if (!input.nextElementSibling || !input.nextElementSibling.classList.contains('invalid-feedback')) {
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'invalid-feedback';
+                            errorDiv.textContent = 'This field is required';
+                            input.parentNode.appendChild(errorDiv);
+                        }
+                    } else {
+                        input.classList.remove('is-invalid');
+                        const errorDiv = input.nextElementSibling;
+                        if (errorDiv && errorDiv.classList.contains('invalid-feedback')) {
+                            errorDiv.remove();
+                        }
+                    }
+                });
+                
+                if (!isValid) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

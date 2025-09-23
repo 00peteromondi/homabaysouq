@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Order #{{ order.id }}</h2>
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4>Order Details</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>Status:</strong> 
+                    <span class="badge bg-{% if order.status == 'delivered' %}success
+                    {% elif order.status == 'shipped' %}info
+                    {% elif order.status == 'paid' %}primary
+                    {% elif order.status == 'cancelled' %}danger
+                    {% else %}secondary{% endif %}">
+                        {{ order.get_status_display }}
+                    </span>
+                </p>
+                <p><strong>Order Date:</strong> {{ order.created_at|date:"M d, Y H:i" }}</p>
+                <p><strong>Total Amount:</strong> KSh {{ order.total_price }}</p>
+                
+                <h5>Items</h5>
+                <ul class="list-group">
+                    {% for item in order.order_items.all %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <img src="{{ item.listing.image.url }}" alt="{{ item.listing.title }}" width="50" height="50">
+                            {{ item.quantity }} x {{ item.listing.title }}
+                        </div>
+                        <span>KSh {{ item.get_total_price }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4>Order Actions</h4>
+            </div>
+            <div class="card-body">
+                {% if order.status == 'pending' %}
+                    <a href="{% url 'process_payment' order.id %}" class="btn btn-primary btn-block mb-2">Complete Payment</a>
+                {% endif %}
+                
+                {% if order.status == 'shipped' %}
+                    <form method="post" action="{% url 'confirm_delivery' order.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-block mb-2">Confirm Delivery</button>
+                    </form>
+                    
+                    <button type="button" class="btn btn-warning btn-block" data-bs-toggle="modal" data-bs-target="#disputeModal">
+                        Report Issue
+                    </button>
+                {% endif %}
+                
+                {% if order.status == 'delivered' %}
+                    <a href="{% url 'leave_review' order.id %}" class="btn btn-info btn-block mb-2">Leave Review</a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h4>Payment Status</h4>
+            </div>
+            <div class="card-body">
+                {% if order.payment %}
+                    <p><strong>Status:</strong> {{ order.payment.get_status_display }}</p>
+                    <p><strong>Method:</strong> {{ order.payment.get_method_display }}</p>
+                    {% if order.payment.transaction_id %}
+                        <p><strong>Transaction ID:</strong> {{ order.payment.transaction_id }}</p>
+                    {% endif %}
+                {% else %}
+                    <p>Payment not processed yet.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h4>Escrow Status</h4>
+            </div>
+            <div class="card-body">
+                {% if order.escrow %}
+                    <p><strong>Status:</strong> {{ order.escrow.get_status_display }}</p>
+                    <p><strong>Amount:</strong> KSh {{ order.escrow.amount }}</p>
+                    {% if order.escrow.released_at %}
+                        <p><strong>Released:</strong> {{ order.escrow.released_at|date:"M d, Y H:i" }}</p>
+                    {% endif %}
+                {% else %}
+                    <p>Escrow not set up yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dispute Modal -->
+<div class="modal fade" id="disputeModal" tabindex="-1" aria-labelledby="disputeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="disputeModalLabel">Report an Issue with Your Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>If you have not received your order or there is an issue with the items, you can open a dispute.</p>
+                <p>Our team will review your case and work to resolve it within 48 hours.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'create_dispute' order.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning">Open Dispute</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

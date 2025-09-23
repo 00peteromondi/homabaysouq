@@ -1,0 +1,495 @@
+<!-- templates/accounts/profile.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ profile_user.username }} - HomaBay Souq{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow);
+        border-radius: 1rem;
+    }
+
+    .profile-pic {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid var(--primary-gemini);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .stat-box {
+        background-color: var(--light-bg);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        text-align: center;
+        border: 1px solid var(--border-color);
+    }
+    
+    .stat-box .display-5 {
+        font-weight: 700;
+        color: var(--primary-gemini);
+    }
+
+    .nav-tabs .nav-link {
+        color: var(--text-color);
+        border: none;
+        border-bottom: 3px solid transparent;
+        transition: border-color 0.3s ease, color 0.3s ease;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: var(--primary-gemini);
+        background-color: transparent;
+        border-color: var(--primary-gemini);
+        font-weight: 600;
+    }
+
+    .nav-tabs .nav-link:hover {
+        border-color: var(--primary-gemini);
+    }
+
+    .listing-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
+    }
+
+    .listing-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow);
+        border-radius: 1rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+
+    .listing-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .listing-img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 1rem 1rem 0 0;
+    }
+    
+    .listing-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-gemini);
+    }
+
+    .no-listings-container {
+        padding: 5rem 1rem;
+        text-align: center;
+        color: var(--text-muted);
+    }
+    
+    .no-listings-container h4 {
+        margin-top: 1rem;
+        font-weight: 600;
+    }
+
+    .badge-verified {
+        background-color: var(--primary-gemini-25);
+        color: var(--primary-gemini);
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 0.4rem 0.8rem;
+        border-radius: 1rem;
+    }
+    
+    .contact-info-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .contact-info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .profile-name {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.25rem;
+    }
+    
+    .profile-username {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .profile-bio {
+        background-color: var(--light-bg);
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        margin: 1.5rem 0;
+        border-left: 4px solid var(--primary-gemini);
+    }
+    
+    .profile-bio p {
+        margin-bottom: 0;
+        font-style: italic;
+        color: var(--text-color);
+    }
+    
+    .profile-bio .quotes {
+        color: var(--primary-gemini);
+        font-size: 1.5rem;
+        line-height: 1;
+        margin-right: 0.5rem;
+    }
+    
+    .empty-bio {
+        color: var(--text-muted);
+        font-style: italic;
+    }
+    
+    .member-since {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Profile Header Section -->
+    <div class="profile-card p-4 mb-4">
+        <div class="row align-items-center">
+            <div class="col-lg-3 text-center mb-3 mb-lg-0">
+                <img src="{% if profile_user.profile_picture %}{{ profile_user.profile_picture.url }}{% else %}{% static 'images/default-profile.png' %}{% endif %}" class="profile-pic" alt="{{ profile_user.username }}">
+                
+                {% if user == profile_user %}
+                <a href="{% url 'profile-edit' profile_user.pk %}" class="btn btn-sm btn-outline-primary mt-3">
+                    <i class="bi bi-camera me-1"></i> Update Photo
+                </a>
+                {% endif %}
+            </div>
+            <div class="col-lg-9">
+                <div class="d-flex align-items-center mb-2">
+                    <div>
+                        <!-- Display full name if available, otherwise fall back to username -->
+                        <h1 class="profile-name">
+                            {% if profile_user.first_name and profile_user.last_name %}
+                                {{ profile_user.first_name }} {{ profile_user.last_name }}
+                            {% elif profile_user.first_name %}
+                                {{ profile_user.first_name }}
+                            {% else %}
+                                {{ profile_user.username }}
+                            {% endif %}
+                        </h1>
+                        <div class="profile-username">@{{ profile_user.username }}</div>
+                    </div>
+                    {% if profile_user.is_verified %}
+                    <span class="badge badge-verified ms-3">
+                        <i class="bi bi-patch-check-fill me-1"></i> Jirani Verified
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <!-- Member since -->
+                <div class="member-since mb-2">
+                    <i class="bi bi-calendar-check me-1"></i> Member since {{ profile_user.date_joined|date:"F Y" }}
+                </div>
+                
+                <!-- Bio Section -->
+                {% if profile_user.bio %}
+                <div class="profile-bio">
+                    <span class="quotes">“</span>
+                    <p>{{ profile_user.bio }}</p>
+                </div>
+                {% else %}
+                <div class="profile-bio empty-bio">
+                    <p>This user hasn't added a bio yet.</p>
+                </div>
+                {% endif %}
+
+                <div class="row g-2 mb-3">
+                    <div class="col-4">
+                        <div class="stat-box">
+                            <h4 class="display-5 mb-0">{{ profile_user.listing_count }}</h4>
+                            <small class="text-muted">Listings</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-box">
+                            <h4 class="display-5 mb-0">{{ profile_user.saved_count }}</h4>
+                            <small class="text-muted">Saved</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-box">
+                            <h4 class="display-5 mb-0">{{ profile_user.rating_average|floatformat:1 }}</h4>
+                            <small class="text-muted">Rating</small>
+                        </div>
+                    </div>
+                </div>
+
+                {% if user == profile_user %}
+                <div class="d-flex gap-2">
+                    <a href="{% url 'profile-edit' profile_user.pk %}" class="btn btn-outline-primary flex-grow-1">
+                        <i class="bi bi-pencil me-1"></i> Edit Profile
+                    </a>
+                    <a href="{% url 'listing-create' %}" class="btn btn-primary flex-grow-1">
+                        <i class="bi bi-plus-circle me-1"></i> Create Listing
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tabbed Content Section -->
+    <div class="card profile-card p-4">
+        <ul class="nav nav-tabs mb-4" id="profileTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="listings-tab" data-bs-toggle="tab" data-bs-target="#listings" type="button" role="tab" aria-controls="listings" aria-selected="true">
+                    Listings ({{ profile_user.listing_count }})
+                </button>
+            </li>
+            {% if user == profile_user %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="saved-tab" data-bs-toggle="tab" data-bs-target="#saved" type="button" role="tab" aria-controls="saved" aria-selected="false">
+                    Saved Items ({{ profile_user.saved_count }})
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="my-contact-tab" data-bs-toggle="tab" data-bs-target="#my-contact" type="button" role="tab" aria-controls="my-contact" aria-selected="false">
+                    Contact Info
+                </button>
+            </li>
+            {% else %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">
+                    Contact
+                </button>
+            </li>
+            {% endif %}
+        </ul>
+        <div class="tab-content" id="profileTabContent">
+            <!-- Listings Tab Pane -->
+            <div class="tab-pane fade show active" id="listings" role="tabpanel" aria-labelledby="listings-tab">
+                {% if page_obj %}
+                <div class="listing-grid">
+                    {% for listing in page_obj %}
+                    <a href="{% url 'listing-detail' listing.pk %}" class="text-decoration-none">
+                        <div class="listing-card">
+                            <img src="{{ listing.image.url }}" class="listing-img" alt="{{ listing.title }}">
+                            <div class="p-3">
+                                <h5 class="card-title text-truncate">{{ listing.title }}</h5>
+                                <p class="listing-price mb-0">Ksh {{ listing.price }}</p>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <nav class="mt-4" aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">Next</span></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                {% else %}
+                <div class="no-listings-container">
+                    <i class="bi bi-inboxes display-1 text-muted"></i>
+                    <h4>No listings yet</h4>
+                    <p class="text-muted">This user hasn't listed any items for sale.</p>
+                    {% if user == profile_user %}
+                    <a href="{% url 'listing-create' %}" class="btn btn-primary mt-2">
+                        <i class="bi bi-plus-circle me-1"></i> Create your first listing
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Saved Items Tab Pane -->
+            {% if user == profile_user %}
+            <div class="tab-pane fade" id="saved" role="tabpanel" aria-labelledby="saved-tab">
+                {% if saved_listings %}
+                <div class="listing-grid">
+                    {% for listing in saved_listings %}
+                    <a href="{% url 'listing-detail' listing.pk %}" class="text-decoration-none">
+                        <div class="listing-card">
+                            <img src="{{ listing.image.url }}" class="listing-img" alt="{{ listing.title }}">
+                            <div class="p-3">
+                                <h5 class="card-title text-truncate">{{ listing.title }}</h5>
+                                <p class="listing-price mb-0">Ksh {{ listing.price }}</p>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="no-listings-container">
+                    <i class="bi bi-bookmark-heart-fill display-1 text-muted"></i>
+                    <h4>No saved items yet</h4>
+                    <p class="text-muted">Find items you love and save them to your profile.</p>
+                    <a href="{% url 'all-listings' %}" class="btn btn-primary mt-2">
+                        <i class="bi bi-search me-1"></i> Start browsing
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Your Contact Info Tab Pane -->
+            <div class="tab-pane fade" id="my-contact" role="tabpanel" aria-labelledby="my-contact-tab">
+                <div class="card p-4">
+                    <h5 class="card-title mb-3">Your Contact Information</h5>
+                    {% if profile_user.phone_number or profile_user.email or profile_user.first_name %}
+                    <div class="contact-info-list">
+                        {% if profile_user.first_name %}
+                        <div class="contact-info-item">
+                            <i class="bi bi-person-fill fs-4 text-primary"></i>
+                            <div>
+                                <h6 class="mb-0">Name</h6>
+                                <p class="text-muted mb-0">
+                                    {% if profile_user.first_name and profile_user.last_name %}
+                                        {{ profile_user.first_name }} {{ profile_user.last_name }}
+                                    {% elif profile_user.first_name %}
+                                        {{ profile_user.first_name }}
+                                    {% else %}
+                                        Not provided
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if profile_user.phone_number %}
+                        <div class="contact-info-item">
+                            <i class="bi bi-phone-fill fs-4 text-primary"></i>
+                            <div>
+                                <h6 class="mb-0">Phone Number</h6>
+                                <p class="text-muted mb-0">{{ profile_user.phone_number }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if profile_user.email %}
+                        <div class="contact-info-item">
+                            <i class="bi bi-envelope-fill fs-4 text-primary"></i>
+                            <div>
+                                <h6 class="mb-0">Email Address</h6>
+                                <p class="text-muted mb-0">{{ profile_user.email }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if profile_user.bio %}
+                        <div class="contact-info-item">
+                            <i class="bi bi-info-circle-fill fs-4 text-primary"></i>
+                            <div>
+                                <h6 class="mb-0">Bio</h6>
+                                <p class="text-muted mb-0">{{ profile_user.bio }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'profile-edit' profile_user.pk %}" class="btn btn-outline-primary mt-3">
+                        <i class="bi bi-pencil me-1"></i> Edit Contact Info
+                    </a>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-person-slash display-1 text-muted"></i>
+                        <h4 class="mt-3">No contact information set</h4>
+                        <p class="text-muted">Add your contact details to make it easier for others to reach you.</p>
+                        <a href="{% url 'profile-edit' profile_user.pk %}" class="btn btn-primary mt-2">
+                            <i class="bi bi-plus-circle me-1"></i> Add Contact Info
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Contact Tab Pane (for viewing other users) -->
+            {% if user != profile_user %}
+            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                <div class="card p-4">
+                    <h5 class="card-title mb-3">Contact {{ profile_user.username }}</h5>
+                    {% if profile_user.phone_number or profile_user.email %}
+                    <div class="contact-info-list">
+                        {% if profile_user.first_name %}
+                        <div class="contact-info-item">
+                            <i class="bi bi-person-fill fs-4 text-primary"></i>
+                            <div>
+                                <h6 class="mb-0">Name</h6>
+                                <p class="text-muted mb-0">
+                                    {% if profile_user.first_name and profile_user.last_name %}
+                                        {{ profile_user.first_name }} {{ profile_user.last_name }}
+                                    {% elif profile_user.first_name %}
+                                        {{ profile_user.first_name }}
+                                    {% else %}
+                                        Not provided
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if profile_user.phone_number %}
+                        <div class="contact-info-item">
+                            <i class="bi bi-phone-fill fs-4 text-primary"></i>
+                            <div>
+                                <h6 class="mb-0">Phone Number</h6>
+                                <a href="tel:{{ profile_user.phone_number }}" class="text-decoration-none text-muted">{{ profile_user.phone_number }}</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if profile_user.email %}
+                        <div class="contact-info-item">
+                            <i class="bi bi-envelope-fill fs-4 text-primary"></i>
+                            <div>
+                                <h6 class="mb-0">Email Address</h6>
+                                <a href="mailto:{{ profile_user.email }}" class="text-decoration-none text-muted">{{ profile_user.email }}</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-person-x display-1 text-muted"></i>
+                        <h4 class="mt-3">No contact information available</h4>
+                        <p class="text-muted">This user has not made their contact details public.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

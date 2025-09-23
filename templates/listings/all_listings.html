@@ -1,0 +1,875 @@
+<!-- templates/listings/all_listings.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}All Listings - HomaBay Souq{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Custom CSS for the Listings Page */
+.card, .filter-sidebar .card, .filter-tag {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+
+.filter-sidebar .card {
+    border-radius: 1rem;
+    overflow: hidden;
+    position: sticky;
+    top: 20px;
+}
+
+.filter-header {
+    cursor: pointer;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.filter-header:hover {
+    background-color: var(--card-bg-hover);
+}
+
+.filter-header .bi {
+    transition: transform 0.3s ease;
+}
+
+.filter-header[aria-expanded="true"] .bi {
+    transform: rotate(180deg);
+}
+
+.filter-content {
+    padding: 1rem;
+}
+
+.price-range {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.price-input, .sort-dropdown {
+    background-color: var(--input-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.price-input:focus, .sort-dropdown:focus {
+    border-color: var(--primary-gemini);
+    box-shadow: 0 0 0 0.25rem var(--primary-gemini-25);
+    outline: none;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--loading-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.3s ease;
+    display: none;
+}
+
+.loading-spinner {
+    width: 3rem;
+    height: 3rem;
+}
+
+.listing-grid {
+    transition: opacity 0.3s ease;
+}
+
+.pagination {
+    margin-top: 2rem;
+}
+
+.results-count {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.filter-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.filter-tag {
+    border-radius: 1rem;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--tag-bg);
+    color: var(--tag-text);
+}
+
+.filter-tag button {
+    background: none;
+    border: none;
+    color: var(--tag-text);
+    cursor: pointer;
+}
+
+.filter-tag button:hover {
+    color: var(--danger);
+}
+
+.no-results {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+}
+
+.sort-dropdown {
+    min-width: 150px;
+}
+
+.listing-card .card-img-top {
+    border-radius: 0.75rem 0.75rem 0 0;
+    height: 250px;
+    object-fit: cover;
+}
+
+.listing-card .position-relative {
+    overflow: hidden;
+}
+
+.listing-card .category-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: var(--primary-gemini);
+    color: white;
+    padding: 0.3rem 0.7rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.listing-card .price-tag {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-gemini);
+}
+
+.listing-card .card-footer {
+    border-top: none;
+}
+
+.btn-primary, .btn-primary:hover, .btn-primary:active {
+    background-color: var(--primary-gemini);
+    border-color: var(--primary-gemini);
+}
+
+.btn-outline-secondary {
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--card-bg-hover);
+    color: var(--text-color);
+}
+
+@media (max-width: 768px) {
+    .filter-sidebar {
+        margin-bottom: 2rem;
+    }
+    
+    .price-range {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">All Listings</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-lg-3 filter-sidebar">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-filter me-2"></i> Filters</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Filter Form -->
+                    <div id="filter-form">
+                        <!-- Search -->
+                        <div class="mb-4">
+                            <label for="search" class="form-label">Search</label>
+                            <input type="text" class="form-control" id="search" name="q" value="{{ search_query|default:'' }}" placeholder="Search listings...">
+                        </div>
+
+                        <!-- Category Filter -->
+                        <div class="mb-4">
+                            <div class="filter-header" data-bs-toggle="collapse" data-bs-target="#categoryCollapse" aria-expanded="true">
+                                <h6 class="mb-0">Category</h6> <i class="bi bi-chevron-down"></i>
+                            </div>
+                            <div class="collapse show" id="categoryCollapse">
+                                <div class="filter-content">
+                                    <select class="form-select" id="category" name="category">
+                                        <option value="all" {% if not selected_category %}selected{% endif %}>All Categories</option>
+                                        {% for category in categories %}
+                                        <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Location Filter -->
+                        <div class="mb-4">
+                            <div class="filter-header collapsed" data-bs-toggle="collapse" data-bs-target="#locationCollapse" aria-expanded="false">
+                                <h6 class="mb-0">Location</h6> <i class="bi bi-chevron-down"></i>
+                            </div>
+                            <div class="collapse" id="locationCollapse">
+                                <div class="filter-content">
+                                    <select class="form-select" id="location" name="location">
+                                        <option value="all" {% if not selected_location %}selected{% endif %}>All Locations</option>
+                                        {% for value, name in locations %}
+                                        <option value="{{ value }}" {% if selected_location == value %}selected{% endif %}>{{ name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Price Range -->
+                        <div class="mb-4">
+                            <div class="filter-header collapsed" data-bs-toggle="collapse" data-bs-target="#priceCollapse" aria-expanded="false">
+                                <h6 class="mb-0">Price Range</h6> <i class="bi bi-chevron-down"></i>
+                            </div>
+                            <div class="collapse" id="priceCollapse">
+                                <div class="filter-content">
+                                    <div class="price-range">
+                                        <input type="number" class="form-control price-input" id="min_price" name="min_price" value="{{ min_price|default:'' }}" placeholder="Min" min="0">
+                                        <span class="text-muted">to</span>
+                                        <input type="number" class="form-control price-input" id="max_price" name="max_price" value="{{ max_price|default:'' }}" placeholder="Max" min="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" id="apply-filters" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-filter me-1"></i> Apply Filters
+                        </button>
+                        <button type="button" id="reset-filters" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-x-circle me-1"></i> Reset Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Listings Content -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="h4 mb-0">All Listings</h2>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="results-count" id="results-count">
+                        Showing {{ listings|length }} of {{ total_listings_count }} listings
+                    </span>
+                    <select class="form-select form-select-sm sort-dropdown" id="sort-by">
+                        <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+                        <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
+                        <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                        <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Active Filters -->
+            <div class="filter-tags" id="active-filters">
+                {% if search_query %}
+                <div class="filter-tag">
+                    Search: "{{ search_query }}"
+                    <button type="button" class="remove-filter" data-filter="q">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+                {% endif %}
+                
+                {% if selected_category and selected_category != 'all' %}
+                {% for category in categories %}
+                    {% if category.id == selected_category|add:0 %}
+                    <div class="filter-tag">
+                        Category: {{ category.name }}
+                        <button type="button" class="remove-filter" data-filter="category">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+                {% endif %}
+                
+                {% if selected_location and selected_location != 'all' %}
+                <div class="filter-tag">
+                    Location: 
+                    {% for value, name in locations %}
+                        {% if value == selected_location %}{{ name }}{% endif %}
+                    {% endfor %}
+                    <button type="button" class="remove-filter" data-filter="location">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+                {% endif %}
+                
+                {% if min_price %}
+                <div class="filter-tag">
+                    Min Price: KSh {{ min_price }}
+                    <button type="button" class="remove-filter" data-filter="min_price">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+                {% endif %}
+                
+                {% if max_price %}
+                <div class="filter-tag">
+                    Max Price: KSh {{ max_price }}
+                    <button type="button" class="remove-filter" data-filter="max_price">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Listings Grid -->
+            <div class="listing-grid" id="listings-container">
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    {% for listing in listings %}
+                    <div class="col">
+                        <div class="card listing-card h-100">
+                            <div class="position-relative">
+                                <img src="{{ listing.image.url }}" class="card-img-top listing-img" alt="{{ listing.title }}">
+                                <span class="category-badge badge bg-primary">{{ listing.category.name }}</span>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ listing.title }}</h5>
+                                <p class="card-text text-muted small">{{ listing.description|truncatewords:10 }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="price-tag">KSh {{ listing.price }}</span>
+                                    <span class="badge bg-light text-dark">{{ listing.get_location_display }}</span>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <a href="{% url 'listing-detail' listing.pk %}" class="btn btn-sm btn-outline-primary w-100">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <div class="no-results">
+                            <i class="bi bi-search display-1 text-muted"></i>
+                            <h4 class="mt-3">No listings found</h4>
+                            <p class="text-muted">Try adjusting your filters or check back later for new listings.</p>
+                            <button id="reset-all-filters" class="btn btn-primary">Reset All Filters</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if listings.has_other_pages %}
+            <nav aria-label="Listings pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if listings.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ listings.previous_page_number }}" data-page="{{ listings.previous_page_number }}">Previous</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+                    {% endif %}
+
+                    {% for i in listings.paginator.page_range %}
+                    {% if listings.number == i %}
+                    <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                    {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ i }}" data-page="{{ i }}">{{ i }}</a></li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if listings.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ listings.next_page_number }}" data-page="{{ listings.next_page_number }}">Next</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay">
+    <div class="spinner-border text-primary loading-spinner" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Debounce function to limit API calls
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Main AJAX filtering functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const listingsContainer = document.getElementById('listings-container');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const resultsCount = document.getElementById('results-count');
+    const activeFilters = document.getElementById('active-filters');
+    const sortSelect = document.getElementById('sort-by');
+    const applyFiltersBtn = document.getElementById('apply-filters');
+    const resetFiltersBtn = document.getElementById('reset-filters');
+    
+    let currentPage = 1;
+    let isLoading = false;
+    
+    // Create mappings for categories and locations
+    const categoryMap = {
+        {% for category in categories %}
+        "{{ category.id }}": "{{ category.name }}",
+        {% endfor %}
+    };
+    
+    const locationMap = {
+        {% for value, name in locations %}
+        "{{ value }}": "{{ name }}",
+        {% endfor %}
+    };
+    
+    // Function to get all filter values
+    function getFilterValues() {
+        return {
+            q: document.getElementById('search').value,
+            category: document.getElementById('category').value,
+            location: document.getElementById('location').value,
+            min_price: document.getElementById('min_price').value,
+            max_price: document.getElementById('max_price').value,
+            sort_by: sortSelect.value,
+            page: currentPage
+        };
+    }
+    
+    // Function to update listings via AJAX
+    function updateListings() {
+        if (isLoading) return;
+        
+        isLoading = true;
+        loadingOverlay.style.display = 'flex';
+        listingsContainer.style.opacity = '0.5';
+        
+        // Get filter values
+        const filters = getFilterValues();
+        
+        // Build query string
+        const params = new URLSearchParams();
+        for (const [key, value] of Object.entries(filters)) {
+            if (value && value !== 'all') {
+                params.append(key, value);
+            }
+        }
+        
+        // Make AJAX request
+        fetch(`{% url 'all-listings' %}?${params.toString()}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Update listings
+            renderListings(data.listings);
+            
+            // Update pagination
+            updatePagination(data);
+            
+            // Update results count
+            resultsCount.textContent = `Showing ${data.listings.length} of ${data.total_count} listings`;
+            
+            // Update URL without reloading page
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            window.history.replaceState({}, '', newUrl);
+            
+            // Update active filters
+            updateActiveFilters(filters);
+            
+            isLoading = false;
+            loadingOverlay.style.display = 'none';
+            listingsContainer.style.opacity = '1';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            isLoading = false;
+            loadingOverlay.style.display = 'none';
+            listingsContainer.style.opacity = '1';
+            
+            // Show error message
+            listingsContainer.innerHTML = `
+                <div class="col-12">
+                    <div class="no-results">
+                        <i class="bi bi-exclamation-triangle display-1 text-muted"></i>
+                        <h4 class="mt-3">Error loading listings</h4>
+                        <p class="text-muted">Please try again later.</p>
+                        <button onclick="location.reload()" class="btn btn-primary">Reload Page</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    
+    // Function to render listings
+    function renderListings(listings) {
+        if (listings.length === 0) {
+            listingsContainer.innerHTML = `
+                <div class="col-12">
+                    <div class="no-results">
+                        <i class="bi bi-search display-1 text-muted"></i>
+                        <h4 class="mt-3">No listings found</h4>
+                        <p class="text-muted">Try adjusting your filters or check back later for new listings.</p>
+                        <button id="reset-all-filters" class="btn btn-primary">Reset All Filters</button>
+                    </div>
+                </div>
+            `;
+            
+            // Re-add event listener to reset button
+            const resetAllBtn = document.getElementById('reset-all-filters');
+            if (resetAllBtn) {
+                resetAllBtn.addEventListener('click', resetAllFilters);
+            }
+            return;
+        }
+        
+        let html = '<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">';
+        
+        listings.forEach(listing => {
+            html += `
+                <div class="col">
+                    <div class="card listing-card h-100">
+                        <div class="position-relative">
+                            <img src="${listing.image_url}" class="card-img-top listing-img" alt="${listing.title}">
+                            <span class="category-badge badge bg-primary">${listing.category}</span>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">${listing.title}</h5>
+                            <p class="card-text text-muted small">${listing.date_created}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="price-tag">KSh ${listing.price}</span>
+                                <span class="badge bg-light text-dark">${listing.location}</span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="${listing.url}" class="btn btn-sm btn-outline-primary w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        listingsContainer.innerHTML = html;
+    }
+    
+    // Function to update pagination
+    function updatePagination(data) {
+        // Remove existing pagination
+        const existingPagination = document.querySelector('.pagination');
+        if (existingPagination) {
+            existingPagination.remove();
+        }
+        
+        // Don't show pagination if there's only one page
+        if (data.num_pages <= 1) return;
+        
+        let paginationHtml = `
+            <nav aria-label="Listings pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+        `;
+        
+        // Previous button
+        if (data.has_previous) {
+            paginationHtml += `
+                <li class="page-item">
+                    <a class="page-link" href="#" data-page="${data.current_page - 1}">Previous</a>
+                </li>
+            `;
+        } else {
+            paginationHtml += `
+                <li class="page-item disabled">
+                    <span class="page-link">Previous</span>
+                </li>
+            `;
+        }
+        
+        // Page numbers - show up to 5 pages around current page
+        let startPage = Math.max(1, data.current_page - 2);
+        let endPage = Math.min(data.num_pages, startPage + 4);
+        
+        // Adjust if we're near the end
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+        
+        // First page and ellipsis if needed
+        if (startPage > 1) {
+            paginationHtml += `
+                <li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            `;
+        }
+        
+        // Page numbers
+        for (let i = startPage; i <= endPage; i++) {
+            if (i === data.current_page) {
+                paginationHtml += `<li class="page-item active"><span class="page-link">${i}</span></li>`;
+            } else {
+                paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+            }
+        }
+        
+        // Last page and ellipsis if needed
+        if (endPage < data.num_pages) {
+            paginationHtml += `
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                <li class="page-item"><a class="page-link" href="#" data-page="${data.num_pages}">${data.num_pages}</a></li>
+            `;
+        }
+        
+        // Next button
+        if (data.has_next) {
+            paginationHtml += `
+                <li class="page-item">
+                    <a class="page-link" href="#" data-page="${data.current_page + 1}">Next</a>
+                </li>
+            `;
+        } else {
+            paginationHtml += `
+                <li class="page-item disabled">
+                    <span class="page-link">Next</span>
+                </li>
+            `;
+        }
+        
+        paginationHtml += `
+                </ul>
+            </nav>
+        `;
+        
+        // Add pagination to the page
+        listingsContainer.insertAdjacentHTML('afterend', paginationHtml);
+        
+        // Add event listeners to new pagination links
+        document.querySelectorAll('.page-link[data-page]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentPage = parseInt(this.getAttribute('data-page'));
+                updateListings();
+            });
+        });
+    }
+    
+    // Function to update active filters display
+    function updateActiveFilters(filters) {
+        let html = '';
+        
+        // Search filter
+        if (filters.q) {
+            html += `
+                <div class="filter-tag">
+                    Search: "${filters.q}"
+                    <button type="button" class="remove-filter" data-filter="q">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            `;
+        }
+        
+        // Category filter
+        if (filters.category && filters.category !== 'all') {
+            html += `
+                <div class="filter-tag">
+                    Category: ${categoryMap[filters.category] || filters.category}
+                    <button type="button" class="remove-filter" data-filter="category">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            `;
+        }
+        
+        // Location filter
+        if (filters.location && filters.location !== 'all') {
+            html += `
+                <div class="filter-tag">
+                    Location: ${locationMap[filters.location] || filters.location}
+                    <button type="button" class="remove-filter" data-filter="location">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            `;
+        }
+        
+        // Price filters
+        if (filters.min_price) {
+            html += `
+                <div class="filter-tag">
+                    Min Price: KSh ${filters.min_price}
+                    <button type="button" class="remove-filter" data-filter="min_price">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            `;
+        }
+        
+        if (filters.max_price) {
+            html += `
+                <div class="filter-tag">
+                    Max Price: KSh ${filters.max_price}
+                    <button type="button" class="remove-filter" data-filter="max_price">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            `;
+        }
+        
+        activeFilters.innerHTML = html;
+        
+        // Add event listeners to remove filter buttons
+        document.querySelectorAll('.remove-filter').forEach(button => {
+            button.addEventListener('click', function() {
+                const filterName = this.getAttribute('data-filter');
+                
+                if (filterName === 'category' || filterName === 'location') {
+                    document.getElementById(filterName).value = 'all';
+                } else {
+                    document.getElementById(filterName).value = '';
+                }
+                
+                updateListings();
+            });
+        });
+    }
+    
+    // Function to reset all filters
+    function resetAllFilters() {
+        document.getElementById('search').value = '';
+        document.getElementById('category').value = 'all';
+        document.getElementById('location').value = 'all';
+        document.getElementById('min_price').value = '';
+        document.getElementById('max_price').value = '';
+        sortSelect.value = 'newest';
+        currentPage = 1;
+        
+        updateListings();
+    }
+    
+    // Event listeners
+    applyFiltersBtn.addEventListener('click', function() {
+        currentPage = 1;
+        updateListings();
+    });
+    
+    sortSelect.addEventListener('change', function() {
+        currentPage = 1;
+        updateListings();
+    });
+    
+    resetFiltersBtn.addEventListener('click', resetAllFilters);
+    
+    // Attach event listener for the "no results" button if it exists
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'reset-all-filters') {
+            resetAllFilters();
+        }
+    });
+
+    // Add event listeners for input changes with debounce
+    document.getElementById('search').addEventListener('input', debounce(function() {
+        currentPage = 1;
+        updateListings();
+    }, 500));
+    
+    document.getElementById('category').addEventListener('change', function() {
+        currentPage = 1;
+        updateListings();
+    });
+    
+    document.getElementById('location').addEventListener('change', function() {
+        currentPage = 1;
+        updateListings();
+    });
+    
+    document.getElementById('min_price').addEventListener('input', debounce(function() {
+        currentPage = 1;
+        updateListings();
+    }, 500));
+    
+    document.getElementById('max_price').addEventListener('input', debounce(function() {
+        currentPage = 1;
+        updateListings();
+    }, 500));
+    
+    // Add event listener to filter headers to rotate the chevron
+    document.querySelectorAll('.filter-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const collapseElement = document.querySelector(this.getAttribute('data-bs-target'));
+            const isCollapsed = collapseElement.classList.contains('show');
+            this.setAttribute('aria-expanded', !isCollapsed);
+        });
+    });
+});
+</script>
+{% endblock %}
