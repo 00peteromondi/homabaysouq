@@ -1077,48 +1077,6 @@
     </div>
 </section>
 
-<!-- Live Activity Section -->
-<section class="container mb-5">
-    <div class="live-activity">
-        <div class="activity-header">
-            <h3 class="activity-title">Live Activity</h3>
-            <span class="badge bg-primary">Live</span>
-        </div>
-        <ul class="activity-list" id="activity-feed">
-            {% for activity in recent_activities %}
-            <li class="activity-item">
-                <img src="{{ activity.user.profile.profile_picture.url|default:'https://randomuser.me/api/portraits/men/41.jpg' }}" alt="User" class="activity-avatar">
-                <div class="activity-content">
-                    <p class="activity-text"><strong>{{ activity.user.username }}</strong> {{ activity.message }}</p>
-                    <small class="activity-time">{{ activity.timestamp|timesince }} ago</small>
-                </div>
-            </li>
-            {% empty %}
-            <li class="activity-item">
-                <img src="https://randomuser.me/api/portraits/men/41.jpg" alt="User" class="activity-avatar">
-                <div class="activity-content">
-                    <p class="activity-text"><strong>John Kamau</strong> just listed a <strong>Samsung Galaxy S21</strong> for KSh 25,000</p>
-                    <small class="activity-time">2 minutes ago</small>
-                </div>
-            </li>
-            <li class="activity-item">
-                <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="User" class="activity-avatar">
-                <div class="activity-content">
-                    <p class="activity-text"><strong>Sarah Achieng</strong> purchased <strong>Office Desk</strong> from <strong>James Otieno</strong></p>
-                    <small class="activity-time">15 minutes ago</small>
-                </div>
-            </li>
-            <li class="activity-item">
-                <img src="https://randomuser.me/api/portraits/men/22.jpg" alt="User" class="activity-avatar">
-                <div class="activity-content">
-                    <p class="activity-text"><strong>Mike Omondi</strong> is now selling <strong>Toyota Premio 2015</strong></p>
-                    <small class="activity-time">45 minutes ago</small>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
-</section>
 
 <!-- How It Works Section -->
 <section class="container mb-5" id="how-it-works">
@@ -1192,7 +1150,7 @@
                         "I sold my old laptop within a day of posting it on HomaBay Souq. The process was smooth and the buyer was from my neighborhood! The messaging system made it easy to coordinate the meetup."
                     </div>
                     <div class="testimonial-author">
-                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User">
+                        <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fprofile-images.xing.com%2Fimages%2Ff045c513e82f9871cd8216c9ba927ee5-2%2Fpeter-onyango.1024x1024.jpg&f=1&nofb=1&ipt=84a8983a8f41678e01a8deec5880c394e773d746f644d1c4dab705da5575032c" alt="User">
                         <div class="testimonial-author-info">
                             <h5 class="mb-0">James Omondi</h5>
                             <small>Homabay Town</small>
@@ -1206,7 +1164,7 @@
                         "As a small business owner, HomaBay Souq has helped me reach customers right here in Homabay. I've doubled my sales since I started using it. The categories are well organized making it easy for buyers to find my products."
                     </div>
                     <div class="testimonial-author">
-                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User">
+                        <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%2Fid%2FOIP.Z4yuW6B_1HJVSmP2JsPwpwAAAA%3Fpid%3DApi&f=1&ipt=a551f2d0f8126abce77035bc88e12a10c8ce2e5c5b2dfc4f4881df4a51b201b4&ipo=images" alt="User">
                         <div class="testimonial-author-info">
                             <h5 class="mb-0">Mary Atieno</h5>
                             <small>Kendu Bay</small>
@@ -1220,7 +1178,7 @@
                         "I found exactly the furniture I was looking for at a great price. The seller was just a few streets away from me. The verification system made me feel confident about the transaction. Highly recommend!"
                     </div>
                     <div class="testimonial-author">
-                        <img src="https://randomuser.me/api/portraits/men/22.jpg" alt="User">
+                        <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%2Fid%2FOIP.C_EE1CHTdvHIdwS2u53QNwHaHa%3Fpid%3DApi&f=1&ipt=343c0a743c7e3ccc43479f725b6e05a0545a4e56336ec56af5ba3f647b15ae3b&ipo=images" alt="User">
                         <div class="testimonial-author-info">
                             <h5 class="mb-0">Peter Onyango</h5>
                             <small>Rodi Kopany</small>

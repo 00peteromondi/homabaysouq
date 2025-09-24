@@ -16,11 +16,14 @@ def register(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
+            message = "Registration successful. You are now logged in."
             login(request, user)
             return redirect('home')
+        
     else:
+
         form = CustomUserCreationForm()
-    return render(request, 'users/register.html', {'form': form})
+    return render(request, 'users/register.html', {'form': form, 'message': message})
 
 class ProfileDetailView(DetailView):
     model = User
