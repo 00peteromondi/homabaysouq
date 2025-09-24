@@ -1,4 +1,5 @@
 # listings/models.py
+import os
 from django.conf import settings
 from django.db import models
 from django.contrib.auth import get_user_model
@@ -48,7 +49,7 @@ class Listing(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     location = models.CharField(max_length=50, choices=HOMABAY_LOCATIONS)
-    image = models.ImageField(upload_to='listing_images/')
+    image = models.ImageField(upload_to='listing_images/', default='listing_images/default.png')
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES, default='used')
     delivery_option = models.CharField(max_length=20, choices=DELIVERY_OPTIONS, default='pickup')
     stock = models.PositiveIntegerField(default=1)
@@ -75,6 +76,13 @@ class Listing(models.Model):
         if self.reviews.count() > 0:
             return self.reviews.aggregate(Avg('rating'))['rating__avg']
         return 0
+    
+    def save(self, *args, **kwargs):
+        # Ensure the directory exists before saving
+        if self.image:
+            # Create directory if it doesn't exist
+            os.makedirs(os.path.join(settings.MEDIA_ROOT, 'listing_images'), exist_ok=True)
+        super().save(*args, **kwargs)
 
 
 class Favorite(models.Model):

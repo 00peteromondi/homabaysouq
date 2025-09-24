@@ -371,7 +371,11 @@
                     <div class="col">
                         <div class="card listing-card h-100">
                             <div class="position-relative">
-                                <img src="{{ listing.image.url }}" class="card-img-top listing-img" alt="{{ listing.title }}">
+                                {% if listing.image %}
+                                    <img src="{{ listing.image.url }}" alt="{{ listing.title }}" style="max-width: 100%; height: auto;">
+                                {% else %}
+                                    <img src="/media/listing_images/default.png" alt="Default image" style="max-width: 100%; height: auto;">
+                                {% endif %}
                                 <span class="category-badge badge bg-primary">{{ listing.category.name }}</span>
                             </div>
                             <div class="card-body">
