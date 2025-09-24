@@ -10,20 +10,22 @@ from listings.models import Listing
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 from django.db import models
+from django.contrib import messages
+
 
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            message = "Registration successful. You are now logged in."
+            messages.info("Registration successful. You are now logged in.")
             login(request, user)
             return redirect('home')
         
     else:
 
         form = CustomUserCreationForm()
-    return render(request, 'users/register.html', {'form': form, 'message': message})
+    return render(request, 'users/register.html', {'form': form})
 
 class ProfileDetailView(DetailView):
     model = User
