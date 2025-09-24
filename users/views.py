@@ -18,8 +18,8 @@ def register(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            messages.info("Registration successful. You are now logged in.")
             login(request, user)
+            messages.success(request, 'Registration successful. Welcome!')
             return redirect('home')
         
     else:
