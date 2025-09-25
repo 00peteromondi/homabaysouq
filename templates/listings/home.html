@@ -6,7 +6,7 @@
 
 {% block extra_css %}
 <style>
-    /* Hero Section Styles */
+    /* Hero Section Styles - Updated for new navbar */
     .hero-section {
         background: linear-gradient(135deg, 
                         rgba(26, 115, 232, 0.85) 0%, 
@@ -15,8 +15,8 @@
         background-size: cover;
         background-position: center;
         color: white;
-        padding: 7rem 0 5rem;
-        margin: -2rem -1rem 4rem;
+        padding: 8rem 0 5rem; /* Increased top padding for navbar */
+        margin: 0 -1rem 4rem;
         border-radius: 0 0 2rem 2rem;
         position: relative;
         overflow: hidden;
@@ -214,10 +214,37 @@
         font-size: 1.2rem;
     }
 
-    /* Categories Section */
+    /* Categories Section - Mobile Optimized */
+    .categories-section {
+        margin-bottom: 5rem;
+        position: relative;
+    }
+
+    .categories-scroll-container {
+        display: flex;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 1rem 0;
+        margin: 0 -1rem;
+        scroll-padding: 0 1rem;
+        scroll-snap-type: x mandatory;
+        gap: 1.5rem;
+    }
+
+    .categories-scroll-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .category-card-scroll {
+        flex: 0 0 auto;
+        width: 280px;
+        scroll-snap-align: start;
+    }
+
     .category-card {
         text-align: center;
-        padding: 2.5rem 1.5rem;
+        padding: 2rem 1.5rem;
         border-radius: 1.5rem;
         transition: all 0.4s ease;
         background: var(--navbar-bg);
@@ -286,6 +313,22 @@
         border-radius: 50px;
         font-size: 0.85rem;
         margin-top: 1rem;
+    }
+
+    /* Desktop Grid Layout */
+    @media (min-width: 768px) {
+        .categories-scroll-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            overflow-x: visible;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .category-card-scroll {
+            width: auto;
+        }
     }
 
     /* Listings Section */
@@ -428,7 +471,7 @@
         padding: 0 1.5rem 1.5rem;
     }
 
-    /* New Sections */
+    /* Community Section */
     .community-section {
         padding: 5rem 0;
         background: var(--body-bg);
@@ -470,6 +513,7 @@
         opacity: 0.8;
     }
 
+    /* Testimonials Section */
     .testimonials-section {
         padding: 5rem 0;
         margin-bottom: 5rem;
@@ -539,6 +583,7 @@
         opacity: 0.8;
     }
 
+    /* Blog Section */
     .blog-section {
         padding: 5rem 0;
         background: var(--body-bg);
@@ -749,7 +794,7 @@
         opacity: 0.7;
     }
 
-    /* Responsive Adjustments */
+    /* Responsive Adjustments for new navbar */
     @media (max-width: 992px) {
         .hero-content h1 {
             font-size: 2.5rem;
@@ -769,6 +814,18 @@
         
         .hero-stats {
             flex-wrap: wrap;
+        }
+        
+        .testimonial-card {
+            padding: 2rem;
+        }
+        
+        .step-card {
+            padding: 2rem 1.5rem;
+        }
+        
+        .hero-section {
+            padding: 6rem 0 5rem; /* Adjusted for mobile navbar */
         }
     }
 
@@ -824,25 +881,108 @@
             flex-direction: column;
             align-items: center;
         }
+        
+        .community-stats {
+            grid-template-columns: 1fr;
+        }
+        
+        .testimonial-card {
+            padding: 1.5rem;
+        }
+        
+        .listing-img-container {
+            height: 180px;
+        }
+        
+        .listing-body {
+            padding: 1rem;
+        }
+        
+        .category-card {
+            padding: 1.5rem 1rem;
+        }
+        
+        .category-icon {
+            font-size: 2.5rem;
+        }
     }
+
+    @media (max-width: 576px) {
+        .hero-section {
+            padding: 4rem 0 3rem;
+            margin: 0 -0.5rem 2rem;
+            border-radius: 0 0 1.5rem 1.5rem;
+        }
+        
+        .hero-content h1 {
+            font-size: 2rem;
+        }
+        
+        .hero-content p {
+            font-size: 1rem;
+        }
+        
+        .hero-stats {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .hero-stat-number {
+            font-size: 2rem;
+        }
+        
+        .section-header {
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+        }
+        
+        .section-subtitle {
+            font-size: 1rem;
+        }
+    }
+    
     .listing-card {
         display: flex;
         flex-direction: column;
         height: 100%;
     }
+    
     .listing-body {
         flex-grow: 1;
         display: flex;
         flex-direction: column;
     }
+    
     .listing-meta {
         margin-top: auto;
     }
+    
     .listing-footer {
         margin-top: auto;
     }
+    
+    /* Full-width sections for better theming */
+    .full-width-section {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    @media (min-width: 768px) {
+        .full-width-section {
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+    }
 </style>
-
 {% endblock %}
 
 {% block content %}
@@ -931,16 +1071,17 @@
     </div>
 </section>
 
-<!-- Categories Section -->
-<section class="container mb-5" id="categories">
+<!-- Categories Section - Mobile Optimized -->
+<section class="container categories-section" id="categories">
     <div class="section-header">
         <h2 class="section-title">Browse by Category</h2>
         <p class="section-subtitle">Explore our wide range of categories to find exactly what you're looking for</p>
     </div>
     
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+    <!-- Mobile: Horizontal Scroll, Desktop: Grid -->
+    <div class="categories-scroll-container">
         {% for category in categories %}
-        <div class="col">
+        <div class="category-card-scroll">
             <a href="{% url 'all-listings' %}?category={{ category.id }}" class="text-decoration-none">
                 <div class="category-card">
                     <i class="bi bi-{{ category.icon }} category-icon"></i>
@@ -1045,7 +1186,7 @@
 </section>
 
 <!-- Community Stats Section -->
-<section class="community-section">
+<section class="community-section full-width-section">
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">Our Growing Community</h2>
@@ -1076,7 +1217,6 @@
         </div>
     </div>
 </section>
-
 
 <!-- How It Works Section -->
 <section class="container mb-5" id="how-it-works">
@@ -1120,7 +1260,7 @@
 </section>
 
 <!-- Testimonials Section -->
-<section class="testimonials-section">
+<section class="testimonials-section full-width-section">
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">What Our Users Say</h2>
@@ -1192,7 +1332,7 @@
 </section>
 
 <!-- Blog Section -->
-<section class="blog-section">
+<section class="blog-section full-width-section">
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">Latest Tips & News</h2>
@@ -1228,6 +1368,7 @@
         {% endif %}
     </div>
 </section>
+
 <!-- Call to Action -->
 <section class="container mb-5">
     <div class="cta-section">
@@ -1368,24 +1509,26 @@
                 </div>
             `;
             
-            activityFeed.prepend(newActivity);
-            
-            // Remove the last activity if there are more than 3
-            if (activityFeed.children.length > 3) {
-                activityFeed.removeChild(activityFeed.lastChild);
+            if (activityFeed) {
+                activityFeed.prepend(newActivity);
+                
+                // Remove the last activity if there are more than 3
+                if (activityFeed.children.length > 3) {
+                    activityFeed.removeChild(activityFeed.lastChild);
+                }
+                
+                // Add animation
+                newActivity.style.opacity = '0';
+                newActivity.style.transform = 'translateY(-20px)';
+                
+                setTimeout(() => {
+                    newActivity.style.transition = 'all 0.5s ease';
+                    newActivity.style.opacity = '1';
+                    newActivity.style.transform = 'translateY(0)';
+                }, 10);
+                
+                activityIndex = (activityIndex + 1) % activities.length;
             }
-            
-            // Add animation
-            newActivity.style.opacity = '0';
-            newActivity.style.transform = 'translateY(-20px)';
-            
-            setTimeout(() => {
-                newActivity.style.transition = 'all 0.5s ease';
-                newActivity.style.opacity = '1';
-                newActivity.style.transform = 'translateY(0)';
-            }, 10);
-            
-            activityIndex = (activityIndex + 1) % activities.length;
         }
         
         // Add new activity every 30 seconds
