@@ -15,6 +15,14 @@ class ListingForm(forms.ModelForm):
             'delivery_option': forms.Select(attrs={'class': 'form-select'}),
         }
 
+        def clean_image(self):
+            image = self.cleaned_data.get('image')
+            if image:
+                # Cloudinary handles file validation, but you can add custom validation
+                if hasattr(image, 'size') and image.size > 10 * 1024 * 1024:  # 10MB limit
+                    raise forms.ValidationError("Image file too large ( > 10MB )")
+            return image
+
 # In listings/forms.py
 from django import forms
 from .models import Review

@@ -137,9 +137,7 @@ class ListingUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Listing
     form_class = ListingForm
 
-    def form_valid(self, form):
-        form.instance.seller = self.request.user
-        return super().form_valid(form)
+    
 
     def test_func(self):
         listing = self.get_object()

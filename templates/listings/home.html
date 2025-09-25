@@ -997,7 +997,7 @@
             <div class="col d-flex">
                 <div class="listing-card d-flex flex-column h-100">
                     <div class="listing-img-container">
-                        <img src="{{ listing.image.url }}" class="listing-img" alt="{{ listing.title }}">
+                        <img src="{{ listing.get_image_url }}" class="listing-img" alt="{{ listing.title }}">
                         <span class="category-badge">{{ listing.category.name }}</span>
                     </div>
                     <div class="listing-body flex-grow-1">

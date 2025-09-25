@@ -5,6 +5,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.db.models import Avg
+from cloudinary.models import CloudinaryField
 
 User = get_user_model()
 
@@ -18,6 +19,18 @@ class Category(models.Model):
 
     class Meta:
         verbose_name_plural = "Categories"
+
+
+from django.db import models
+from django.conf import settings
+
+# Try to import CloudinaryField, fallback to ImageField if not available
+try:
+    from cloudinary.models import CloudinaryField
+    CLOUDINARY_AVAILABLE = True
+except ImportError:
+    CLOUDINARY_AVAILABLE = False
+    from django.db.models import ImageField
 
 class Listing(models.Model):
     # Pre-defined list of Homabay locations
@@ -49,7 +62,20 @@ class Listing(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     location = models.CharField(max_length=50, choices=HOMABAY_LOCATIONS)
-    image = models.ImageField(upload_to='listing_images/', default='listing_images/default.png')
+    if CLOUDINARY_AVAILABLE and hasattr(settings, 'CLOUDINARY_CLOUD_NAME') and settings.CLOUDINARY_CLOUD_NAME:
+        image = CloudinaryField(
+            'image',
+            folder='homabay_souq/listings/',
+            null=True,
+            blank=True
+        )
+    else:
+        # Fallback to regular ImageField
+        image = models.ImageField(
+            upload_to='listing_images/',
+            null=True,
+            blank=True
+        )
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES, default='used')
     delivery_option = models.CharField(max_length=20, choices=DELIVERY_OPTIONS, default='pickup')
     stock = models.PositiveIntegerField(default=1)
@@ -76,6 +102,18 @@ class Listing(models.Model):
         if self.reviews.count() > 0:
             return self.reviews.aggregate(Avg('rating'))['rating__avg']
         return 0
+    
+    def get_image_url(self):
+        """Safe method to get image URL that works with both Cloudinary and local storage"""
+        if self.image:
+            try:
+                return self.image.url
+            except Exception as e:
+                # Fallback if Cloudinary is not configured
+                if hasattr(self.image, 'url'):
+                    return self.image.url
+                return '/static/images/default.png'
+        return '/static/images/default.png'
     
     def save(self, *args, **kwargs):
         # Ensure the directory exists before saving
