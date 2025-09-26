@@ -170,7 +170,7 @@
     <div class="profile-card p-4 mb-4">
         <div class="row align-items-center">
             <div class="col-lg-3 text-center mb-3 mb-lg-0">
-                <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default.png' %}{% endif %}" class="profile-pic" alt="{{ profile_user.username }}">
+                <img src="{{ user.get_profile_picture_url }}" class="profile-pic" alt="{{ user.username }}">
                 
                 {% if user == profile_user %}
                 <a href="{% url 'profile-edit' profile_user.pk %}" class="btn btn-sm btn-outline-primary mt-3">
@@ -220,19 +220,19 @@
                 <div class="row g-2 mb-3">
                     <div class="col-4">
                         <div class="stat-box">
-                            <h4 class="display-5 mb-0">{{ profile_user.listing_count }}</h4>
+                            <h4 class="display-5 mb-0">{{ listing_count }}</h4>
                             <small class="text-muted">Listings</small>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="stat-box">
-                            <h4 class="display-5 mb-0">{{ profile_user.saved_count }}</h4>
+                            <h4 class="display-5 mb-0">{{ saved_count }}</h4>
                             <small class="text-muted">Saved</small>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="stat-box">
-                            <h4 class="display-5 mb-0">{{ profile_user.rating_average|floatformat:1 }}</h4>
+                            <h4 class="display-5 mb-0">{{ rating_average|floatformat:1 }}</h4>
                             <small class="text-muted">Rating</small>
                         </div>
                     </div>
@@ -257,13 +257,13 @@
         <ul class="nav nav-tabs mb-4" id="profileTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="listings-tab" data-bs-toggle="tab" data-bs-target="#listings" type="button" role="tab" aria-controls="listings" aria-selected="true">
-                    Listings ({{ profile_user.listing_count }})
+                    Listings ({{ listing_count }})
                 </button>
             </li>
             {% if user == profile_user %}
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="saved-tab" data-bs-toggle="tab" data-bs-target="#saved" type="button" role="tab" aria-controls="saved" aria-selected="false">
-                    Saved Items ({{ profile_user.saved_count }})
+                    Saved Items ({{ saved_count }})
                 </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -287,7 +287,7 @@
                     {% for listing in page_obj %}
                     <a href="{% url 'listing-detail' listing.pk %}" class="text-decoration-none">
                         <div class="listing-card">
-                            <img src="{{ listing.image.url }}" class="listing-img" alt="{{ listing.title }}">
+                            <img src="{{ listing.get_image_url }}" class="listing-img" alt="{{ listing.title }}">
                             <div class="p-3">
                                 <h5 class="card-title text-truncate">{{ listing.title }}</h5>
                                 <p class="listing-price mb-0">Ksh {{ listing.price }}</p>

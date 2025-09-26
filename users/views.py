@@ -4,14 +4,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import DetailView, UpdateView
 from django.urls import reverse_lazy
+from django.contrib import messages
+from django import forms
 from .models import User
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from listings.models import Listing
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 from django.db import models
-from django.contrib import messages
-
 
 def register(request):
     if request.method == 'POST':
@@ -21,9 +21,9 @@ def register(request):
             login(request, user)
             messages.success(request, 'Registration successful. Welcome!')
             return redirect('home')
-        
+        else:
+            messages.error(request, 'Please correct the errors below.')
     else:
-
         form = CustomUserCreationForm()
     return render(request, 'users/register.html', {'form': form})
 
@@ -38,7 +38,7 @@ class ProfileDetailView(DetailView):
         user = self.request.user
 
         # Listings by this user (paginated)
-        listings_qs = Listing.objects.filter(seller=profile_user).order_by('-date_created')
+        listings_qs = Listing.objects.filter(seller=profile_user, is_sold=False).order_by('-date_created')
         paginator = Paginator(listings_qs, 8)
         page_number = self.request.GET.get('page')
         page_obj = paginator.get_page(page_number)
@@ -51,17 +51,13 @@ class ProfileDetailView(DetailView):
         context['saved_listings'] = saved_listings
 
         # Listing count
-        context['profile_user'].listing_count = listings_qs.count()
+        context['listing_count'] = listings_qs.count()
 
         # Saved count (only for profile owner)
-        context['profile_user'].saved_count = saved_listings.count() if saved_listings is not None else 0
+        context['saved_count'] = saved_listings.count() if saved_listings is not None else 0
 
-        # Rating average (assuming a related reviews_received with a rating field)
-        reviews = getattr(profile_user, 'reviews_received', None)
-        if reviews and reviews.exists():
-            context['profile_user'].rating_average = reviews.aggregate(avg=models.Avg('rating'))['avg'] or 0
-        else:
-            context['profile_user'].rating_average = 0
+        # Rating average (you'll need to implement reviews for this to work)
+        context['rating_average'] = 0  # Placeholder - implement your review system
 
         return context
 
@@ -76,8 +72,31 @@ class ProfileUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         return self.request.user == self.get_object()
     
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        # Set initial values for the form
+        form.fields['first_name'].initial = self.object.first_name
+        form.fields['last_name'].initial = self.object.last_name
+        form.fields['username'].initial = self.object.username
+        form.fields['email'].initial = self.object.email
+        form.fields['phone_number'].initial = self.object.phone_number
+        form.fields['bio'].initial = self.object.bio
+        form.fields['show_contact_info'].initial = self.object.show_contact_info
+        return form
+    
     def form_valid(self, form):
         # Handle profile picture upload
         if 'profile_picture' in self.request.FILES:
             form.instance.profile_picture = self.request.FILES['profile_picture']
+        
+        messages.success(self.request, 'Profile updated successfully!')
         return super().form_valid(form)
+    
+    def form_invalid(self, form):
+        messages.error(self.request, 'Please correct the errors below.')
+        return super().form_invalid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = self.get_form()
+        return context

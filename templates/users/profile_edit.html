@@ -6,384 +6,597 @@
 
 {% block extra_css %}
 <style>
-    .profile-edit-card {
-        background-color: var(--card-bg);
-        border: 1px solid var(--border-color);
-        box-shadow: var(--shadow);
-        border-radius: 1rem;
-        transition: background-color 0.3s ease, border-color 0.3s ease;
+    .profile-edit-container {
+        max-width: 900px;
+        margin: 0 auto;
     }
 
-    .profile-pic-container {
-        position: relative;
-        width: 150px;
-        height: 150px;
-        margin: 0 auto 1.5rem;
-    }
-
-    .profile-pic-edit {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 4px solid var(--primary-gemini);
-        box-shadow: var(--shadow-sm);
-    }
-    
-    .upload-btn {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background-color: var(--primary-gemini);
+    .edit-header {
+        background: linear-gradient(135deg, var(--primary-gemini) 0%, #0d47a1 100%);
         color: white;
+        border-radius: 20px 20px 0 0;
+        padding: 2.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .edit-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+        background-size: cover;
+    }
+
+    .back-btn-modern {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        border-radius: 12px;
+        width: 44px;
+        height: 44px;
         display: flex;
         align-items: center;
         justify-content: center;
+        color: white;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        text-decoration: none;
+    }
+
+    .back-btn-modern:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateX(-2px);
+        color: white;
+    }
+
+    .profile-edit-card-modern {
+        background: var(--card-bg);
+        border-radius: 0 0 20px 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .profile-pic-section-modern {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: linear-gradient(to bottom, rgba(var(--primary-gemini-rgb), 0.02) 0%, transparent 100%);
+        border-bottom: 1px solid rgba(var(--border-color-rgb), 0.2);
+    }
+
+    .profile-pic-wrapper-modern {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 1.5rem;
+    }
+
+    .profile-pic-modern {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid white;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+    }
+
+    .upload-btn-modern {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        width: 44px;
+        height: 44px;
+        background: var(--primary-gemini);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
         cursor: pointer;
         transition: all 0.3s ease;
-        border: 2px solid var(--card-bg);
-        box-shadow: var(--shadow-sm);
+        border: 3px solid white;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
-    
-    .upload-btn:hover {
-        background-color: var(--primary-gemini-dark);
+
+    .upload-btn-modern:hover {
+        background: var(--primary-gemini-dark);
         transform: scale(1.1);
     }
 
-    .form-control, .form-select, .form-check-input {
-        background-color: var(--input-bg);
-        color: var(--text-color);
-        border: 1px solid var(--border-color);
-        border-radius: 0.75rem;
-        padding: 0.75rem 1rem;
-        transition: all 0.3s ease;
-    }
-    
-    .form-control:focus, .form-select:focus {
-        border-color: var(--primary-gemini);
-        box-shadow: 0 0 0 0.25rem rgba(var(--primary-gemini-rgb), 0.25);
-    }
-    
-    .form-control::placeholder {
-        color: var(--text-muted);
-        opacity: 0.8;
-    }
-    
-    .form-label {
-        font-weight: 600;
-        color: var(--text-color);
-        margin-bottom: 0.5rem;
-    }
-    
-    .form-text {
-        font-size: 0.85rem;
-        color: var(--text-muted);
+    .form-section-modern {
+        padding: 2.5rem;
     }
 
-    .btn-primary {
-        background-color: var(--primary-gemini);
-        border-color: var(--primary-gemini);
-        border-radius: 0.75rem;
-        padding: 0.75rem 1.5rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-primary:hover {
-        background-color: var(--primary-gemini-dark);
-        border-color: var(--primary-gemini-dark);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-hover);
-    }
-    
-    .btn-outline-secondary {
-        border-color: var(--border-color);
+    .section-title-modern {
+        font-size: 1.3rem;
+        font-weight: 700;
         color: var(--text-color);
-        border-radius: 0.75rem;
-        padding: 0.75rem 1.5rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-outline-secondary:hover {
-        background-color: var(--light-bg);
-        border-color: var(--border-color);
-        color: var(--text-color);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-sm);
-    }
-
-    .section-header {
-        border-bottom: 1px solid var(--border-color);
-        padding-bottom: 1rem;
         margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid rgba(var(--primary-gemini-rgb), 0.1);
         position: relative;
     }
-    
-    .section-header h5 {
-        position: relative;
-        display: inline-block;
-        padding-right: 1rem;
-        background-color: var(--card-bg);
-        z-index: 1;
-        color: var(--text-color);
-    }
-    
-    .section-header p {
-        color: var(--text-muted);
-    }
-    
-    .section-header::after {
+
+    .section-title-modern::after {
         content: '';
         position: absolute;
-        bottom: -1px;
+        bottom: -2px;
         left: 0;
-        width: 60px;
-        height: 3px;
-        background-color: var(--primary-gemini);
-        border-radius: 3px;
+        width: 50px;
+        height: 2px;
+        background: var(--primary-gemini);
+        border-radius: 2px;
     }
 
-    .form-check-input {
-        background-color: var(--input-bg);
-        border: 1px solid var(--border-color);
+    .form-grid-modern {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
     }
-    
-    .form-check-input:checked {
-        background-color: var(--primary-gemini);
-        border-color: var(--primary-gemini);
+
+    .form-group-modern {
+        margin-bottom: 1.5rem;
     }
-    
-    .form-check-input:focus {
-        border-color: var(--primary-gemini);
-        box-shadow: 0 0 0 0.25rem rgba(var(--primary-gemini-rgb), 0.25);
-    }
-    
-    .form-check-label {
+
+    .form-label-modern {
+        display: block;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
         color: var(--text-color);
+        font-size: 0.95rem;
     }
 
-    /* Dark mode specific adjustments */
-    [data-theme="dark"] .form-control,
-    [data-theme="dark"] .form-select {
-        background-color: var(--input-bg-dark);
-        border-color: var(--border-color-dark);
+    .input-modern {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        border: 2px solid rgba(var(--border-color-rgb), 0.3);
+        border-radius: 12px;
+        background: var(--input-bg);
+        color: var(--text-color);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        outline: none;
     }
-    
-    [data-theme="dark"] .btn-outline-secondary {
-        border-color: var(--border-color-dark);
-        color: var(--text-color-dark);
+
+    .input-modern:focus {
+        border-color: var(--primary-gemini);
+        box-shadow: 0 0 0 3px rgba(var(--primary-gemini-rgb), 0.1);
+        transform: translateY(-1px);
     }
-    
-    [data-theme="dark"] .btn-outline-secondary:hover {
-        background-color: var(--light-bg-dark);
-        color: var(--text-color-dark);
+
+    .textarea-modern {
+        min-height: 120px;
+        resize: vertical;
+        line-height: 1.5;
+    }
+
+    .char-counter-modern {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        text-align: right;
+        margin-top: 0.5rem;
+    }
+
+    .char-counter-modern.warning {
+        color: #ff6b35;
+        font-weight: 600;
+    }
+
+    .switch-container-modern {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem;
+        background: rgba(var(--primary-gemini-rgb), 0.03);
+        border-radius: 12px;
+        border: 2px solid rgba(var(--border-color-rgb), 0.1);
+        margin: 1.5rem 0;
+    }
+
+    .switch-modern {
+        position: relative;
+        display: inline-block;
+        width: 54px;
+        height: 30px;
+    }
+
+    .switch-modern input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider-modern {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: all 0.3s ease;
+        border-radius: 34px;
+    }
+
+    .slider-modern:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: all 0.3s ease;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    input:checked + .slider-modern {
+        background-color: var(--primary-gemini);
+    }
+
+    input:checked + .slider-modern:before {
+        transform: translateX(24px);
+    }
+
+    .form-actions-modern {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(var(--border-color-rgb), 0.2);
+        margin-top: 2rem;
+    }
+
+    .btn-modern {
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        font-size: 1rem;
+    }
+
+    .btn-primary-modern {
+        background: var(--primary-gemini);
+        color: white;
+        box-shadow: 0 4px 16px rgba(var(--primary-gemini-rgb), 0.3);
+    }
+
+    .btn-primary-modern:hover {
+        background: var(--primary-gemini-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(var(--primary-gemini-rgb), 0.4);
+        color: white;
+    }
+
+    .btn-outline-modern {
+        background: transparent;
+        color: var(--text-color);
+        border: 2px solid rgba(var(--border-color-rgb), 0.4);
+    }
+
+    .btn-outline-modern:hover {
+        border-color: var(--primary-gemini);
+        color: var(--primary-gemini);
+        transform: translateY(-2px);
+        background: rgba(var(--primary-gemini-rgb), 0.05);
+    }
+
+    .error-message-modern {
+        color: #ff4757;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .success-message-modern {
+        background: linear-gradient(135deg, #00b894, #00a085);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        margin: 1.5rem 2.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
     }
 
     @media (max-width: 768px) {
-        .profile-pic-container {
+        .edit-header {
+            padding: 2rem 1.5rem;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .form-section-modern {
+            padding: 1.5rem;
+        }
+
+        .form-grid-modern {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .form-actions-modern {
+            flex-direction: column;
+        }
+
+        .btn-modern {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .profile-pic-modern {
             width: 120px;
             height: 120px;
         }
-        
-        .upload-btn {
-            width: 32px;
-            height: 32px;
-        }
-        
-        .profile-edit-card {
-            padding: 1.5rem !important;
+
+        .success-message-modern {
+            margin: 1rem 1.5rem 0;
         }
     }
 
-    /* Validation styles */
-    .is-invalid {
-        border-color: var(--danger) !important;
+    /* Animation for form elements */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
-    
-    .invalid-feedback {
-        color: var(--danger);
-        font-size: 0.85rem;
-        margin-top: 0.25rem;
+
+    .form-group-modern {
+        animation: fadeInUp 0.6s ease-out;
     }
+
+    .form-group-modern:nth-child(1) { animation-delay: 0.1s; }
+    .form-group-modern:nth-child(2) { animation-delay: 0.2s; }
+    .form-group-modern:nth-child(3) { animation-delay: 0.3s; }
+    .form-group-modern:nth-child(4) { animation-delay: 0.4s; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <!-- Back Navigation -->
-    <div class="d-flex align-items-center mb-4">
-        <a href="{% url 'profile' user.pk %}" class="btn btn-sm btn-outline-secondary me-2">
-            <i class="bi bi-arrow-left"></i>
-        </a>
-        <h4 class="mb-0" style="color: var(--text-color);">Edit Profile</h4>
-    </div>
-    
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="profile-edit-card p-4 p-md-5">
-                <form method="post" enctype="multipart/form-data" class="row g-4" novalidate>
-                    {% csrf_token %}
-                    
-                    <!-- Profile Picture Section -->
-                    <div class="col-12 text-center">
-                        <div class="profile-pic-container">
-                            <img id="profile-pic-preview" src="{% if form.instance.profile_picture %}{{ form.instance.profile_picture.url }}{% else %}{% static 'images/default-profile.png' %}{% endif %}" class="profile-pic-edit" alt="Profile Picture">
-                            <label for="id_profile_picture" class="upload-btn" title="Change Profile Picture">
-                                <i class="bi bi-camera-fill"></i>
-                            </label>
-                            <input type="file" name="profile_picture" accept="image/*" id="id_profile_picture" class="d-none">
-                        </div>
-                        {% if form.profile_picture.errors %}
-                            <div class="invalid-feedback d-block">{{ form.profile_picture.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Basic Information Section -->
-                    <div class="col-12">
-                        <div class="section-header">
-                            <h5 class="mb-0">Basic Information</h5>
-                            <p class="text-muted mb-0">Update your public profile details</p>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
-                        <input type="text" name="first_name" value="{{ form.first_name.value|default:'' }}" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" id="{{ form.first_name.id_for_label }}" placeholder="Enter your first name">
-                        {% if form.first_name.errors %}
-                            <div class="invalid-feedback">{{ form.first_name.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
-                        <input type="text" name="last_name" value="{{ form.last_name.value|default:'' }}" class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" id="{{ form.last_name.id_for_label }}" placeholder="Enter your last name">
-                        {% if form.last_name.errors %}
-                            <div class="invalid-feedback">{{ form.last_name.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
-                        <input type="text" name="username" value="{{ form.username.value|default:'' }}" class="form-control {% if form.username.errors %}is-invalid{% endif %}" id="{{ form.username.id_for_label }}" placeholder="Choose a username">
-                        {% if form.username.errors %}
-                            <div class="invalid-feedback">{{ form.username.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
-                        <input type="email" name="email" value="{{ form.email.value|default:'' }}" class="form-control {% if form.email.errors %}is-invalid{% endif %}" id="{{ form.email.id_for_label }}" placeholder="Your email address">
-                        {% if form.email.errors %}
-                            <div class="invalid-feedback">{{ form.email.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="col-12">
-                        <label for="{{ form.bio.id_for_label }}" class="form-label">Bio</label>
-                        <textarea name="bio" class="form-control {% if form.bio.errors %}is-invalid{% endif %}" id="{{ form.bio.id_for_label }}" rows="4" placeholder="Tell others about yourself">{{ form.bio.value|default:'' }}</textarea>
-                        {% if form.bio.errors %}
-                            <div class="invalid-feedback">{{ form.bio.errors }}</div>
-                        {% endif %}
-                        <div class="form-text">Tell others about yourself (max 250 characters)</div>
-                        <div class="form-text text-end" id="bio-counter">0/250 characters</div>
-                    </div>
-                    
-                    <!-- Contact Information Section -->
-                    <div class="col-12 mt-4">
-                        <div class="section-header">
-                            <h5 class="mb-0">Contact Information</h5>
-                            <p class="text-muted mb-0">How others can reach you</p>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <label for="{{ form.phone_number.id_for_label }}" class="form-label">Phone Number</label>
-                        <input type="text" name="phone_number" value="{{ form.phone_number.value|default:'' }}" class="form-control {% if form.phone_number.errors %}is-invalid{% endif %}" id="{{ form.phone_number.id_for_label }}" placeholder="e.g., +254712345678">
-                        {% if form.phone_number.errors %}
-                            <div class="invalid-feedback">{{ form.phone_number.errors }}</div>
-                        {% endif %}
-                        <div class="form-text">Include country code if outside Kenya</div>
-                    </div>
-                    
-                    <!-- Privacy Settings Section -->
-                    <div class="col-12 mt-4">
-                        <div class="section-header">
-                            <h5 class="mb-0">Privacy Settings</h5>
-                            <p class="text-muted mb-0">Control who can see your information</p>
-                        </div>
-                    </div>
-                    
-                    <div class="col-12">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" name="show_contact_info" id="show_contact_info" {% if form.show_contact_info.value %}checked{% endif %}>
-                            <label class="form-check-label" for="show_contact_info">
-                                Show my contact information to other users
-                            </label>
-                        </div>
-                        <div class="form-text">When enabled, your phone number and email will be visible on your public profile</div>
-                    </div>
-                    
-                    <!-- Action Buttons -->
-                    <div class="col-12 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
-                        <div class="d-flex flex-column flex-md-row gap-3">
-                            <button type="submit" class="btn btn-primary flex-grow-1 flex-md-grow-0">Save Changes</button>
-                            <a href="{% url 'profile' user.pk %}" class="btn btn-outline-secondary flex-grow-1 flex-md-grow-0">Cancel</a>
-                        </div>
-                    </div>
-                </form>
+<div class="profile-edit-container">
+    <!-- Modern Header -->
+    <div class="edit-header">
+        <div class="d-flex align-items-center justify-content-between position-relative">
+            <a href="{% url 'profile' user.pk %}" class="back-btn-modern">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div class="text-center flex-grow-1">
+                <h1 class="h3 mb-1">Edit Profile</h1>
+                <p class="mb-0 opacity-90">Update your personal information and preferences</p>
             </div>
+            <div style="width: 44px;"></div>
         </div>
+    </div>
+
+    <!-- Success Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'success' %}
+            <div class="success-message-modern">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>{{ message }}</span>
+            </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <!-- Modern Profile Card -->
+    <div class="profile-edit-card-modern">
+        
+
+        <!-- Main Form -->
+        <form method="post" enctype="multipart/form-data" class="form-section-modern">
+            {% csrf_token %}
+
+            <!-- Profile Picture Section -->
+            <div class="profile-pic-section-modern">
+                <div class="profile-pic-wrapper-modern">
+                    <img id="profile-pic-preview" 
+                        src="{% if form.instance.profile_picture %}{{ form.instance.get_profile_picture_url }}{% else %}{% static 'images/default.png' %}{% endif %}" 
+                        class="profile-pic-modern" 
+                        alt="Profile Picture">
+                    <label for="id_profile_picture" class="upload-btn-modern" title="Change Profile Picture">
+                        <i class="bi bi-camera"></i>
+                    </label>
+                    <input type="file" name="profile_picture" accept="image/*" id="id_profile_picture" class="d-none">
+                </div>
+                <p class="text-muted mb-0">Click the camera icon to update your profile picture</p>
+                {% if form.profile_picture.errors %}
+                    <div class="error-message-modern mt-2">
+                        <i class="bi bi-exclamation-circle"></i>
+                        {{ form.profile_picture.errors }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Display non-field errors -->
+            {% if form.non_field_errors %}
+                <div class="error-message-modern mb-3">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Basic Information Section -->
+            <h3 class="section-title-modern">Basic Information</h3>
+            <div class="form-grid-modern">
+                <div class="form-group-modern">
+                    <label for="{{ form.first_name.id_for_label }}" class="form-label-modern">First Name</label>
+                    <input type="text" 
+                           name="first_name" 
+                           value="{{ form.first_name.value|default:'' }}" 
+                           class="input-modern {% if form.first_name.errors %}error{% endif %}" 
+                           id="{{ form.first_name.id_for_label }}" 
+                           placeholder="Enter your first name">
+                    {% if form.first_name.errors %}
+                        <div class="error-message-modern">{{ form.first_name.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group-modern">
+                    <label for="{{ form.last_name.id_for_label }}" class="form-label-modern">Last Name</label>
+                    <input type="text" 
+                           name="last_name" 
+                           value="{{ form.last_name.value|default:'' }}" 
+                           class="input-modern {% if form.last_name.errors %}error{% endif %}" 
+                           id="{{ form.last_name.id_for_label }}" 
+                           placeholder="Enter your last name">
+                    {% if form.last_name.errors %}
+                        <div class="error-message-modern">{{ form.last_name.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group-modern">
+                    <label for="{{ form.username.id_for_label }}" class="form-label-modern">Username</label>
+                    <input type="text" 
+                           name="username" 
+                           value="{{ form.username.value|default:'' }}" 
+                           class="input-modern {% if form.username.errors %}error{% endif %}" 
+                           id="{{ form.username.id_for_label }}" 
+                           placeholder="Choose a username">
+                    {% if form.username.errors %}
+                        <div class="error-message-modern">{{ form.username.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group-modern">
+                    <label for="{{ form.email.id_for_label }}" class="form-label-modern">Email Address</label>
+                    <input type="email" 
+                           name="email" 
+                           value="{{ form.email.value|default:'' }}" 
+                           class="input-modern {% if form.email.errors %}error{% endif %}" 
+                           id="{{ form.email.id_for_label }}" 
+                           placeholder="your.email@example.com">
+                    {% if form.email.errors %}
+                        <div class="error-message-modern">{{ form.email.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Bio Section -->
+            <div class="form-group-modern">
+                <label for="{{ form.bio.id_for_label }}" class="form-label-modern">Bio</label>
+                <textarea name="bio" 
+                          class="input-modern textarea-modern {% if form.bio.errors %}error{% endif %}" 
+                          id="{{ form.bio.id_for_label }}" 
+                          rows="4" 
+                          placeholder="Tell others about yourself...">{{ form.bio.value|default:'' }}</textarea>
+                <div class="char-counter-modern" id="bio-counter">0/500 characters</div>
+                {% if form.bio.errors %}
+                    <div class="error-message-modern">{{ form.bio.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Contact Information Section -->
+            <h3 class="section-title-modern">Contact Information</h3>
+            <div class="form-grid-modern">
+                <div class="form-group-modern">
+                    <label for="{{ form.phone_number.id_for_label }}" class="form-label-modern">Phone Number</label>
+                    <input type="text" 
+                           name="phone_number" 
+                           value="{{ form.phone_number.value|default:'' }}" 
+                           class="input-modern {% if form.phone_number.errors %}error{% endif %}" 
+                           id="{{ form.phone_number.id_for_label }}" 
+                           placeholder="+254 712 345 678">
+                    {% if form.phone_number.errors %}
+                        <div class="error-message-modern">{{ form.phone_number.errors }}</div>
+                    {% endif %}
+                    <small class="text-muted">Include country code for international numbers</small>
+                </div>
+            </div>
+
+            <!-- Privacy Settings -->
+            <h3 class="section-title-modern">Privacy Settings</h3>
+            <div class="switch-container-modern">
+                <label class="switch-modern">
+                    <input type="checkbox" name="show_contact_info" id="show_contact_info" {% if form.show_contact_info.value %}checked{% endif %}>
+                    <span class="slider-modern"></span>
+                </label>
+                <div>
+                    <label for="show_contact_info" class="form-label-modern mb-1">Show contact information</label>
+                    <p class="text-muted mb-0 small">Allow other users to see your phone number and email</p>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions-modern">
+                <a href="{% url 'profile' user.pk %}" class="btn-modern btn-outline-modern">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
+                <button type="submit" class="btn-modern btn-primary-modern">
+                    <i class="bi bi-check-circle"></i> Save Changes
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Profile picture preview with modern feedback
         const fileInput = document.getElementById('id_profile_picture');
         const profilePicPreview = document.getElementById('profile-pic-preview');
 
         if (fileInput && profilePicPreview) {
-            fileInput.addEventListener('change', (event) => {
+            fileInput.addEventListener('change', function(event) {
                 const [file] = event.target.files;
                 if (file) {
-                    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-                        alert('Please select an image smaller than 5MB');
+                    if (file.size > 5 * 1024 * 1024) {
+                        showNotification('Please select an image smaller than 5MB', 'error');
                         fileInput.value = '';
                         return;
                     }
                     
-                    profilePicPreview.src = URL.createObjectURL(file);
-                    
-                    // Clear the preview when the same file is selected again
-                    fileInput.addEventListener('click', function() {
-                        this.value = '';
-                    });
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        profilePicPreview.src = e.target.result;
+                        // Add subtle animation
+                        profilePicPreview.style.transform = 'scale(1.05)';
+                        setTimeout(() => {
+                            profilePicPreview.style.transform = 'scale(1)';
+                        }, 300);
+                    };
+                    reader.readAsDataURL(file);
                 }
             });
         }
-        
-        // Add character counter for bio field
+
+        // Bio character counter
         const bioField = document.getElementById('{{ form.bio.id_for_label }}');
         const bioCounter = document.getElementById('bio-counter');
-        
+
         if (bioField && bioCounter) {
             function updateBioCounter() {
-                const maxLength = 250;
+                const maxLength = 500;
                 const currentLength = bioField.value.length;
                 bioCounter.textContent = `${currentLength}/${maxLength} characters`;
                 
                 if (currentLength > maxLength * 0.9) {
-                    bioCounter.classList.add('text-warning');
+                    bioCounter.classList.add('warning');
                 } else {
-                    bioCounter.classList.remove('text-warning');
+                    bioCounter.classList.remove('warning');
                 }
                 
-                // Enforce max length
                 if (currentLength > maxLength) {
                     bioField.value = bioField.value.substring(0, maxLength);
                     updateBioCounter();
@@ -393,40 +606,51 @@
             bioField.addEventListener('input', updateBioCounter);
             updateBioCounter();
         }
-        
-        // Form validation
-        const form = document.querySelector('form');
-        if (form) {
-            form.addEventListener('submit', function(event) {
-                let isValid = true;
-                const inputs = form.querySelectorAll('input[required], textarea[required]');
-                
-                inputs.forEach(input => {
-                    if (!input.value.trim()) {
-                        isValid = false;
-                        input.classList.add('is-invalid');
-                        
-                        // Create error message if it doesn't exist
-                        if (!input.nextElementSibling || !input.nextElementSibling.classList.contains('invalid-feedback')) {
-                            const errorDiv = document.createElement('div');
-                            errorDiv.className = 'invalid-feedback';
-                            errorDiv.textContent = 'This field is required';
-                            input.parentNode.appendChild(errorDiv);
-                        }
-                    } else {
-                        input.classList.remove('is-invalid');
-                        const errorDiv = input.nextElementSibling;
-                        if (errorDiv && errorDiv.classList.contains('invalid-feedback')) {
-                            errorDiv.remove();
-                        }
-                    }
-                });
-                
-                if (!isValid) {
-                    event.preventDefault();
-                    event.stopPropagation();
+
+        // Real-time input validation with modern feedback
+        const inputs = document.querySelectorAll('.input-modern');
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value.trim() === '' && this.hasAttribute('required')) {
+                    this.style.borderColor = '#ff4757';
+                } else {
+                    this.style.borderColor = '';
                 }
             });
+            
+            input.addEventListener('input', function() {
+                this.style.borderColor = '';
+            });
+        });
+
+        // Enhanced form submission
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="bi bi-arrow-repeat spinner"></i> Saving...';
+                submitBtn.disabled = true;
+                
+                // Re-enable after 5 seconds if still processing (safety net)
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }, 5000);
+            });
+        }
+
+        // Simple notification function
+        function showNotification(message, type) {
+            // You can replace this with a proper toast notification
+            const alertClass = type === 'error' ? 'alert-danger' : 'alert-success';
+            const notification = document.createElement('div');
+            notification.className = `alert ${alertClass} alert-dismissible fade show`;
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.form-section-modern').prepend(notification);
         }
     });
 </script>

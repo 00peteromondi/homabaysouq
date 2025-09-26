@@ -46,6 +46,15 @@ def inbox(request):
 def conversation_detail(request, pk):
     conversation = get_object_or_404(Conversation, pk=pk, participants=request.user)
     
+    # Mark messages as read when viewing the conversation
+    Message.objects.filter(
+        conversation=conversation
+    ).exclude(
+        sender=request.user
+    ).filter(
+        is_read=False
+    ).update(is_read=True)
+    
     if request.method == 'POST':
         form = MessageForm(request.POST)
         if form.is_valid():
@@ -70,6 +79,39 @@ def conversation_detail(request, pk):
                     }
                 })
             return redirect('conversation-detail', pk=pk)
+    
+    # GET request handling
+    messages = conversation.messages.all()
+    form = MessageForm()
+    
+    # Handle AJAX requests for message list
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        messages_data = []
+        for msg in messages:
+            messages_data.append({
+                'id': msg.id,
+                'sender': msg.sender.username,
+                'content': msg.content,
+                'timestamp': msg.timestamp.isoformat(),
+                'is_read': msg.is_read,
+                'is_own_message': msg.sender == request.user
+            })
+        
+        return JsonResponse({
+            'conversation_id': conversation.id,
+            'messages': messages_data,
+            'participants': [{
+                'id': user.id,
+                'username': user.username,
+                'is_current_user': user == request.user
+            } for user in conversation.participants.all()]
+        })
+    
+    return render(request, 'chats/conversation.html', {
+        'conversation': conversation,
+        'messages': messages,
+        'form': form
+    })
         
 @login_required
 def start_conversation(request, listing_id, recipient_id):

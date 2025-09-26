@@ -730,6 +730,10 @@ def leave_review(request, listing_id=None, seller_id=None):
                 review.user = request.user
                 review.listing = listing
                 review.save()
+                
+                # Notify seller about the new review
+                notify_new_review(seller, request.user, review, listing)
+                
                 messages.success(request, "Thank you for your review!")
                 return redirect('listing-detail', pk=listing.id)
         else:
@@ -759,9 +763,13 @@ def leave_review(request, listing_id=None, seller_id=None):
             if form.is_valid():
                 review = form.save(commit=False)
                 review.user = request.user
-                review.listing = listings.first()  # Or let user choose
+                # Use the first listing or let user choose - you might want to improve this
+                review.listing = listings.first()
                 review.save()
-                notify_new_review(seller, request.user, review, listing)
+                
+                # Use review.listing instead of undefined 'listing' variable
+                notify_new_review(seller, request.user, review, review.listing)
+                
                 messages.success(request, "Thank you for your review!")
                 return redirect('profile', pk=seller.id)
         else:

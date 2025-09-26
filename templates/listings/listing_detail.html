@@ -126,8 +126,8 @@
             <div class="card mb-4 shadow-sm">
                 <div class="card-body text-center">
                     <img src="{{ object.seller.profile_picture.url|default:'/media/default_profile_pic.jpg' }}" class="profile-pic rounded-circle border mb-3" alt="{{ object.seller.username }}" style="width: 96px; height: 96px; object-fit: cover;">
-                    <h5 class="card-title fw-bold mb-1">{{ object.seller.username }}</h5>
-                    <p class="card-text text-muted mb-3">{{ object.seller.first_name }} {{ object.seller.last_name }}</p>
+                    <h5 class="card-title fw-bold mb-1">{{ object.seller.first_name }} {{ object.seller.last_name }}</h5>
+                    <p class="card-text text-muted mb-3">@{{ object.seller.username }}</p>
                     
                     {% if object.seller.is_verified %}
                     <span class="verified-badge d-inline-block mb-2 px-2 py-1 rounded bg-success text-white small">
