@@ -42,6 +42,22 @@ class CheckoutForm(forms.Form):
         initial='mpesa',
         widget=forms.RadioSelect
     )
+    first_name = forms.CharField(max_length=30,
+        help_text="Your first name"
+
+    )
+    last_name = forms.CharField(max_length=30,
+        help_text="Your last name"
+    )
+    email = forms.EmailField(
+        help_text="Your email address"
+    )
+    city = forms.CharField(max_length=50,
+        help_text="Your city"
+    )
+    postal_code = forms.CharField(max_length=20,
+        help_text="Your postal code"
+    )
 
 class ReviewForm(forms.ModelForm):
     class Meta:

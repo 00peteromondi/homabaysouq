@@ -340,7 +340,7 @@
                     {% if user.is_authenticated %}
                     <div class="dropdown">
                         <a href="#" class="nav-link dropdown-toggle d-flex align-items-center" role="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="{{ user.get|default:'https://placehold.co/40x40/c2c2c2/1f1f1f?text=HS' }}" alt="{{ user.username }}" class="rounded-circle me-2" style="width: 32px; height: 32px;">
+                            <img src="{{ user.get_profile_picture|default:'https://placehold.co/40x40/c2c2c2/1f1f1f?text=HS' }}" alt="{{ user.username }}" class="rounded-circle me-2" style="width: 32px; height: 32px;">
                             <span class="fw-bold d-none d-lg-block">{{ user.username }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="profileDropdown">

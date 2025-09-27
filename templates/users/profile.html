@@ -170,7 +170,7 @@
     <div class="profile-card p-4 mb-4">
         <div class="row align-items-center">
             <div class="col-lg-3 text-center mb-3 mb-lg-0">
-                <img src="{{ user.get_profile_picture_url }}" class="profile-pic" alt="{{ user.username }}">
+                <img src="{{ profile_user.get_profile_picture_url|default:'/media/default_profile_pic.jpg' }}" class="profile-pic" alt="{{ profile_user.username }}">
                 
                 {% if user == profile_user %}
                 <a href="{% url 'profile-edit' profile_user.pk %}" class="btn btn-sm btn-outline-primary mt-3">

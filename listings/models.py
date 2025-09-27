@@ -222,6 +222,16 @@ class Order(models.Model):
     items = models.ManyToManyField(Listing, through='OrderItem')
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=ORDER_STATUS, default='pending')
+    
+    # Add shipping and contact information fields
+    first_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100, blank=True)
+    email = models.EmailField(blank=True)
+    phone_number = models.CharField(max_length=20, blank=True)
+    shipping_address = models.TextField(blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    postal_code = models.CharField(max_length=20, blank=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     paid_at = models.DateTimeField(null=True, blank=True)
@@ -240,12 +250,12 @@ class Order(models.Model):
             order_item.listing.is_sold = True
             order_item.listing.save()
 
-
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    added_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     def __str__(self):
         return f"{self.quantity} x {self.listing.title}"

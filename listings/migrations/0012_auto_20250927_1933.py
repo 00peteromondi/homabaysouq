@@ -26,7 +26,7 @@ def add_default_categories(apps, schema_editor):
         # Fashion & Beauty
         {'name': "Men's Shoes & Clothing", 'icon': 'person', 'description': 'Shirts, trousers, shoes and accessories for men'},
         {'name': "Women's Shoes & Clothing", 'icon': 'balloon-heart-fill', 'description': 'Dresses, skirts, shoes and accessories for women'},
-        {'name': "Children's Clothing", 'icon': 'balloon-fill', 'description': 'Clothing for babies, toddlers and children'},
+        {'name': "Children's Shoes & Clothing", 'icon': 'balloon-fill', 'description': 'Clothing for babies, toddlers and children'},
         {'name': 'Jewelry & Watches', 'icon': 'gem', 'description': 'Necklaces, rings, bracelets and watches'},
         {'name': 'Beauty & Personal Care', 'icon': 'flower1', 'description': 'Makeup, skincare, haircare products'},
         
@@ -73,7 +73,7 @@ def remove_default_categories(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('listings', '0001_initial'),
+        ('listings', '0011_alter_listing_image'),
     ]
 
     operations = [

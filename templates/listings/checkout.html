@@ -23,6 +23,11 @@
                 <div class="card-body">
                     <form method="post" id="checkoutForm">
                         {% csrf_token %}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -42,7 +47,7 @@
                         </div>
                         
                         <div class="mb-3">
-                            {{ form.address|as_crispy_field }}
+                            {{ form.shipping_address|as_crispy_field }}
                         </div>
                         
                         <div class="row">
@@ -103,12 +108,13 @@
                     <div class="order-items mb-3">
                         {% for item in cart.items.all %}
                         <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
-                            <img src="{{ item.listing.image.url }}" 
+                            <img src="{{ item.listing.get_image_url }}" 
                                  alt="{{ item.listing.title }}"
                                  class="rounded me-3"
                                  width="50"
                                  height="50"
-                                 style="object-fit: cover;">
+                                 style="object-fit: cover;"
+                                 onerror="this.src='https://placehold.co/50x50/c2c2c2/1f1f1f?text=HS'">
                             <div class="flex-grow-1">
                                 <h6 class="mb-1">{{ item.listing.title }}</h6>
                                 <small class="text-muted">Qty: {{ item.quantity }}</small>
@@ -192,6 +198,24 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // Validate required fields
+        const requiredFields = checkoutForm.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!isValid) {
+            showToast('Please fill in all required fields', 'error');
+            return;
+        }
+        
         // Show loading state
         placeOrderBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Processing...';
         placeOrderBtn.disabled = true;
@@ -210,13 +234,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function simulateMpesaPayment() {
         // Show M-Pesa simulation
-        const mpesaModal = new bootstrap.Modal(document.createElement('div'));
         const modalHtml = `
             <div class="modal fade" id="mpesaModal" tabindex="-1">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header bg-success text-white">
                             <h5 class="modal-title">M-Pesa Payment</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body text-center py-4">
                             <i class="bi bi-phone text-success display-4 mb-3"></i>
@@ -259,7 +283,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.classList.remove('is-invalid');
             }
         });
+        
+        input.addEventListener('input', function() {
+            if (this.value.trim() !== '' && this.hasAttribute('required')) {
+                this.classList.remove('is-invalid');
+            }
+        });
     });
+    
+    // Toast function
+    function showToast(message, type = 'info') {
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} border-0`;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+        
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        
+        // Add to container
+        const container = document.querySelector('.toast-container');
+        container.appendChild(toast);
+        
+        // Show toast
+        const bsToast = new bootstrap.Toast(toast, { autohide: true, delay: 3000 });
+        bsToast.show();
+        
+        // Remove after hide
+        toast.addEventListener('hidden.bs.toast', () => {
+            toast.remove();
+        });
+    }
 });
 </script>
 {% endblock %}

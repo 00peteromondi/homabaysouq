@@ -439,7 +439,7 @@ def checkout(request):
                         last_name=form.cleaned_data['last_name'],
                         email=form.cleaned_data['email'],
                         phone_number=form.cleaned_data['phone_number'],
-                        address=form.cleaned_data['address'],
+                        shipping_address=form.cleaned_data['shipping_address'],
                         city=form.cleaned_data['city'],
                         postal_code=form.cleaned_data['postal_code'],
                     )
