@@ -386,10 +386,10 @@
                                 </div>
                             </div>
                             <div class="card-footer bg-transparent">
-                                <div class="d-flex justify-content-between">
+                                
                                     <a href="{% url 'listing-detail' listing.pk %}" class="btn btn-sm btn-outline-primary">View Details</a>
-                                    <a href="{% url 'add_to_cart' listing.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-cart"></i></a>
-                                </div>
+                                    
+                                
                             </div>
                         </div>
                     </div>
@@ -619,7 +619,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
                         <div class="card-footer bg-transparent">
-                            <a href="${listing.url}" class="btn btn-sm btn-outline-primary w-100">View Details</a>
+                            
+                            <a href="${listing.url}" class="btn btn-sm btn-outline-primary">View Details</a>
+                            
                         </div>
                     </div>
                 </div>
