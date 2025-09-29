@@ -13,6 +13,8 @@ urlpatterns = [
     path('reviews/', include('reviews.urls')),
     path('blog/', include('blog.urls')),
     path('notifications/', include('notifications.urls')),
+    # Social authentication
+    path('accounts/', include('allauth.urls')),
 ]
 
 if settings.DEBUG:

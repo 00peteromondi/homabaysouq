@@ -25,8 +25,16 @@ def register(request):
             messages.error(request, 'Please correct the errors below.')
     else:
         form = CustomUserCreationForm()
-    return render(request, 'users/register.html', {'form': form})
-
+    
+    # Check if there are social account tokens in session (for social registration)
+    social_account = None
+    if request.session.get('socialaccount_sociallogin'):
+        social_account = request.session['socialaccount_sociallogin']
+    
+    return render(request, 'users/register.html', {
+        'form': form,
+        'social_account': social_account
+    })
 class ProfileDetailView(DetailView):
     model = User
     template_name = 'users/profile.html'

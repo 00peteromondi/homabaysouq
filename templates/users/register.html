@@ -83,6 +83,23 @@
                                         Already have an account? <a href="{% url 'login' %}">Sign In</a>
                                     </small>
                                 </div>
+                                
+                                <div class="text-center mb-4">
+                                    <span class="text-muted small">Or sign up with</span>
+                                </div>
+
+                                <div class="row g-2 mb-4">
+                                    <div class="col">
+                                        <a href="{% url 'google_login' %}" class="btn btn-outline-danger w-100">
+                                            <i class="bi bi-google me-1"></i> Google
+                                        </a>
+                                    </div>
+                                    <div class="col">
+                                        <a href="{% url 'facebook_login' %}" class="btn btn-outline-primary w-100">
+                                            <i class="bi bi-facebook me-1"></i> Facebook
+                                        </a>
+                                    </div>
+                                </div>
                             </form>
                         </div>
                     </div>
