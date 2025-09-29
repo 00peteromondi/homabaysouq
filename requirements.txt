@@ -10,4 +10,5 @@ Pillow==10.4.0
 django-cloudinary-storage==0.3.0
 cloudinary==1.30.0
 django-allauth==65.11.2
+py-JWT>=2.0.0
 
