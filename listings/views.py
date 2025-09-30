@@ -52,7 +52,6 @@ class ListingListView(ListView):
         
         return queryset
 
-    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
@@ -66,6 +65,18 @@ class ListingListView(ListView):
             like_count=Count('likes'),
             comment_count=Count('comments', filter=Q(comments__active=True))
         ).order_by('-published_at')[:3]
+        
+        # Add the missing context variables that home.html expects
+        context['popular_categories'] = Category.objects.annotate(
+            listing_count=Count('listing')
+        ).order_by('-listing_count')[:6]
+        
+        # Add placeholder values for missing variables
+        context['total_messages_count'] = 0  # Replace with actual count if you have messages
+        context['successful_transactions'] = 0  # Replace with actual count if you have orders
+        
+        # For testimonials - create empty list since you don't have testimonials model
+        context['testimonials'] = []
         
         # Efficiently get listing counts per category
         category_counts = (
@@ -82,13 +93,11 @@ class ListingListView(ListView):
 
         context['recent_activities'] = Activity.objects.select_related('user').order_by('-timestamp')[:5]
 
-    
         category_id = self.request.GET.get('category')
         if category_id:
             context['selected_category'] = get_object_or_404(Category, id=category_id)
 
         return context
-
 
 from django.db.models import Avg, Count
 from django.views.generic import DetailView
