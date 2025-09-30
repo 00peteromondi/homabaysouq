@@ -98,7 +98,7 @@
                         {% for similar_listing in similar_listings|slice:":4" %}
                         <div class="col">
                             <div class="card h-100 listing-card">
-                                <img src="{{ similar_listing.image.url }}" class="card-img-top listing-img" alt="{{ similar_listing.title }}">
+                                <img src="{{ similar_listing.get_image_url }}" class="card-img-top listing-img" alt="{{ similar_listing.title }}">
                                 <div class="card-body">
                                     <h6 class="card-title">{{ similar_listing.title|truncatewords:5 }}</h6>
                                     <p class="card-text price-tag mb-1">KSh {{ similar_listing.price }}</p>

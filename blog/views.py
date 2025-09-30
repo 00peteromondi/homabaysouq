@@ -22,51 +22,63 @@ class BlogPostListView(ListView):
     paginate_by = 12
     
     def get_queryset(self):
-        queryset = BlogPost.objects.filter(status='published').select_related(
-            'author', 'category'
-        ).prefetch_related('likes').annotate(
-            like_count=Count('likes'),
-            comment_count=Count('comments', filter=Q(comments__active=True))
-        ).order_by('-published_at', '-created_at')
-        
-        # Handle search and filters
-        self.form = BlogSearchForm(self.request.GET)
-        if self.form.is_valid():
-            query = self.form.cleaned_data.get('q')
-            category = self.form.cleaned_data.get('category')
+        try:
+            queryset = BlogPost.objects.filter(status='published').select_related(
+                'author', 'category'
+            ).prefetch_related('likes').annotate(
+                like_count=Count('likes'),
+                comment_count=Count('comments', filter=Q(comments__active=True))
+            ).order_by('-published_at', '-created_at')
             
-            if query:
-                queryset = queryset.filter(
-                    Q(title__icontains=query) | 
-                    Q(content__icontains=query) |
-                    Q(excerpt__icontains=query) |
-                    Q(author__username__icontains=query)
-                )
+            # Handle search and filters
+            self.form = BlogSearchForm(self.request.GET)
+            if self.form.is_valid():
+                query = self.form.cleaned_data.get('q')
+                category = self.form.cleaned_data.get('category')
+                
+                if query:
+                    queryset = queryset.filter(
+                        Q(title__icontains=query) | 
+                        Q(content__icontains=query) |
+                        Q(excerpt__icontains=query) |
+                        Q(author__username__icontains=query)
+                    )
+                
+                if category:
+                    queryset = queryset.filter(category=category)
             
-            if category:
-                queryset = queryset.filter(category=category)
-        
-        return queryset
+            return queryset
+        except Exception as e:
+            print(f"Error in BlogPostListView get_queryset: {e}")
+            return BlogPost.objects.none()
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['categories'] = BlogCategory.objects.annotate(
-            post_count=Count('posts', filter=Q(posts__status='published'))
-        ).filter(post_count__gt=0)
-        context['featured_posts'] = BlogPost.objects.filter(
-            featured=True, status='published'
-        ).select_related('author')[:4]
-        context['recent_posts'] = BlogPost.objects.filter(
-            status='published'
-        ).select_related('author').order_by('-published_at')[:5]
-        context['search_form'] = self.form
-        context['total_posts'] = self.get_queryset().count()
-        
-        # Add user's posts if authenticated
-        if self.request.user.is_authenticated:
-            context['user_posts'] = BlogPost.objects.filter(
-                author=self.request.user
-            ).select_related('category').order_by('-created_at')[:5]
+        try:
+            context['categories'] = BlogCategory.objects.annotate(
+                post_count=Count('posts', filter=Q(posts__status='published'))
+            ).filter(post_count__gt=0)
+            context['featured_posts'] = BlogPost.objects.filter(
+                featured=True, status='published'
+            ).select_related('author')[:4]
+            context['recent_posts'] = BlogPost.objects.filter(
+                status='published'
+            ).select_related('author').order_by('-published_at')[:5]
+            context['search_form'] = self.form
+            context['total_posts'] = self.get_queryset().count()
+            
+            # Add user's posts if authenticated
+            if self.request.user.is_authenticated:
+                context['user_posts'] = BlogPost.objects.filter(
+                    author=self.request.user
+                ).select_related('category').order_by('-created_at')[:5]
+        except Exception as e:
+            print(f"Error in BlogPostListView get_context_data: {e}")
+            context['categories'] = []
+            context['featured_posts'] = []
+            context['recent_posts'] = []
+            context['total_posts'] = 0
+            context['user_posts'] = []
         
         return context
 
@@ -76,47 +88,59 @@ class BlogPostDetailView(DetailView):
     context_object_name = 'post'
     
     def get_queryset(self):
-        queryset = BlogPost.objects.select_related('author', 'category').prefetch_related(
-            'likes', 'comments__user', 'comments__replies__user'
-        )
-        
-        # Staff can see all posts, others only published
-        if not self.request.user.is_staff:
-            queryset = queryset.filter(status='published')
-        
-        return queryset
+        try:
+            queryset = BlogPost.objects.select_related('author', 'category').prefetch_related(
+                'likes', 'comments__user', 'comments__replies__user'
+            )
+            
+            # Staff can see all posts, others only published
+            if not self.request.user.is_staff:
+                queryset = queryset.filter(status='published')
+            
+            return queryset
+        except Exception as e:
+            print(f"Error in BlogPostDetailView get_queryset: {e}")
+            return BlogPost.objects.none()
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        post = self.get_object()
-        
-        # Increment view count
-        if post.is_published():
-            post.increment_view_count()
-        
-        # Add comment form
-        context['comment_form'] = BlogCommentForm()
-        
-        # Get active comments with replies
-        context['comments'] = post.comments.filter(
-            active=True, parent__isnull=True
-        ).select_related('user').prefetch_related('replies__user')
-        
-        # Check if user liked the post
-        if self.request.user.is_authenticated:
-            context['user_liked'] = post.likes.filter(id=self.request.user.id).exists()
-        else:
+        try:
+            post = self.get_object()
+            
+            # Increment view count
+            if post.is_published():
+                post.increment_view_count()
+            
+            # Add comment form
+            context['comment_form'] = BlogCommentForm()
+            
+            # Get active comments with replies
+            context['comments'] = post.comments.filter(
+                active=True, parent__isnull=True
+            ).select_related('user').prefetch_related('replies__user')
+            
+            # Check if user liked the post
+            if self.request.user.is_authenticated:
+                context['user_liked'] = post.likes.filter(id=self.request.user.id).exists()
+            else:
+                context['user_liked'] = False
+            
+            # Related posts
+            context['related_posts'] = BlogPost.objects.filter(
+                status='published', category=post.category
+            ).exclude(id=post.id).select_related('author')[:4]
+            
+            # Categories
+            context['categories'] = BlogCategory.objects.annotate(
+                post_count=Count('posts', filter=Q(posts__status='published'))
+            ).filter(post_count__gt=0).order_by('name')
+        except Exception as e:
+            print(f"Error in BlogPostDetailView get_context_data: {e}")
+            context['comment_form'] = BlogCommentForm()
+            context['comments'] = []
             context['user_liked'] = False
-        
-        # Related posts
-        context['related_posts'] = BlogPost.objects.filter(
-            status='published', category=post.category
-        ).exclude(id=post.id).select_related('author')[:4]
-        
-        # Categories
-        context['categories'] = BlogCategory.objects.annotate(
-            post_count=Count('posts', filter=Q(posts__status='published'))
-        ).filter(post_count__gt=0).order_by('name')
+            context['related_posts'] = []
+            context['categories'] = []
 
         return context
 
@@ -169,74 +193,98 @@ class UserPostListView(LoginRequiredMixin, ListView):
     paginate_by = 10
     
     def get_queryset(self):
-        return BlogPost.objects.filter(
-            author=self.request.user
-        ).select_related('category').order_by('-created_at')
+        try:
+            return BlogPost.objects.filter(
+                author=self.request.user
+            ).select_related('category').order_by('-created_at')
+        except Exception as e:
+            print(f"Error in UserPostListView get_queryset: {e}")
+            return BlogPost.objects.none()
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['total_posts'] = self.get_queryset().count()
-        context['published_posts'] = self.get_queryset().filter(status='published').count()
-        context['draft_posts'] = self.get_queryset().filter(status='draft').count()
+        try:
+            context['total_posts'] = self.get_queryset().count()
+            context['published_posts'] = self.get_queryset().filter(status='published').count()
+            context['draft_posts'] = self.get_queryset().filter(status='draft').count()
+        except Exception as e:
+            print(f"Error in UserPostListView get_context_data: {e}")
+            context['total_posts'] = 0
+            context['published_posts'] = 0
+            context['draft_posts'] = 0
 
         return context
 
 @require_POST
 @login_required
 def toggle_like(request, slug):
-    post = get_object_or_404(BlogPost, slug=slug)
-    
-    if post.likes.filter(id=request.user.id).exists():
-        post.likes.remove(request.user)
-        liked = False
-    else:
-        post.likes.add(request.user)
-        liked = True
-    
-    like_count = post.likes.count()
-    
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return JsonResponse({
-            'liked': liked,
-            'like_count': like_count
-        })
-    
-    return redirect('blog:post-detail', slug=post.slug)
+    try:
+        post = get_object_or_404(BlogPost, slug=slug)
+        
+        if post.likes.filter(id=request.user.id).exists():
+            post.likes.remove(request.user)
+            liked = False
+        else:
+            post.likes.add(request.user)
+            liked = True
+        
+        like_count = post.likes.count()
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'liked': liked,
+                'like_count': like_count
+            })
+        
+        return redirect('blog:post-detail', slug=post.slug)
+    except Exception as e:
+        print(f"Error in toggle_like: {e}")
+        return redirect('blog:post-list')
 
 @require_POST
 @login_required
 def add_comment(request, slug):
-    post = get_object_or_404(BlogPost, slug=slug)
-    
-    if not post.allow_comments:
-        messages.error(request, 'Comments are disabled for this post.')
+    try:
+        post = get_object_or_404(BlogPost, slug=slug)
+        
+        if not post.allow_comments:
+            messages.error(request, 'Comments are disabled for this post.')
+            return redirect('blog:post-detail', slug=post.slug)
+        
+        form = BlogCommentForm(request.POST)
+        
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.user = request.user
+            
+            # Handle reply to comment
+            parent_id = request.POST.get('parent_id')
+            if parent_id:
+                parent_comment = get_object_or_404(BlogComment, id=parent_id, post=post)
+                comment.parent = parent_comment
+            
+            comment.save()
+            messages.success(request, 'Your comment has been added successfully!')
+        
         return redirect('blog:post-detail', slug=post.slug)
-    
-    form = BlogCommentForm(request.POST)
-    
-    if form.is_valid():
-        comment = form.save(commit=False)
-        comment.post = post
-        comment.user = request.user
-        
-        # Handle reply to comment
-        parent_id = request.POST.get('parent_id')
-        if parent_id:
-            parent_comment = get_object_or_404(BlogComment, id=parent_id, post=post)
-            comment.parent = parent_comment
-        
-        comment.save()
-        messages.success(request, 'Your comment has been added successfully!')
-    
-    return redirect('blog:post-detail', slug=post.slug)
+    except Exception as e:
+        print(f"Error in add_comment: {e}")
+        messages.error(request, 'An error occurred while adding your comment.')
+        return redirect('blog:post-list')
 
 @login_required
 def delete_comment(request, comment_id):
-    comment = get_object_or_404(BlogComment, id=comment_id, user=request.user)
-    post_slug = comment.post.slug
-    comment.delete()
-    messages.success(request, 'Your comment has been deleted successfully!')
-    return redirect('blog:post-detail', slug=post_slug)
+    try:
+        comment = get_object_or_404(BlogComment, id=comment_id, user=request.user)
+        post_slug = comment.post.slug
+        comment.delete()
+        messages.success(request, 'Your comment has been deleted successfully!')
+        return redirect('blog:post-detail', slug=post_slug)
+    except Exception as e:
+        print(f"Error in delete_comment: {e}")
+        messages.error(request, 'An error occurred while deleting your comment.')
+        return redirect('blog:post-list')
 
 # Category views remain similar but updated for new functionality
 class BlogCategoryListView(ListView):
@@ -245,9 +293,13 @@ class BlogCategoryListView(ListView):
     context_object_name = 'categories'
     
     def get_queryset(self):
-        return BlogCategory.objects.annotate(
-            post_count=Count('posts', filter=Q(posts__status='published'))
-        ).filter(post_count__gt=0).order_by('name')
+        try:
+            return BlogCategory.objects.annotate(
+                post_count=Count('posts', filter=Q(posts__status='published'))
+            ).filter(post_count__gt=0).order_by('name')
+        except Exception as e:
+            print(f"Error in BlogCategoryListView get_queryset: {e}")
+            return BlogCategory.objects.none()
 
 class BlogCategoryCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = BlogCategory

@@ -3,6 +3,16 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
+import os
+from django.conf import settings
+
+# Try to import CloudinaryField, fallback to ImageField if not available
+try:
+    from cloudinary.models import CloudinaryField
+    CLOUDINARY_AVAILABLE = True
+except ImportError:
+    CLOUDINARY_AVAILABLE = False
+    from django.db.models import ImageField
 
 User = get_user_model()
 
@@ -32,7 +42,24 @@ class BlogPost(models.Model):
     slug = models.SlugField(unique=True, max_length=250)
     excerpt = models.TextField(blank=True, help_text="Brief description of the post")
     content = models.TextField()
-    image = models.ImageField(upload_to='blog_images/%Y/%m/%d/', blank=True, null=True)
+    
+    # Cloudinary field with proper configuration
+    if CLOUDINARY_AVAILABLE and hasattr(settings, 'CLOUDINARY_CLOUD_NAME') and settings.CLOUDINARY_CLOUD_NAME:
+        image = CloudinaryField(
+            'image',
+            folder='homabay_souq/blog/',
+            transformation=[
+                {'width': 800, 'height': 400, 'crop': 'fill'},
+                {'quality': 'auto'},
+                {'format': 'webp'}
+            ],
+            null=True,
+            blank=True
+        )
+    else:
+        # Fallback to regular ImageField
+        image = models.ImageField(upload_to='blog_images/%Y/%m/%d/', blank=True, null=True)
+    
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_posts')
     category = models.ForeignKey(BlogCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='posts')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
@@ -59,6 +86,25 @@ class BlogPost(models.Model):
     def get_absolute_url(self):
         return reverse('blog:post-detail', kwargs={'slug': self.slug})
     
+    def get_image_url(self):
+        """Safe method to get image URL that works with both Cloudinary and local storage"""
+        if not self.image:
+            return '/static/images/default.png'
+        
+        try:
+            # For Cloudinary
+            if hasattr(self.image, 'url'):
+                url = self.image.url
+                # Check if it's a valid URL (not empty or placeholder)
+                if url and not url.endswith('/None') and 'placeholder' not in url:
+                    return url
+            
+            # For regular ImageField with safe fallback
+            return '/static/images/default.png'
+        except (ValueError, AttributeError) as e:
+            print(f"Error getting image URL for blog post {self.id}: {e}")
+            return '/static/images/default.png'
+    
     def increment_view_count(self):
         """Increment view count for the post"""
         self.view_count += 1
@@ -78,6 +124,12 @@ class BlogPost(models.Model):
             self.published_at = timezone.now()
         elif self.status != 'published':
             self.published_at = None
+        
+        # Ensure the directory exists before saving for local storage
+        if self.image and not CLOUDINARY_AVAILABLE:
+            # Create directory if it doesn't exist
+            os.makedirs(os.path.join(settings.MEDIA_ROOT, 'blog_images'), exist_ok=True)
+        
         super().save(*args, **kwargs)
 
 class BlogPostLike(models.Model):

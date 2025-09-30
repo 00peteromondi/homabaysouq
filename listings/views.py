@@ -59,12 +59,15 @@ class ListingListView(ListView):
         context['total_listings_count'] = Listing.objects.filter(is_sold=False).count()
         context['total_users_count'] = User.objects.count()
         context['total_categories_count'] = Category.objects.count()
-        context['blog_posts'] = BlogPost.objects.filter(
-            status='published'
-        ).select_related('author').prefetch_related('likes').annotate(
-            like_count=Count('likes'),
-            comment_count=Count('comments', filter=Q(comments__active=True))
-        ).order_by('-published_at')[:3]
+        try:
+            from blog.models import BlogPost
+            context['blog_posts'] = BlogPost.objects.filter(
+                status='published'
+            ).select_related('author').order_by('-published_at')[:3]
+        except Exception as e:
+            print(f"Error loading blog posts: {e}")
+            context['blog_posts'] = []
+        
         
         # Add the missing context variables that home.html expects
         context['popular_categories'] = Category.objects.annotate(
