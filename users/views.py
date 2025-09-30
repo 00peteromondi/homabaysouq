@@ -18,7 +18,11 @@ def register(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
+            
+            # Fix: Explicitly set the backend and then login
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request, user)
+            
             messages.success(request, 'Registration successful. Welcome!')
             return redirect('home')
         else:
@@ -35,6 +39,7 @@ def register(request):
         'form': form,
         'social_account': social_account
     })
+
 class ProfileDetailView(DetailView):
     model = User
     template_name = 'users/profile.html'

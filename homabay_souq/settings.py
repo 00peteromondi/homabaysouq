@@ -107,7 +107,11 @@ ROOT_URLCONF = 'homabay_souq.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+            os.path.join(BASE_DIR, 'templates', 'account'),
+            os.path.join(BASE_DIR, 'templates', 'socialaccount'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -115,11 +119,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                # Remove problematic context processors temporarily for debugging
-                # 'listings.context_processors.cart_item_count',
-                # 'listings.context_processors.cart_context',
-                # 'chats.context_processors.messages_context',
-                # 'notifications.context_processors.notifications_context',
+                'listings.context_processors.cart_item_count',
+                'listings.context_processors.cart_context',
+                'chats.context_processors.messages_context',
+                'notifications.context_processors.notifications_context',
             ],
         },
     },
@@ -216,12 +219,18 @@ ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'optional'
 SOCIALACCOUNT_QUERY_EMAIL = True
 SOCIALACCOUNT_STORE_TOKENS = True
 LOGIN_REDIRECT_URL = 'home'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
 
-# Social account providers
+# Social Auth Environment Variables
+GOOGLE_OAUTH_CLIENT_ID = os.environ.get('GOOGLE_OAUTH_CLIENT_ID', '')
+GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET', '')
+FACEBOOK_OAUTH_CLIENT_ID = os.environ.get('FACEBOOK_OAUTH_CLIENT_ID', '')
+FACEBOOK_OAUTH_CLIENT_SECRET = os.environ.get('FACEBOOK_OAUTH_CLIENT_SECRET', '')
+
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': [
@@ -252,6 +261,9 @@ SOCIALACCOUNT_PROVIDERS = {
 
 # Custom adapter
 SOCIALACCOUNT_ADAPTER = 'users.adapters.CustomSocialAccountAdapter'
+SOCIALACCOUNT_FORMS = {
+    'signup': 'users.social_forms.CustomSocialSignupForm',
+}
 
 # Auto connect social accounts to existing users by email
 SOCIALACCOUNT_AUTO_SIGNUP = True

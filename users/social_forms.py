@@ -8,6 +8,8 @@ class CustomSocialSignupForm(SignupForm):
     phone_number = forms.CharField(max_length=15, required=False, label='Phone Number')
     location = forms.CharField(max_length=100, required=True, label='Location', 
                               help_text="Your specific area in Homabay, e.g., Ndhiwa, Rodi Kopany")
+    # Add any additional fields you need for your signup form
+    
 
     def save(self, request):
         user = super().save(request)

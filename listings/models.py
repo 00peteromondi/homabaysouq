@@ -245,11 +245,22 @@ class Order(models.Model):
         self.paid_at = timezone.now()
         self.save()
         
-        # Mark all items as sold
+        # Update stock for each item in the order
         for order_item in self.order_items.all():
-            order_item.listing.is_sold = True
-            order_item.listing.save()
-
+            listing = order_item.listing
+            # Only update stock if it's greater than 0
+            if listing.stock >= order_item.quantity:
+                listing.stock -= order_item.quantity
+                # Mark as sold only if stock reaches 0
+                if listing.stock == 0:
+                    listing.is_sold = True
+                listing.save()
+            else:
+                # This shouldn't happen if validation is proper, but handle just in case
+                listing.stock = 0
+                listing.is_sold = True
+                listing.save()
+                
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE)

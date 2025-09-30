@@ -1146,6 +1146,12 @@
                         <p class="listing-description">{{ listing.description|truncatewords:12 }}</p>
                         <div class="listing-meta mt-auto">
                             <span class="price-tag">KSh {{ listing.price }}</span>
+                            <!-- In the listing card, add this near the price -->
+                            {% if listing.stock > 0 %}
+                                <small class="text-muted">{{ listing.stock }} in stock</small>
+                            {% else %}
+                                <small class="text-danger">Out of stock</small>
+                            {% endif %}
                             <span class="location-badge">{{ listing.get_location_display }}</span>
                         </div>
                     </div>

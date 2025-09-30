@@ -1,0 +1,80 @@
+
+{% extends "base.html" %}
+{% load crispy_forms_tags static %}
+
+{% block title %}Login - HomaBay Souq{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="row g-0">
+                    <div class="col-md-5 d-none d-md-block">
+                        <div class="card-body p-5 bg-primary text-white h-100 d-flex flex-column justify-content-center">
+                            <h3 class="fw-bold">Welcome Back!</h3>
+                            <p class="mb-4">Continue your journey with HomaBay Souq</p>
+                            <ul class="list-unstyled">
+                                <li class="mb-3"><i class="bi bi-check-circle-fill me-2"></i> Access your listings</li>
+                                <li class="mb-3"><i class="bi bi-check-circle-fill me-2"></i> Connect with local buyers</li>
+                                <li class="mb-3"><i class="bi bi-check-circle-fill me-2"></i> Manage your profile</li>
+                                <li><i class="bi bi-check-circle-fill me-2"></i> Secure and reliable</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card-body p-5">
+                            <h2 class="h3 fw-bold mb-1">Sign In</h2>
+                            <p class="text-muted mb-4">Welcome back to your account</p>
+                            
+                            {% if form.errors %}
+                            <div class="alert alert-danger">
+                                <strong>Error:</strong> Your username and password didn't match. Please try again.
+                            </div>
+                            {% endif %}
+
+                            <form class="login" method="POST" action="{% url 'account_login' %}">
+                                {% csrf_token %}
+                                
+                                <div class="mb-3">
+                                    {{ form.login|as_crispy_field }}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {{ form.password|as_crispy_field }}
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="form-check">
+                                            {{ form.remember|as_crispy_field }}
+                                        </div>
+                                        <a href="{% url 'account_reset_password' %}" class="small text-muted">Forgot password?</a>
+                                    </div>
+                                </div>
+                                
+                                {% if redirect_field_value %}
+                                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                                {% endif %}
+                                
+                                <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+                                </button>
+                                
+                                <div class="text-center mb-4">
+                                    <span class="text-muted small">Or continue with</span>
+                                </div>
+
+                                {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+                                
+                                <div class="text-center mt-4">
+                                    <small class="text-muted">
+                                        Don't have an account? <a href="{% url 'account_signup' %}">Sign up</a>
+                                    </small>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+
+{% extends 'base.html' %}
+{% load crispy_forms_tags static %}
+
+{% block title %}Social Sign In - HomaBay Souq{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <img src="{% static 'img/logo.png' %}" alt="HomaBay Souq" height="60" class="mb-3">
+                        <h2 class="h3 fw-bold">Continue with {{ provider.name }}</h2>
+                        <p class="text-muted">Connect your {{ provider.name }} account to HomaBay Souq</p>
+                    </div>
+
+                    {% if process == "connect" %}
+                    <div class="alert alert-info">
+                        <h4 class="alert-heading">Connect Account</h4>
+                        <p class="mb-0">You are about to connect a new third party account from {{ provider.name }}.</p>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-light border">
+                        <h4 class="alert-heading">Sign In</h4>
+                        <p class="mb-0">You are about to sign in using a third party account from {{ provider.name }}.</p>
+                    </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg py-2">
+                                <i class="bi bi-{{ provider.name|lower }} me-2"></i>
+                                Continue with {{ provider.name }}
+                            </button>
+                            
+                            <a href="{% url 'login' %}" class="btn btn-outline-secondary py-2">
+                                <i class="bi bi-arrow-left me-2"></i>
+                                Back to Sign In
+                            </a>
+                        </div>
+                    </form>
+
+                    <div class="mt-4 pt-4 border-top">
+                        <div class="text-center">
+                            <small class="text-muted">
+                                By continuing, you agree to our 
+                                <a href="#" class="text-decoration-none">Terms of Service</a> and 
+                                <a href="#" class="text-decoration-none">Privacy Policy</a>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -76,8 +76,19 @@ class ListingListView(ListView):
         
         # Add placeholder values for missing variables
         context['total_messages_count'] = 0  # Replace with actual count if you have messages
-        context['successful_transactions'] = 0  # Replace with actual count if you have orders
+        # Get completed transactions count (orders with status 'delivered')
+        try:
+            from .models import Order
+            context['successful_transactions'] = Order.objects.filter(
+                status__in=['paid', 'shipped', 'delivered']
+            ).count()
+        except Exception as e:
+            print(f"Error loading completed transactions: {e}")
+            context['successful_transactions'] = 0
         
+        # Alternative: Count all paid orders (if you want to include shipped orders too)
+        
+
         # For testimonials - create empty list since you don't have testimonials model
         context['testimonials'] = []
         
@@ -316,6 +327,13 @@ def update_cart_item(request, item_id):
     cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
     quantity = int(request.POST.get('quantity', 1))
     
+    # Check if quantity doesn't exceed available stock
+    if quantity > cart_item.listing.stock:
+        return JsonResponse({
+            'success': False,
+            'error': f"Only {cart_item.listing.stock} units available."
+        })
+    
     if quantity <= 0:
         cart_item.delete()
         success = True
@@ -333,7 +351,6 @@ def update_cart_item(request, item_id):
         'cart_total': float(cart_total),
         'item_count': item_count
     })
-
 @login_required
 @require_POST
 def remove_from_cart(request, item_id):
@@ -395,6 +412,13 @@ def view_cart(request):
 def add_to_cart(request, listing_id):
     listing = get_object_or_404(Listing, id=listing_id, is_sold=False)
     
+    # Check if item is in stock
+    if listing.stock <= 0:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'error': "This item is out of stock."})
+        messages.warning(request, "This item is out of stock.")
+        return redirect('listing-detail', pk=listing_id)
+    
     # Users shouldn't add their own listings to cart
     if listing.seller == request.user:
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -410,6 +434,13 @@ def add_to_cart(request, listing_id):
     )
     
     if not created:
+        # Check if we're not exceeding available stock
+        if cart_item.quantity + 1 > listing.stock:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': f"Only {listing.stock} units available."})
+            messages.warning(request, f"Only {listing.stock} units of '{listing.title}' are available.")
+            return redirect('listing-detail', pk=listing_id)
+        
         cart_item.quantity += 1
         cart_item.save()
         message = f"Updated quantity of {listing.title} in your cart."
@@ -428,14 +459,15 @@ def add_to_cart(request, listing_id):
     messages.success(request, message)
     return redirect('listing-detail', pk=listing_id)
 
-
 @login_required
 def checkout(request):
     cart = get_object_or_404(Cart, user=request.user)
     
-    if not cart.items.exists():
-        messages.warning(request, "Your cart is empty.")
-        return redirect('view_cart')
+    for cart_item in cart.items.all():
+        if cart_item.quantity > cart_item.listing.stock:
+            messages.error(request, f"Sorry, only {cart_item.listing.stock} units of '{cart_item.listing.title}' are available.")
+            return redirect('view_cart')
+    
     
     if request.method == 'POST':
         form = CheckoutForm(request.POST)
@@ -519,11 +551,13 @@ def process_payment(request, order_id):
             # Simulate successful payment
             transaction_id = f"TXN{order.id}{int(timezone.now().timestamp())}"
             order.payment.mark_as_completed(transaction_id)
-            
-            # Notify sellers about payment
+
             for order_item in order.order_items.all():
                 notify_payment_received(order_item.listing.seller, request.user, order)
-            
+
+
+
+
             # Create activity log
             Activity.objects.create(
                 user=request.user,

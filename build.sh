@@ -1,16 +1,24 @@
+
 #!/usr/bin/env bash
-# Exit on error
 set -o errexit
 
-# Modify this line as needed for your package manager (pip, poetry, etc.)
 pip install -r requirements.txt
 
+# Apply database migrations
+python manage.py migrate
+
+# Create social applications
+python manage.py create_social_apps
+
+# Create static directories
 mkdir -p media/listing_images
 mkdir -p media/profile_pics
 mkdir -p media/blog_images
 
-# Convert static asset files
-python manage.py collectstatic --noinput
+mkdir -p static/images
+mkdir -p static/css
+mkdir -p static/js
 
-# Apply any outstanding database migrations
-python manage.py migrate
+
+# Collect static files
+python manage.py collectstatic --no-input

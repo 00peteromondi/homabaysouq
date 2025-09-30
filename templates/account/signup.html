@@ -1,0 +1,111 @@
+
+{% extends "base.html" %}
+{% load crispy_forms_tags static %}
+
+{% block title %}Sign Up - HomaBay Souq{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="row g-0">
+                    <div class="col-md-5 d-none d-md-block">
+                        <div class="card-body p-5 bg-primary text-white h-100 d-flex flex-column justify-content-center">
+                            <h3 class="fw-bold">Join HomaBay Souq</h3>
+                            <p class="mb-4">Buy and sell with people in your community</p>
+                            <ul class="list-unstyled">
+                                <li class="mb-3"><i class="bi bi-check-circle-fill me-2"></i> List items for free</li>
+                                <li class="mb-3"><i class="bi bi-check-circle-fill me-2"></i> Connect with local buyers</li>
+                                <li class="mb-3"><i class="bi bi-check-circle-fill me-2"></i> Safe and secure transactions</li>
+                                <li><i class="bi bi-check-circle-fill me-2"></i> Build your reputation</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card-body p-5">
+                            <h2 class="h3 fw-bold mb-1">Create Account</h2>
+                            <p class="text-muted mb-4">Join thousands of users in Homabay</p>
+                            
+                            <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+                                {% csrf_token %}
+                                
+                                {% if form.non_field_errors %}
+                                <div class="alert alert-danger">
+                                    {% for error in form.non_field_errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        {{ form.username|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        {{ form.email|as_crispy_field }}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        {{ form.password1|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        {{ form.password2|as_crispy_field }}
+                                    </div>
+                                </div>
+                                
+
+                                {% comment %}
+                                If you have custom fields in your signup form, add them here
+                                For example, if you're using a custom form with first_name, last_name, etc.
+                                {% if form.first_name %}
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        {{ form.first_name|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        {{ form.last_name|as_crispy_field }}
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endcomment %}
+                                
+                                {% if redirect_field_value %}
+                                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                                {% endif %}
+                                
+                                <div class="mb-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                                        <label class="form-check-label small" for="termsCheck">
+                                            I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#" class="text-decoration-none">Privacy Policy</a>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                                    <i class="bi bi-person-plus me-1"></i> Create Account
+                                </button>
+                                
+                                <div class="text-center mb-4">
+                                    <span class="text-muted small">Or sign up with</span>
+                                </div>
+
+                                {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+                                
+                                <div class="text-center">
+                                    <small class="text-muted">
+                                        Already have an account? <a href="{% url 'account_login' %}">Sign In</a>
+                                    </small>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
