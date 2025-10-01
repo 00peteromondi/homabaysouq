@@ -3,7 +3,7 @@
 {% load crispy_forms_tags %}
 {% load humanize %}
 
-{% block title %}Home - HomaBay Souq{% endblock %}
+{% block title %}Home - Souq{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -34,7 +34,6 @@
         left: 5%;
         animation-delay: 0s;
         border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-        /* Phone shape */
     }
     
     .bg-element-2 {
@@ -45,7 +44,6 @@
         right: 10%;
         animation-delay: 2s;
         border-radius: 20px;
-        /* TV shape */
     }
     
     .bg-element-3 {
@@ -56,7 +54,6 @@
         left: 15%;
         animation-delay: 4s;
         border-radius: 50px 50px 20px 20px;
-        /* Cup shape */
     }
     
     .bg-element-4 {
@@ -67,7 +64,6 @@
         right: 20%;
         animation-delay: 6s;
         border-radius: 50% 20% 70% 40%;
-        /* Pizza slice */
     }
     
     .bg-element-5 {
@@ -78,7 +74,6 @@
         right: 5%;
         animation-delay: 8s;
         border-radius: 10px 40px 10px 40px;
-        /* Tablet shape */
     }
     
     .bg-element-6 {
@@ -89,7 +84,6 @@
         left: 8%;
         animation-delay: 10s;
         border-radius: 10px;
-        /* Book shape */
     }
     
     .bg-element-7 {
@@ -100,7 +94,6 @@
         left: 25%;
         animation-delay: 12s;
         border-radius: 40px 10px 40px 10px;
-        /* Laptop shape */
     }
     
     @keyframes float {
@@ -155,6 +148,12 @@
         background-position: center;
     }
     
+    .slide-4 {
+        background: linear-gradient(rgba(0, 31, 63, 0.85), rgba(0, 128, 128, 0.85)), url('https://images.unsplash.com/photo-1556742044-3f034b6dac99?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
+        background-size: cover;
+        background-position: center;
+    }
+    
     .carousel-content {
         max-width: 800px;
         color: white;
@@ -165,11 +164,19 @@
         font-size: 3rem;
         font-weight: 800;
         margin-bottom: 1.5rem;
+        animation: fadeInUp 1s ease-out;
+        font-family: 'Playfair Display', serif;
     }
     
     .carousel-content p {
         font-size: 1.25rem;
         margin-bottom: 2rem;
+        animation: fadeInUp 1s ease-out 0.3s both;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .carousel-buttons {
+        animation: fadeInUp 1s ease-out 0.6s both;
     }
     
     .carousel-dots {
@@ -195,12 +202,39 @@
         transform: scale(1.2);
     }
     
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     /* Hero Section */
     .hero-section {
         position: relative;
-        background: var(--body-bg);
+        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-teal) 100%);
         padding: 3rem 0;
         z-index: 1;
+        color: white;
+        border-radius: 2rem;
+        margin: 0 1rem 3rem;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+        background-size: cover;
+        z-index: -1;
     }
     
     .hero-content {
@@ -213,7 +247,8 @@
         font-weight: 800;
         margin-bottom: 1.5rem;
         font-size: 2.8rem;
-        color: var(--text-color);
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        font-family: 'Playfair Display', serif;
     }
     
     .hero-content p {
@@ -223,7 +258,7 @@
         max-width: 700px;
         margin-left: auto;
         margin-right: auto;
-        color: var(--text-color);
+        font-family: 'Inter', sans-serif;
     }
     
     .hero-stats {
@@ -237,9 +272,10 @@
     .hero-stat {
         text-align: center;
         padding: 1rem;
-        background: var(--navbar-bg);
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
         border-radius: 1rem;
-        border: 1px solid rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.3);
         min-width: 140px;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         transition: transform 0.3s ease;
@@ -253,40 +289,56 @@
         font-size: 2.2rem;
         font-weight: 800;
         margin-bottom: 0.5rem;
-        color: var(--accent-blue);
+        color: white;
     }
     
     .hero-stat-label {
         font-size: 0.9rem;
         opacity: 0.9;
         font-weight: 600;
-        color: var(--text-color);
+        color: white;
     }
     
     .hero-search {
         max-width: 700px;
         margin: 0 auto 2rem;
+        position: relative;
     }
     
     .hero-search .form-control {
         border-radius: 50px;
-        padding: 1.1rem 1.5rem;
-        border: 1px solid rgba(255, 255, 255, 0.18);
+        padding: 1.1rem 1.5rem 1.1rem 3rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
         box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
         font-size: 1rem;
-        background: var(--navbar-bg);
+        background: rgba(255, 255, 255, 0.9);
         color: var(--text-color);
+        padding-right: 120px;
+        font-family: 'Inter', sans-serif;
     }
     
     .hero-search .btn {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
         border-radius: 50px;
-        padding: 1.1rem 2rem;
-        margin-left: 0.5rem;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        padding: 0.7rem 1.5rem;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
         font-weight: 600;
-        font-size: 1rem;
-        background: var(--accent-blue);
+        font-size: 0.9rem;
         border: none;
+        transition: all 0.3s ease;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 1.2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-color);
+        opacity: 0.7;
     }
     
     .trending-tags {
@@ -298,19 +350,19 @@
     }
     
     .trending-tags .badge {
-        background: var(--navbar-bg);
-        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
         padding: 0.6rem 1rem;
         border-radius: 50px;
         transition: all 0.3s ease;
         font-weight: 500;
         cursor: pointer;
-        color: var(--text-color);
+        color: white;
+        font-family: 'Inter', sans-serif;
     }
     
     .trending-tags .badge:hover {
-        background: var(--accent-blue);
-        color: white;
+        background: rgba(255, 255, 255, 0.3);
         transform: translateY(-3px);
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     }
@@ -344,12 +396,14 @@
         font-weight: 700;
         margin-bottom: 0.5rem;
         color: var(--accent-red);
+        font-family: 'Playfair Display', serif;
     }
     
     .promo-banner p {
         margin-bottom: 0;
         opacity: 0.9;
         color: var(--text-color);
+        font-family: 'Inter', sans-serif;
     }
 
     /* Section Headers */
@@ -365,6 +419,7 @@
         margin-bottom: 1rem;
         color: var(--text-color);
         font-size: 2rem;
+        font-family: 'Playfair Display', serif;
     }
     
     .section-title::after {
@@ -385,6 +440,7 @@
         max-width: 700px;
         margin: 0 auto;
         font-size: 1.1rem;
+        font-family: 'Inter', sans-serif;
     }
 
     /* Categories Section - Enhanced with Horizontal Scroll */
@@ -413,11 +469,12 @@
         flex: 0 0 auto;
         width: 200px;
         scroll-snap-align: start;
+        height: 280px;
     }
     
     .category-card {
         text-align: center;
-        padding: 1.5rem 1rem;
+        padding: 2rem 1rem;
         border-radius: 1.5rem;
         transition: all 0.4s ease;
         background: var(--navbar-bg);
@@ -430,33 +487,17 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-    }
-    
-    .category-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 5px;
-        background: var(--accent-blue);
-        transform: scaleX(0);
-        transform-origin: left;
-        transition: transform 0.4s ease;
-    }
-    
-    .category-card:hover::before {
-        transform: scaleX(1);
+        justify-content: space-between;
     }
     
     .category-card:hover {
         transform: translateY(-8px);
         box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        background: rgba(66, 133, 244, 0.05);
     }
     
     .category-icon {
-        font-size: 2.8rem;
+        font-size: 3rem;
         margin-bottom: 1.2rem;
         display: block;
         transition: all 0.3s ease;
@@ -471,23 +512,68 @@
         font-weight: 700;
         margin-bottom: 0.75rem;
         color: var(--text-color);
+        font-family: 'Inter', sans-serif;
     }
     
     .category-card p {
         color: var(--text-color);
         opacity: 0.8;
         font-size: 0.9rem;
-        margin-bottom: 0;
+        margin-bottom: 2rem;
+        flex-grow: 1;
+        font-family: 'Inter', sans-serif;
     }
     
     .category-count {
         display: inline-block;
-        padding: 0.25rem 0.75rem;
+        padding: 0.5rem 1rem;
         border-radius: 50px;
         font-size: 0.8rem;
-        margin-top: 1rem;
         font-weight: 600;
+        position: absolute;
+        bottom: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        min-width: 100px;
+        text-align: center;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
     }
+    
+    /* Colorful category cards */
+    .cat-card-1:hover { background: rgba(251, 188, 4, 0.05); }
+    .cat-card-2:hover { background: rgba(234, 67, 53, 0.05); }
+    .cat-card-3:hover { background: rgba(66, 133, 244, 0.05); }
+    .cat-card-4:hover { background: rgba(52, 168, 83, 0.05); }
+    .cat-card-5:hover { background: rgba(139, 0, 0, 0.05); }
+    .cat-card-6:hover { background: rgba(218, 165, 32, 0.05); }
+    .cat-card-7:hover { background: rgba(255, 107, 53, 0.05); }
+    .cat-card-8:hover { background: rgba(0, 128, 128, 0.05); }
+    .cat-card-9:hover { background: rgba(138, 43, 226, 0.05); }
+    .cat-card-10:hover { background: rgba(0, 31, 63, 0.05); }
+    
+    /* Colorful category icons */
+    .cat-icon-1 { color: var(--accent-yellow); }
+    .cat-icon-2 { color: var(--accent-red); }
+    .cat-icon-3 { color: var(--accent-blue); }
+    .cat-icon-4 { color: var(--accent-green); }
+    .cat-icon-5 { color: var(--accent-maroon); }
+    .cat-icon-6 { color: var(--accent-goldenrod); }
+    .cat-icon-7 { color: var(--accent-orange); }
+    .cat-icon-8 { color: var(--accent-teal); }
+    .cat-icon-9 { color: var(--accent-purple); }
+    .cat-icon-10 { color: var(--accent-navy); }
+    
+    /* Colorful category count badges */
+    .cat-count-1 { background: var(--accent-yellow); color: #1f1f1f; }
+    .cat-count-2 { background: var(--accent-red); color: white; }
+    .cat-count-3 { background: var(--accent-blue); color: white; }
+    .cat-count-4 { background: var(--accent-green); color: white; }
+    .cat-count-5 { background: var(--accent-maroon); color: white; }
+    .cat-count-6 { background: var(--accent-goldenrod); color: #1f1f1f; }
+    .cat-count-7 { background: var(--accent-orange); color: white; }
+    .cat-count-8 { background: var(--accent-teal); color: white; }
+    .cat-count-9 { background: var(--accent-purple); color: white; }
+    .cat-count-10 { background: var(--accent-navy); color: white; }
     
     /* Desktop Grid Layout */
     @media (min-width: 768px) {
@@ -503,6 +589,83 @@
         .category-card-scroll {
             width: auto;
         }
+    }
+    
+    /* Toggle Categories Button */
+    .toggle-categories {
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    /* Stats Carousel Section */
+    .stats-carousel-section {
+        margin-bottom: 4rem;
+    }
+    
+    .stats-carousel {
+        position: relative;
+        overflow: hidden;
+        border-radius: 1.5rem;
+        background: var(--navbar-bg);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+    }
+    
+    .stats-slide {
+        display: none;
+        text-align: center;
+        animation: fadeIn 0.5s ease-in-out;
+    }
+    
+    .stats-slide.active {
+        display: block;
+    }
+    
+    .stats-slide .stat-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: var(--accent-blue);
+    }
+    
+    .stats-slide .stat-value {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+        font-family: 'Playfair Display', serif;
+    }
+    
+    .stats-slide .stat-label {
+        font-size: 1.2rem;
+        color: var(--text-color);
+        opacity: 0.8;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .stats-dots {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 1.5rem;
+    }
+    
+    .stats-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .stats-dot.active {
+        background: var(--accent-blue);
+        transform: scale(1.2);
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
 
     /* Listings Section */
@@ -568,6 +731,7 @@
         margin-bottom: 0.75rem;
         color: var(--text-color);
         font-size: 1.1rem;
+        font-family: 'Inter', sans-serif;
     }
     
     .listing-description {
@@ -576,6 +740,7 @@
         margin-bottom: 1rem;
         font-size: 0.9rem;
         flex-grow: 1;
+        font-family: 'Inter', sans-serif;
     }
     
     .listing-meta {
@@ -589,6 +754,7 @@
         font-weight: 800;
         color: var(--accent-blue);
         font-size: 1.2rem;
+        font-family: 'Inter', sans-serif;
     }
     
     .location-badge {
@@ -598,10 +764,73 @@
         border-radius: 50px;
         font-size: 0.8rem;
         font-weight: 500;
+        font-family: 'Inter', sans-serif;
     }
     
     .listing-footer {
         padding: 0 1.2rem 1.2rem;
+    }
+
+    /* Modern Button Styles */
+    .btn-modern {
+        border-radius: 50px;
+        padding: 0.9rem 2rem;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .btn-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-modern:hover::before {
+        left: 100%;
+    }
+    
+    .btn-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 7px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-modern-primary {
+        background: var(--accent-blue);
+        color: white;
+        border: none;
+    }
+    
+    .btn-modern-secondary {
+        background: transparent;
+        color: var(--accent-blue);
+        border: 2px solid var(--accent-blue);
+    }
+    
+    .btn-modern-success {
+        background: var(--accent-green);
+        color: white;
+        border: none;
+    }
+    
+    .btn-modern-warning {
+        background: var(--accent-yellow);
+        color: #1f1f1f;
+        border: none;
+    }
+    
+    .btn-modern-danger {
+        background: var(--accent-red);
+        color: white;
+        border: none;
     }
 
     /* How It Works Section */
@@ -657,6 +886,7 @@
         margin-bottom: 1rem;
         color: var(--text-color);
         font-weight: 700;
+        font-family: 'Inter', sans-serif;
     }
     
     .step-card p {
@@ -664,6 +894,7 @@
         opacity: 0.9;
         margin-bottom: 0;
         font-size: 0.95rem;
+        font-family: 'Inter', sans-serif;
     }
 
     /* CTA Section */
@@ -689,6 +920,7 @@
         font-weight: 800;
         margin-bottom: 1.5rem;
         font-size: 2.2rem;
+        font-family: 'Playfair Display', serif;
     }
     
     .cta-content p {
@@ -698,15 +930,11 @@
         max-width: 700px;
         margin-left: auto;
         margin-right: auto;
+        font-family: 'Inter', sans-serif;
     }
     
     .cta-buttons .btn {
-        border-radius: 50px;
-        padding: 0.9rem 2rem;
-        font-weight: 600;
-        font-size: 1rem;
         margin: 0 0.5rem 1rem;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
     }
 
     /* New Sections */
@@ -718,7 +946,7 @@
     
     .stats-container {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
     }
     
@@ -729,30 +957,44 @@
         text-align: center;
         border: 1px solid rgba(255, 255, 255, 0.18);
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
     }
     
     .stat-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
     }
+    
+    .stat-card-1:hover { background: rgba(251, 188, 4, 0.05); }
+    .stat-card-2:hover { background: rgba(234, 67, 53, 0.05); }
+    .stat-card-3:hover { background: rgba(66, 133, 244, 0.05); }
+    .stat-card-4:hover { background: rgba(52, 168, 83, 0.05); }
     
     .stat-icon {
         font-size: 2.5rem;
         margin-bottom: 1rem;
-        color: var(--accent-blue);
     }
+    
+    .stat-card-1 .stat-icon { color: var(--accent-yellow); }
+    .stat-card-2 .stat-icon { color: var(--accent-red); }
+    .stat-card-3 .stat-icon { color: var(--accent-blue); }
+    .stat-card-4 .stat-icon { color: var(--accent-green); }
     
     .stat-value {
         font-size: 2.2rem;
         font-weight: 800;
         margin-bottom: 0.5rem;
         color: var(--text-color);
+        font-family: 'Playfair Display', serif;
     }
     
     .stat-label {
         font-size: 1rem;
         color: var(--text-color);
         opacity: 0.8;
+        font-family: 'Inter', sans-serif;
     }
     
     /* Testimonials Section */
@@ -795,6 +1037,7 @@
         color: var(--text-color);
         position: relative;
         z-index: 1;
+        font-family: 'Inter', sans-serif;
     }
     
     .testimonial-author {
@@ -814,6 +1057,7 @@
     .author-info h5 {
         margin-bottom: 0.25rem;
         color: var(--text-color);
+        font-family: 'Inter', sans-serif;
     }
     
     .author-info p {
@@ -821,6 +1065,7 @@
         font-size: 0.9rem;
         opacity: 0.7;
         color: var(--text-color);
+        font-family: 'Inter', sans-serif;
     }
     
     /* Featured Users Section */
@@ -841,11 +1086,14 @@
         text-align: center;
         border: 1px solid rgba(255, 255, 255, 0.18);
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
     }
     
     .user-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
     }
     
     .user-avatar {
@@ -855,12 +1103,19 @@
         object-fit: cover;
         margin: 0 auto 1rem;
         border: 3px solid var(--accent-blue);
+        transition: all 0.3s ease;
+    }
+    
+    .user-card:hover .user-avatar {
+        transform: scale(1.1);
+        border-color: var(--accent-red);
     }
     
     .user-name {
         font-weight: 700;
         margin-bottom: 0.5rem;
         color: var(--text-color);
+        font-family: 'Inter', sans-serif;
     }
     
     .user-stats {
@@ -877,12 +1132,14 @@
     .user-stat-value {
         font-weight: 700;
         color: var(--accent-blue);
+        font-family: 'Inter', sans-serif;
     }
     
     .user-stat-label {
         font-size: 0.8rem;
         opacity: 0.7;
         color: var(--text-color);
+        font-family: 'Inter', sans-serif;
     }
     
     .user-bio {
@@ -890,6 +1147,7 @@
         opacity: 0.8;
         margin-bottom: 1.5rem;
         color: var(--text-color);
+        font-family: 'Inter', sans-serif;
     }
     
     /* Quick Actions Section */
@@ -910,28 +1168,126 @@
         text-align: center;
         border: 1px solid rgba(255, 255, 255, 0.18);
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
+        transition: all 0.4s ease;
         cursor: pointer;
         text-decoration: none;
         color: var(--text-color);
+        position: relative;
+        overflow: hidden;
     }
     
     .action-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-8px);
         box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
         color: var(--text-color);
         text-decoration: none;
+        background: rgba(66, 133, 244, 0.05);
     }
     
     .action-icon {
         font-size: 2rem;
         margin-bottom: 1rem;
         color: var(--accent-blue);
+        transition: all 0.3s ease;
+    }
+    
+    .action-card:hover .action-icon {
+        transform: scale(1.2);
+        color: var(--accent-red);
     }
     
     .action-text {
         font-weight: 600;
         font-size: 0.9rem;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* Advertisement Cards */
+    .ad-section {
+        margin-bottom: 4rem;
+    }
+    
+    .ad-card {
+        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-teal) 100%);
+        border-radius: 1.5rem;
+        padding: 2.5rem;
+        text-align: center;
+        color: white;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        position: relative;
+        overflow: hidden;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .ad-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+        background-size: cover;
+        z-index: 1;
+    }
+    
+    .ad-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .ad-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        font-family: 'Playfair Display', serif;
+    }
+    
+    .ad-text {
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+        opacity: 0.9;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .ad-card-2 {
+        background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-orange) 100%);
+    }
+    
+    .ad-card-3 {
+        background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-yellow) 100%);
+    }
+    
+    /* Animated Text */
+    .animated-text {
+        display: inline-block;
+        background: linear-gradient(90deg, var(--accent-yellow), var(--accent-red), var(--accent-blue), var(--accent-green));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        animation: gradientShift 3s ease infinite;
+        background-size: 300% 300%;
+    }
+    
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    .highlight-text {
+        color: var(--accent-blue);
+        font-weight: 700;
+    }
+    
+    .accent-text {
+        color: var(--accent-red);
+        font-weight: 700;
     }
     
     /* Blog Posts Section */
@@ -976,6 +1332,7 @@
         font-size: 0.8rem;
         color: var(--text-color);
         opacity: 0.7;
+        font-family: 'Inter', sans-serif;
     }
     
     .blog-title {
@@ -983,6 +1340,7 @@
         margin-bottom: 1rem;
         color: var(--text-color);
         font-size: 1.2rem;
+        font-family: 'Inter', sans-serif;
     }
     
     .blog-excerpt {
@@ -990,31 +1348,8 @@
         opacity: 0.8;
         margin-bottom: 1rem;
         font-size: 0.9rem;
+        font-family: 'Inter', sans-serif;
     }
-    
-    /* Colorful category badges */
-    .cat-badge-1 { background: var(--accent-yellow); }
-    .cat-badge-2 { background: var(--accent-red); }
-    .cat-badge-3 { background: var(--accent-blue); }
-    .cat-badge-4 { background: var(--accent-green); }
-    .cat-badge-5 { background: var(--accent-maroon); }
-    .cat-badge-6 { background: var(--accent-goldenrod); }
-    
-    /* Colorful category icons */
-    .cat-icon-1 { color: var(--accent-yellow); }
-    .cat-icon-2 { color: var(--accent-red); }
-    .cat-icon-3 { color: var(--accent-blue); }
-    .cat-icon-4 { color: var(--accent-green); }
-    .cat-icon-5 { color: var(--accent-maroon); }
-    .cat-icon-6 { color: var(--accent-goldenrod); }
-    
-    /* Colorful category count badges */
-    .cat-count-1 { background: var(--accent-yellow); color: #1f1f1f; }
-    .cat-count-2 { background: var(--accent-red); color: white; }
-    .cat-count-3 { background: var(--accent-blue); color: white; }
-    .cat-count-4 { background: var(--accent-green); color: white; }
-    .cat-count-5 { background: var(--accent-maroon); color: white; }
-    .cat-count-6 { background: var(--accent-goldenrod); color: #1f1f1f; }
 
     /* Responsive Adjustments */
     @media (max-width: 992px) {
@@ -1050,6 +1385,10 @@
         .carousel-content h1 {
             font-size: 2.5rem;
         }
+        
+        .stats-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
 
     @media (max-width: 768px) {
@@ -1067,6 +1406,8 @@
         
         .hero-section {
             padding: 2rem 0;
+            margin: 0 0.5rem 3rem;
+            border-radius: 1.5rem;
         }
         
         .hero-content h1 {
@@ -1081,6 +1422,12 @@
             margin-left: 0;
             margin-top: 1rem;
             width: 100%;
+            position: static;
+            transform: none;
+        }
+        
+        .hero-search .form-control {
+            padding-right: 1.5rem;
         }
         
         .section-title {
@@ -1124,11 +1471,11 @@
         }
         
         .category-card {
-            padding: 1.2rem 0.8rem;
+            padding: 1.5rem 0.8rem;
         }
         
         .category-icon {
-            font-size: 2.2rem;
+            font-size: 2.5rem;
         }
         
         .step-card {
@@ -1145,6 +1492,14 @@
         
         .actions-container {
             grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .stats-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .category-card-scroll {
+            height: 260px;
         }
     }
 
@@ -1191,6 +1546,7 @@
         
         .category-card-scroll {
             width: 180px;
+            height: 250px;
         }
         
         .listings-grid {
@@ -1212,6 +1568,22 @@
         .users-container {
             grid-template-columns: 1fr;
         }
+        
+        .ad-card {
+            padding: 1.5rem;
+        }
+        
+        .ad-title {
+            font-size: 1.5rem;
+        }
+        
+        .ad-text {
+            font-size: 1rem;
+        }
+        
+        .category-card p {
+            margin-bottom: 2.5rem;
+        }
     }
 </style>
 {% endblock %}
@@ -1232,29 +1604,73 @@
 <div class="hero-carousel">
     <div class="carousel-slide slide-1 active">
         <div class="carousel-content">
-            <h1>Discover Local Treasures in Homabay</h1>
+            <h1>Discover <span class="animated-text">Local Treasures</span></h1>
             <p>Find everything from electronics to fresh produce from trusted local sellers</p>
-            <a href="{% url 'all-listings' %}" class="btn btn-light btn-lg">Start Shopping</a>
+            <div class="carousel-buttons">
+                <a href="{% url 'all-listings' %}" class="btn btn-modern btn-modern-primary me-2">Start Shopping</a>
+                <a href="{% url 'listing-create' %}" class="btn btn-modern btn-modern-secondary">Start Selling</a>
+            </div>
         </div>
     </div>
     <div class="carousel-slide slide-2">
         <div class="carousel-content">
-            <h1>Sell Your Items with Ease</h1>
-            <p>Reach thousands of buyers in Homabay County with our secure platform</p>
-            <a href="{% url 'listing-create' %}" class="btn btn-light btn-lg">Start Selling</a>
+            <h1>Sell Your Items with <span class="highlight-text">Ease</span></h1>
+            <p>Reach thousands of buyers with our <span class="accent-text">secure platform</span></p>
+            <div class="carousel-buttons">
+                <a href="{% url 'listing-create' %}" class="btn btn-modern btn-modern-success me-2">List an Item</a>
+                <a href="{% url 'register' %}" class="btn btn-modern btn-modern-secondary">Create Account</a>
+            </div>
         </div>
     </div>
     <div class="carousel-slide slide-3">
         <div class="carousel-content">
-            <h1>Connect with Your Community</h1>
-            <p>Buy and sell directly with people in your neighborhood</p>
-            <a href="{% url 'register' %}" class="btn btn-light btn-lg">Join Now</a>
+            <h1>Connect with Your <span class="animated-text">Community</span></h1>
+            <p>Buy and sell directly with people in your <span class="highlight-text">neighborhood</span></p>
+            <div class="carousel-buttons">
+                <a href="{% url 'register' %}" class="btn btn-modern btn-modern-warning me-2">Join Now</a>
+                <a href="{% url 'all-listings' %}" class="btn btn-modern btn-modern-secondary">Browse Listings</a>
+            </div>
+        </div>
+    </div>
+    <div class="carousel-slide slide-4">
+        <div class="carousel-content">
+            <h1><span class="animated-text">Stats</span> That Matter</h1>
+            <p>Join our growing community of buyers and sellers</p>
+            <div class="stats-carousel mt-4">
+                <div class="stats-slide active">
+                    <i class="bi bi-grid-3x3-gap-fill stat-icon"></i>
+                    <div class="stat-value" id="carousel-stat-listings">{{ total_listings_count|intcomma }}</div>
+                    <div class="stat-label">Active Listings</div>
+                </div>
+                <div class="stats-slide">
+                    <i class="bi bi-people-fill stat-icon"></i>
+                    <div class="stat-value" id="carousel-stat-users">{{ total_users_count|intcomma }}</div>
+                    <div class="stat-label">Registered Users</div>
+                </div>
+                <div class="stats-slide">
+                    <i class="bi bi-tags-fill stat-icon"></i>
+                    <div class="stat-value" id="carousel-stat-categories">{{ total_categories_count|intcomma }}</div>
+                    <div class="stat-label">Categories</div>
+                </div>
+                <div class="stats-slide">
+                    <i class="bi bi-check-circle-fill stat-icon"></i>
+                    <div class="stat-value" id="carousel-stat-transactions">{{ successful_transactions|intcomma }}</div>
+                    <div class="stat-label">Successful Transactions</div>
+                </div>
+                <div class="stats-dots">
+                    <div class="stats-dot active" data-slide="0"></div>
+                    <div class="stats-dot" data-slide="1"></div>
+                    <div class="stats-dot" data-slide="2"></div>
+                    <div class="stats-dot" data-slide="3"></div>
+                </div>
+            </div>
         </div>
     </div>
     <div class="carousel-dots">
         <div class="carousel-dot active" data-slide="0"></div>
         <div class="carousel-dot" data-slide="1"></div>
         <div class="carousel-dot" data-slide="2"></div>
+        <div class="carousel-dot" data-slide="3"></div>
     </div>
 </div>
 
@@ -1263,8 +1679,8 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-10 mx-auto text-center hero-content">
-                <h1 class="display-4 fw-bold">HomaBay Souq Marketplace</h1>
-                <p class="lead">Connect with local buyers and sellers. Find great deals, sell your items, and grow your business in Homabay.</p>
+                <h1 class="display-4 fw-bold">Souq Marketplace</h1>
+                <p class="lead">Connect with local buyers and sellers. Find great deals, sell your items, and grow your business.</p>
                 
                 <!-- Dynamic Stats -->
                 <div class="hero-stats">
@@ -1284,15 +1700,16 @@
                 
                 <!-- Search Bar -->
                 <div class="hero-search">
+                    <i class="bi bi-search search-icon"></i>
                     <form method="get" action="{% url 'all-listings' %}" class="d-flex flex-column flex-md-row">
                         <input type="text" name="q" class="form-control me-md-3 mb-3 mb-md-0" placeholder="Search for items, brands, and categories..." value="{{ request.GET.q }}">
-                        <button class="btn btn-accent-blue" type="submit"><i class="bi bi-search me-2"></i> Search</button>
+                        <button class="btn btn-modern btn-modern-primary" type="submit">Search</button>
                     </form>
                 </div>
                 
                 <!-- Trending Tags -->
                 <div class="trending-tags">
-                    {% for category in popular_categories %}
+                    {% for category in popular_categories|slice:":5" %}
                     <span class="badge">{{ category.name }}</span>
                     {% endfor %}
                 </div>
@@ -1319,14 +1736,14 @@
     </div>
     
     <!-- Mobile: Horizontal Scroll, Desktop: Grid -->
-    <div class="categories-scroll-container">
-        {% for category in categories %}
+    <div class="categories-scroll-container" id="categories-container">
+        {% for category in categories|slice:":10" %}
         <div class="category-card-scroll">
             <a href="{% url 'all-listings' %}?category={{ category.id }}" class="text-decoration-none">
-                <div class="category-card">
+                <div class="category-card cat-card-{{ forloop.counter }}">
                     <i class="bi bi-{{ category.icon }} category-icon cat-icon-{{ forloop.counter }}"></i>
                     <h5>{{ category.name }}</h5>
-                    <p>{{ category.description }}.</p>
+                    <p>{{ category.description }}</p>
                     <span class="category-count cat-count-{{ forloop.counter }}">{{ listings_count|get_item:category.id }} items</span>
                 </div>
             </a>
@@ -1342,23 +1759,31 @@
             {% if selected_category %}
                 {{ selected_category.name }} Listings
             {% else %}
-                Featured Listings
+                {% if user.is_authenticated %}
+                    <span class="highlight-text">Personalized</span> Recommendations
+                {% else %}
+                    Featured Listings
+                {% endif %}
             {% endif %}
         </h2>
         <p class="section-subtitle">
             {% if selected_category %}
                 Discover the latest {{ selected_category.name }} from local sellers
             {% else %}
-                Check out our most popular items from Homabay sellers
+                {% if user.is_authenticated %}
+                    Based on your interests and browsing history
+                {% else %}
+                    Check out our most popular items from local sellers
+                {% endif %}
             {% endif %}
         </p>
     </div>
     
     <div class="d-flex justify-content-between align-items-center mb-4">
         {% if selected_category %}
-            <a href="{% url 'home' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-2"></i>Back to All Categories</a>
+            <a href="{% url 'home' %}" class="btn btn-modern btn-modern-secondary"><i class="bi bi-arrow-left me-2"></i>Back to All Categories</a>
         {% else %}
-            <a href="{% url 'all-listings' %}" class="btn btn-accent-blue">View All Listings</a>
+            <a href="{% url 'all-listings' %}" class="btn btn-modern btn-modern-primary">View All Listings</a>
         {% endif %}
     </div>
     
@@ -1384,7 +1809,7 @@
                 </div>
             </div>
             <div class="listing-footer">
-                <a href="{% url 'listing-detail' listing.pk %}" class="btn btn-accent-blue w-100">View Details</a>
+                <a href="{% url 'listing-detail' listing.pk %}" class="btn btn-modern btn-modern-primary w-100">View Details</a>
             </div>
         </div>
         {% endfor %}
@@ -1393,7 +1818,7 @@
     <!-- Show More Button if filtered by category -->
     {% if selected_category and listings.count > 8 %}
     <div class="text-center mt-4">
-        <a href="{% url 'all-listings' %}?category={{ selected_category.id }}" class="btn btn-accent-blue">View All {{ selected_category.name }} Listings</a>
+        <a href="{% url 'all-listings' %}?category={{ selected_category.id }}" class="btn btn-modern btn-modern-primary">View All {{ selected_category.name }} Listings</a>
     </div>
     {% endif %}
     
@@ -1405,42 +1830,53 @@
             {% if selected_category %}
                 No listings found in {{ selected_category.name }} category.
             {% else %}
-                Be the first to create a listing in Homabay Souq
+                Be the first to create a listing in Souq
             {% endif %}
         </p>
         {% if user.is_authenticated %}
-        <a href="{% url 'listing-create' %}" class="btn btn-accent-blue mt-2">Create Listing</a>
+        <a href="{% url 'listing-create' %}" class="btn btn-modern btn-modern-primary mt-2">Create Listing</a>
         {% else %}
-        <a href="{% url 'register' %}" class="btn btn-accent-blue mt-2">Join Now</a>
+        <a href="{% url 'register' %}" class="btn btn-modern btn-modern-primary mt-2">Join Now</a>
         {% endif %}
     </div>
     {% endif %}
 </section>
 
+<!-- Advertisement Section 2 -->
+<section class="container ad-section">
+    <div class="ad-card ad-card-2">
+        <div class="ad-content">
+            <h3 class="ad-title">Become a <span class="animated-text">Top Seller</span>!</h3>
+            <p class="ad-text">List your items today and reach thousands of potential buyers</p>
+            <a href="{% url 'listing-create' %}" class="btn btn-modern btn-modern-warning">Start Selling</a>
+        </div>
+    </div>
+</section>
+
 <!-- Marketplace Stats Section -->
 <section class="container stats-section">
     <div class="section-header">
-        <h2 class="section-title">HomaBay Souq by Numbers</h2>
-        <p class="section-subtitle">Our marketplace is growing every day with active buyers and sellers</p>
+        <h2 class="section-title">Our Impact in <span class="highlight-text">Numbers</span></h2>
+        <p class="section-subtitle">See how Souq is transforming local commerce</p>
     </div>
     
     <div class="stats-container">
-        <div class="stat-card">
+        <div class="stat-card stat-card-1">
             <i class="bi bi-grid-3x3-gap-fill stat-icon"></i>
             <div class="stat-value" id="stat-listings">{{ total_listings_count|intcomma }}</div>
             <div class="stat-label">Active Listings</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card-2">
             <i class="bi bi-people-fill stat-icon"></i>
             <div class="stat-value" id="stat-users">{{ total_users_count|intcomma }}</div>
             <div class="stat-label">Registered Users</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card-3">
             <i class="bi bi-tags-fill stat-icon"></i>
             <div class="stat-value" id="stat-categories">{{ total_categories_count|intcomma }}</div>
             <div class="stat-label">Categories</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card-4">
             <i class="bi bi-check-circle-fill stat-icon"></i>
             <div class="stat-value" id="stat-transactions">{{ successful_transactions|intcomma }}</div>
             <div class="stat-label">Successful Transactions</div>
@@ -1451,12 +1887,35 @@
 <!-- Featured Users Section -->
 <section class="container featured-users-section">
     <div class="section-header">
-        <h2 class="section-title">Featured Sellers</h2>
-        <p class="section-subtitle">Meet some of our trusted sellers in the Homabay community</p>
+        <h2 class="section-title">Top <span class="accent-text">Sellers</span> This Month</h2>
+        <p class="section-subtitle">Meet some of our most trusted sellers in the community</p>
     </div>
     
     <div class="users-container">
-        <!-- User 1 -->
+        <!-- Dynamic Users from Database would go here -->
+        {% for user in featured_users|slice:":3" %}
+        <div class="user-card">
+            <img src="{{ user.get_profile_picture|default:'https://placehold.co/100x100/4f46e5/ffffff?text=User' }}" class="user-avatar" alt="{{ user.username }}">
+            <h4 class="user-name">{{ user.username }}</h4>
+            <div class="user-stats">
+                <div class="user-stat">
+                    <div class="user-stat-value">{{ user.listings.count }}</div>
+                    <div class="user-stat-label">Listings</div>
+                </div>
+                <div class="user-stat">
+                    <div class="user-stat-value">4.8</div>
+                    <div class="user-stat-label">Rating</div>
+                </div>
+                <div class="user-stat">
+                    <div class="user-stat-value">{{ user.orders_received.count }}</div>
+                    <div class="user-stat-label">Sales</div>
+                </div>
+            </div>
+            <p class="user-bio">Active seller with quality products and excellent customer service</p>
+            <a href="{% url 'profile' user.pk %}" class="btn btn-modern btn-modern-secondary btn-sm">View Profile</a>
+        </div>
+        {% empty %}
+        <!-- Placeholder Users -->
         <div class="user-card">
             <img src="https://placehold.co/100x100/4f46e5/ffffff?text=JM" class="user-avatar" alt="John M">
             <h4 class="user-name">John M.</h4>
@@ -1475,10 +1934,9 @@
                 </div>
             </div>
             <p class="user-bio">Selling quality electronics and home appliances with warranty</p>
-            <a href="#" class="btn btn-outline-primary btn-sm">View Profile</a>
+            <a href="#" class="btn btn-modern btn-modern-secondary btn-sm">View Profile</a>
         </div>
         
-        <!-- User 2 -->
         <div class="user-card">
             <img src="https://placehold.co/100x100/10b981/ffffff?text=SK" class="user-avatar" alt="Sarah K">
             <h4 class="user-name">Sarah K.</h4>
@@ -1496,11 +1954,10 @@
                     <div class="user-stat-label">Sales</div>
                 </div>
             </div>
-            <p class="user-bio">Fresh farm produce and homemade crafts from Rusinga Island</p>
-            <a href="#" class="btn btn-outline-primary btn-sm">View Profile</a>
+            <p class="user-bio">Fresh farm produce and homemade crafts</p>
+            <a href="#" class="btn btn-modern btn-modern-secondary btn-sm">View Profile</a>
         </div>
         
-        <!-- User 3 -->
         <div class="user-card">
             <img src="https://placehold.co/100x100/f59e0b/ffffff?text=DM" class="user-avatar" alt="David M">
             <h4 class="user-name">David M.</h4>
@@ -1518,8 +1975,20 @@
                     <div class="user-stat-label">Sales</div>
                 </div>
             </div>
-            <p class="user-bio">Furniture and home decor items with free delivery in Homabay Town</p>
-            <a href="#" class="btn btn-outline-primary btn-sm">View Profile</a>
+            <p class="user-bio">Furniture and home decor items with free delivery</p>
+            <a href="#" class="btn btn-modern btn-modern-secondary btn-sm">View Profile</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Advertisement Section 3 -->
+<section class="container ad-section">
+    <div class="ad-card ad-card-3">
+        <div class="ad-content">
+            <h3 class="ad-title">Secure <span class="animated-text">Payments</span> with Escrow</h3>
+            <p class="ad-text">Your money is protected until you receive your items</p>
+            <a href="#" class="btn btn-modern btn-modern-success">Learn More</a>
         </div>
     </div>
 </section>
@@ -1527,8 +1996,8 @@
 <!-- Testimonials Section -->
 <section class="container testimonials-section">
     <div class="section-header">
-        <h2 class="section-title">What Our Users Say</h2>
-        <p class="section-subtitle">Hear from buyers and sellers who use HomaBay Souq</p>
+        <h2 class="section-title">What Our <span class="highlight-text">Users</span> Say</h2>
+        <p class="section-subtitle">Hear from buyers and sellers who use Souq</p>
     </div>
     
     <div class="testimonials-container">
@@ -1540,7 +2009,7 @@
                 <img src="https://placehold.co/60x60/4f46e5/ffffff?text=AN" class="author-avatar" alt="Alice N">
                 <div class="author-info">
                     <h5>Alice N.</h5>
-                    <p>Buyer from Homabay Town</p>
+                    <p>Verified Buyer</p>
                 </div>
             </div>
         </div>
@@ -1548,12 +2017,12 @@
         <!-- Testimonial 2 -->
         <div class="testimonial-card">
             <div class="testimonial-quote">"</div>
-            <p class="testimonial-text">As a small business owner, HomaBay Souq has helped me reach customers I never would have found otherwise. I've doubled my monthly sales since joining!</p>
+            <p class="testimonial-text">As a small business owner, Souq has helped me reach customers I never would have found otherwise. I've doubled my monthly sales since joining!</p>
             <div class="testimonial-author">
                 <img src="https://placehold.co/60x60/10b981/ffffff?text=RO" class="author-avatar" alt="Robert O">
                 <div class="author-info">
                     <h5>Robert O.</h5>
-                    <p>Seller from Kendu Bay</p>
+                    <p>Top Seller</p>
                 </div>
             </div>
         </div>
@@ -1566,7 +2035,7 @@
                 <img src="https://placehold.co/60x60/f59e0b/ffffff?text=MK" class="author-avatar" alt="Mary K">
                 <div class="author-info">
                     <h5>Mary K.</h5>
-                    <p>Buyer from Mbita</p>
+                    <p>Happy Customer</p>
                 </div>
             </div>
         </div>
@@ -1576,7 +2045,7 @@
 <!-- Quick Actions Section -->
 <section class="container quick-actions-section">
     <div class="section-header">
-        <h2 class="section-title">Quick Actions</h2>
+        <h2 class="section-title">Quick <span class="accent-text">Actions</span></h2>
         <p class="section-subtitle">Get started with these quick actions</p>
     </div>
     
@@ -1623,8 +2092,8 @@
 <section class="container mb-4" id="how-it-works">
     <div class="how-it-works">
         <div class="section-header">
-            <h2 class="section-title">How It Works</h2>
-            <p class="section-subtitle">Selling and buying on HomaBay Souq is simple and secure</p>
+            <h2 class="section-title">How It <span class="animated-text">Works</span></h2>
+            <p class="section-subtitle">Selling and buying on Souq is simple and secure</p>
         </div>
         
         <div class="steps-container">
@@ -1656,15 +2125,15 @@
 <section class="container mb-4">
     <div class="cta-section">
         <div class="cta-content">
-            <h2>Ready to Buy or Sell in Homabay?</h2>
-            <p>Join thousands of users who are already trading on HomaBay Souq. It's free to sign up and start buying or selling today!</p>
+            <h2>Ready to <span class="animated-text">Buy or Sell</span>?</h2>
+            <p>Join thousands of users who are already trading on Souq. It's free to sign up and start buying or selling today!</p>
             <div class="cta-buttons">
                 {% if user.is_authenticated %}
-                <a href="{% url 'listing-create' %}" class="btn btn-accent-blue">Create a Listing</a>
-                <a href="{% url 'all-listings' %}" class="btn btn-outline-primary">Browse Listings</a>
+                <a href="{% url 'listing-create' %}" class="btn btn-modern btn-modern-primary">Create a Listing</a>
+                <a href="{% url 'all-listings' %}" class="btn btn-modern btn-modern-success">Browse Listings</a>
                 {% else %}
-                <a href="{% url 'register' %}" class="btn btn-accent-blue">Create Account</a>
-                <a href="{% url 'login' %}" class="btn btn-outline-primary">Sign In</a>
+                <a href="{% url 'register' %}" class="btn btn-modern btn-modern-primary">Create Account</a>
+                <a href="{% url 'login' %}" class="btn btn-modern btn-modern-warning">Sign In</a>
                 {% endif %}
             </div>
         </div>
@@ -1680,48 +2149,89 @@
     const totalCategories = {{ total_categories_count }};
     const successfulTransactions = {{ successful_transactions }};
     
-    // Carousel functionality
     document.addEventListener('DOMContentLoaded', function() {
-        // Carousel functionality
-        const slides = document.querySelectorAll('.carousel-slide');
-        const dots = document.querySelectorAll('.carousel-dot');
-        let currentSlide = 0;
-        let slideInterval;
+        // Hero Carousel functionality
+        const heroSlides = document.querySelectorAll('.carousel-slide');
+        const heroDots = document.querySelectorAll('.carousel-dot');
+        let currentHeroSlide = 0;
+        let heroSlideInterval;
         
-        function showSlide(n) {
-            slides.forEach(slide => slide.classList.remove('active'));
-            dots.forEach(dot => dot.classList.remove('active'));
+        function showHeroSlide(n) {
+            heroSlides.forEach(slide => slide.classList.remove('active'));
+            heroDots.forEach(dot => dot.classList.remove('active'));
             
-            currentSlide = (n + slides.length) % slides.length;
+            currentHeroSlide = (n + heroSlides.length) % heroSlides.length;
             
-            slides[currentSlide].classList.add('active');
-            dots[currentSlide].classList.add('active');
+            heroSlides[currentHeroSlide].classList.add('active');
+            heroDots[currentHeroSlide].classList.add('active');
         }
         
-        function nextSlide() {
-            showSlide(currentSlide + 1);
+        function nextHeroSlide() {
+            showHeroSlide(currentHeroSlide + 1);
         }
         
         // Start automatic sliding
-        slideInterval = setInterval(nextSlide, 5000);
+        heroSlideInterval = setInterval(nextHeroSlide, 5000);
         
         // Add click event to dots
-        dots.forEach((dot, index) => {
+        heroDots.forEach((dot, index) => {
             dot.addEventListener('click', () => {
-                clearInterval(slideInterval);
-                showSlide(index);
-                slideInterval = setInterval(nextSlide, 5000);
+                clearInterval(heroSlideInterval);
+                showHeroSlide(index);
+                heroSlideInterval = setInterval(nextHeroSlide, 5000);
             });
         });
         
         // Pause on hover
-        const carousel = document.querySelector('.hero-carousel');
-        carousel.addEventListener('mouseenter', () => {
-            clearInterval(slideInterval);
+        const heroCarousel = document.querySelector('.hero-carousel');
+        heroCarousel.addEventListener('mouseenter', () => {
+            clearInterval(heroSlideInterval);
         });
         
-        carousel.addEventListener('mouseleave', () => {
-            slideInterval = setInterval(nextSlide, 5000);
+        heroCarousel.addEventListener('mouseleave', () => {
+            heroSlideInterval = setInterval(nextHeroSlide, 5000);
+        });
+        
+        // Stats Carousel functionality
+        const statsSlides = document.querySelectorAll('.stats-slide');
+        const statsDots = document.querySelectorAll('.stats-dot');
+        let currentStatsSlide = 0;
+        let statsSlideInterval;
+        
+        function showStatsSlide(n) {
+            statsSlides.forEach(slide => slide.classList.remove('active'));
+            statsDots.forEach(dot => dot.classList.remove('active'));
+            
+            currentStatsSlide = (n + statsSlides.length) % statsSlides.length;
+            
+            statsSlides[currentStatsSlide].classList.add('active');
+            statsDots[currentStatsSlide].classList.add('active');
+        }
+        
+        function nextStatsSlide() {
+            showStatsSlide(currentStatsSlide + 1);
+        }
+        
+        // Start automatic sliding
+        statsSlideInterval = setInterval(nextStatsSlide, 3000);
+        
+        // Add click event to dots
+        statsDots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                clearInterval(statsSlideInterval);
+                showStatsSlide(index);
+                statsSlideInterval = setInterval(nextStatsSlide, 3000);
+            });
+        });
+        
+        // Pause on hover
+        const statsCarousel = document.querySelector('.stats-carousel');
+        statsCarousel.addEventListener('mouseenter', () => {
+            clearInterval(statsSlideInterval);
+        });
+        
+        statsCarousel.addEventListener('mouseleave', () => {
+            statsSlideInterval = setInterval(nextStatsSlide, 3000);
         });
         
         // Animate stats counting
@@ -1773,6 +2283,22 @@
                             animateValue(element, 0, stat.value, 2000);
                         }
                     });
+                    
+                    // Animate carousel stats too
+                    const carouselStats = [
+                        { id: 'carousel-stat-listings', value: totalListings },
+                        { id: 'carousel-stat-users', value: totalUsers },
+                        { id: 'carousel-stat-categories', value: totalCategories },
+                        { id: 'carousel-stat-transactions', value: successfulTransactions }
+                    ];
+                    
+                    carouselStats.forEach(stat => {
+                        const element = document.getElementById(stat.id);
+                        if (element) {
+                            animateValue(element, 0, stat.value, 2000);
+                        }
+                    });
+                    
                     observer.disconnect();
                 }
             });
@@ -1794,7 +2320,7 @@
         }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
         
         // Observe cards
-        document.querySelectorAll('.category-card, .listing-card, .step-card, .stat-card, .action-card, .blog-card, .testimonial-card, .user-card').forEach(card => {
+        document.querySelectorAll('.category-card, .listing-card, .step-card, .stat-card, .action-card, .blog-card, .testimonial-card, .user-card, .ad-card').forEach(card => {
             card.style.opacity = '0';
             card.style.transform = 'translateY(20px)';
             card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
@@ -1811,6 +2337,45 @@
             promoBanner.addEventListener('mouseleave', function() {
                 this.style.transform = 'scale(1)';
             });
+        }
+        
+        // Dynamic ad text rotation
+        const adTitles = [
+            "Free Delivery Available!",
+            "Become a Top Seller!",
+            "Secure Payments with Escrow",
+            "Join Our Growing Community!",
+            "Special Discounts for New Users!"
+        ];
+        
+        const adTexts = [
+            "Select sellers offer free delivery for orders over KSh 2,000",
+            "List your items today and reach thousands of potential buyers",
+            "Your money is protected until you receive your items",
+            "Connect with local buyers and sellers in your area",
+            "Get 10% off your first purchase with code WELCOME10"
+        ];
+        
+        let adIndex = 0;
+        const adTitle = document.querySelector('.ad-title');
+        const adText = document.querySelector('.ad-text');
+        
+        // Only rotate if elements exist
+        if (adTitle && adText) {
+            setInterval(() => {
+                adIndex = (adIndex + 1) % adTitles.length;
+                adTitle.textContent = adTitles[adIndex];
+                adText.textContent = adTexts[adIndex];
+                
+                // Add fade animation
+                adTitle.style.opacity = '0';
+                adText.style.opacity = '0';
+                
+                setTimeout(() => {
+                    adTitle.style.opacity = '1';
+                    adText.style.opacity = '1';
+                }, 500);
+            }, 5000);
         }
     });
 </script>

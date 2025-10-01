@@ -1,5 +1,3 @@
-[file name]: base.html
-[file content begin]
 {% load static %}
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
@@ -10,18 +8,11 @@
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css" rel="stylesheet">
-    
-
-    <!-- AOS CSS -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-
 
     <!-- Custom CSS -->
     <style>
@@ -32,29 +23,25 @@
             --accent-red: #ea4335;
             --accent-yellow: #fbbc04;
             --accent-green: #34a853;
-            --accent-maroon: #8b0000;
             --accent-goldenrod: #daa520;
-            --accent-purple: #8a2be2;
             --accent-orange: #ff6b35;
             --accent-teal: #008080;
             --accent-navy: #001f3f;
-            --danger-color: #D13438;
+            --light-goldenrod: #faf3e0;
             --light-bg: #f8f9fa;
-            --light-gradient: linear-gradient(135deg, #daa520 0%, #ff6b35 33%, #001f3f 66%, #008080 100%);
-            --light-navbar-bg: rgba(255, 255, 255, 0.98);
+            --light-navbar-bg: #ffffff;
             --light-text: #1f1f1f;
-            --light-sidebar-bg: linear-gradient(135deg, #daa520 0%, #ff6b35 33%, #001f3f 66%, #008080 100%);
-            --light-sidebar-link-hover: rgba(255, 255, 255, 0.3);
-            --light-sidebar-search-bg: rgba(255, 255, 255, 0.25);
-            --light-input-placeholder: rgba(31, 31, 31, 0.7);
+            --light-sidebar-bg: #ffffff;
+            --light-sidebar-link-hover: #faf3e0;
+            --light-sidebar-search-bg: #f5f5f5;
+            --light-input-placeholder: #6c757d;
             --dark-bg: #121212;
-            --dark-gradient: linear-gradient(135deg, #b8860b 0%, #cc5500 33%, #000814 66%, #006666 100%);
-            --dark-navbar-bg: rgba(18, 18, 18, 0.98);
+            --dark-navbar-bg: #1e1e1e;
             --dark-text: #f0f4f9;
-            --dark-sidebar-bg: linear-gradient(135deg, #b8860b 0%, #cc5500 33%, #000814 66%, #006666 100%);
-            --dark-sidebar-link-hover: rgba(255, 255, 255, 0.15);
-            --dark-sidebar-search-bg: rgba(255, 255, 255, 0.1);
-            --dark-input-placeholder: rgba(240, 244, 249, 0.7);
+            --dark-sidebar-bg: #1e1e1e;
+            --dark-sidebar-link-hover: #2a2a2a;
+            --dark-sidebar-search-bg: #2a2a2a;
+            --dark-input-placeholder: #a0a0a0;
             --footer-bg: #111111;
             
             /* Logo gradient colors - not affected by theme */
@@ -65,7 +52,6 @@
 
         [data-theme="light"] {
             --body-bg: var(--light-bg);
-            --body-gradient: var(--light-gradient);
             --navbar-bg: var(--light-navbar-bg);
             --text-color: var(--light-text);
             --sidebar-bg: var(--light-sidebar-bg);
@@ -77,7 +63,6 @@
 
         [data-theme="dark"] {
             --body-bg: var(--dark-bg);
-            --body-gradient: var(--dark-gradient);
             --navbar-bg: var(--dark-navbar-bg);
             --text-color: var(--dark-text);
             --sidebar-bg: var(--dark-sidebar-bg);
@@ -95,94 +80,33 @@
             overflow-x: hidden;
         }
 
-        /* Abstract background shapes */
-        .bg-shapes {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.1;
-            pointer-events: none;
-        }
-
-        .shape {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(40px);
-        }
-
-        .shape-1 {
-            width: 300px;
-            height: 300px;
-            background: var(--accent-goldenrod);
-            top: 10%;
-            left: 5%;
-            animation: float 8s ease-in-out infinite;
-        }
-
-        .shape-2 {
-            width: 200px;
-            height: 200px;
-            background: var(--accent-navy);
-            top: 60%;
-            right: 10%;
-            animation: float 6s ease-in-out infinite reverse;
-        }
-
-        .shape-3 {
-            width: 250px;
-            height: 250px;
-            background: var(--accent-orange);
-            bottom: 10%;
-            left: 20%;
-            animation: float 10s ease-in-out infinite;
-        }
-
-        .shape-4 {
-            width: 180px;
-            height: 180px;
-            background: var(--accent-teal);
-            top: 20%;
-            right: 20%;
-            animation: float 7s ease-in-out infinite reverse;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(10deg); }
-        }
-
-        /* Rest of the CSS remains the same as before... */
         /* Fixed Top Navbar */
         .navbar {
-            backdrop-filter: blur(20px);
             background-color: var(--navbar-bg);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            border-bottom: 1px solid rgba(229, 231, 235, 0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
             z-index: 1000;
             width: 100%;
             left: 0;
             top: 0;
-            border-radius: 0;
-            padding: 0.6rem 1rem;
+            padding: 0.7rem 1rem;
             transition: all 0.3s ease-in-out;
         }
         
-        /* Mobile Navbar - less rounded, more compact */
+        /* Mobile Navbar */
         @media (max-width: 768px) {
             .navbar {
-                padding: 0.5rem 0.8rem;
-                border-radius: 0;
+                padding: 0.6rem 0.8rem;
             }
             
             .navbar-brand.logo {
                 font-size: 1.1rem;
             }
             
-            .nav-link.icon-link {
-                padding: 0.4rem 0.5rem;
+            /* Hide cart, notifications, and messages icons on small screens */
+            .navbar .nav-link.icon-link.d-md-none,
+            .navbar .nav-link.icon-link.d-sm-block {
+                display: none !important;
             }
             
             .dropdown-menu {
@@ -202,15 +126,13 @@
 
         .nav-link.icon-link:hover i {
             color: var(--accent-blue);
-            transform: scale(1.2) rotate(5deg);
         }
 
         .dropdown-menu {
             border: none;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
             overflow: hidden;
-            backdrop-filter: blur(10px);
             background: var(--navbar-bg);
         }
 
@@ -220,9 +142,8 @@
         }
 
         .dropdown-item:hover {
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-teal));
+            background-color: var(--accent-blue);
             color: white;
-            transform: translateX(5px);
         }
 
         /* Main Content Container */
@@ -239,7 +160,7 @@
             left: 0;
             width: var(--sidebar-width);
             background: var(--sidebar-bg);
-            box-shadow: 5px 0 30px rgba(0,0,0,0.15);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
             padding: 1.5rem;
             overflow-y: auto;
             transform: translateX(-100%);
@@ -258,21 +179,19 @@
         body.sidebar-open .navbar {
             width: calc(100% - var(--sidebar-width));
             left: var(--sidebar-width);
-            border-radius: 0;
-            top: 0;
         }
         
-        /* Custom scrollbar for aesthetics */
+        /* Custom scrollbar for sidebar */
         .sidebar::-webkit-scrollbar {
             width: 6px;
         }
 
         .sidebar::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.05);
         }
 
         .sidebar::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.5);
+            background-color: rgba(0, 0, 0, 0.2);
             border-radius: 10px;
         }
 
@@ -280,36 +199,18 @@
         .sidebar-link {
             color: var(--text-color);
             padding: 0.75rem 1rem;
-            transition: all 0.4s ease;
+            transition: all 0.3s ease;
             text-decoration: none;
             display: flex;
             align-items: center;
-            border-radius: 12px;
+            border-radius: 8px;
             margin-bottom: 5px;
             font-weight: 500;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .sidebar-link::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.5s;
-        }
-
-        .sidebar-link:hover::before {
-            left: 100%;
         }
 
         .sidebar-link:hover {
             background-color: var(--sidebar-link-hover-bg);
-            transform: translateX(8px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateX(5px);
         }
 
         .sidebar-search .form-control {
@@ -322,7 +223,7 @@
         }
 
         .sidebar-search .form-control:focus {
-            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.3);
+            box-shadow: 0 0 0 2px var(--accent-blue);
         }
         
         .sidebar-search .form-control::placeholder {
@@ -345,8 +246,7 @@
         }
 
         .search-container-gemini .form-control:focus {
-            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.3);
-            transform: scale(1.02);
+            box-shadow: 0 0 0 2px var(--accent-blue);
         }
 
         .search-container-gemini .form-control::placeholder {
@@ -360,12 +260,6 @@
             transform: translateY(-50%);
             color: var(--text-color);
             padding: 0 0.75rem;
-            transition: all 0.3s ease;
-        }
-
-        .search-container-gemini .btn:hover {
-            color: var(--accent-blue);
-            transform: translateY(-50%) scale(1.1);
         }
 
         /* Footer */
@@ -383,7 +277,7 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, var(--accent-goldenrod), var(--accent-orange), var(--accent-navy), var(--accent-teal));
+            background: var(--accent-goldenrod);
         }
         
         /* Logo with gradient that doesn't change with theme */
@@ -408,19 +302,12 @@
         }
         
         .toast {
-            backdrop-filter: blur(20px);
             background-color: var(--navbar-bg);
             border: none;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
             overflow: hidden;
-            border-left: 5px solid;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .toast:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            border-left: 4px solid;
         }
         
         .toast.success {
@@ -445,28 +332,20 @@
             top: -5px;
             right: -5px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-red), var(--accent-orange));
+            background: var(--accent-red);
             color: white;
-            width: 20px;
-            height: 20px;
-            font-size: 0.7rem;
+            width: 18px;
+            height: 18px;
+            font-size: 0.65rem;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            animation: pulse 2s infinite;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
         /* Colorful accent buttons */
         .btn-accent-blue {
-            background: linear-gradient(135deg, var(--accent-blue), #3367d6);
+            background: var(--accent-blue);
             color: white;
             border: none;
             transition: all 0.3s ease;
@@ -474,13 +353,12 @@
         }
         
         .btn-accent-blue:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 7px 15px rgba(66, 133, 244, 0.4);
+            background: #3367d6;
             color: white;
         }
         
         .btn-accent-red {
-            background: linear-gradient(135deg, var(--accent-red), #d23c30);
+            background: var(--accent-red);
             color: white;
             border: none;
             transition: all 0.3s ease;
@@ -488,41 +366,12 @@
         }
         
         .btn-accent-red:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 7px 15px rgba(234, 67, 53, 0.4);
-            color: white;
-        }
-        
-        .btn-accent-yellow {
-            background: linear-gradient(135deg, var(--accent-yellow), #e6a700);
-            color: #1f1f1f;
-            border: none;
-            transition: all 0.3s ease;
-            font-weight: 600;
-        }
-        
-        .btn-accent-yellow:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 7px 15px rgba(251, 188, 4, 0.4);
-            color: #1f1f1f;
-        }
-        
-        .btn-accent-green {
-            background: linear-gradient(135deg, var(--accent-green), #2e8b57);
-            color: white;
-            border: none;
-            transition: all 0.3s ease;
-            font-weight: 600;
-        }
-        
-        .btn-accent-green:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 7px 15px rgba(52, 168, 83, 0.4);
+            background: #d23c30;
             color: white;
         }
         
         .btn-accent-teal {
-            background: linear-gradient(135deg, var(--accent-teal), #006666);
+            background: var(--accent-teal);
             color: white;
             border: none;
             transition: all 0.3s ease;
@@ -530,13 +379,12 @@
         }
         
         .btn-accent-teal:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 7px 15px rgba(0, 128, 128, 0.4);
+            background: #006666;
             color: white;
         }
 
         .btn-accent-orange {
-            background: linear-gradient(135deg, var(--accent-orange), #e55a2b);
+            background: var(--accent-orange);
             color: white;
             border: none;
             transition: all 0.3s ease;
@@ -544,22 +392,7 @@
         }
         
         .btn-accent-orange:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 7px 15px rgba(255, 107, 53, 0.4);
-            color: white;
-        }
-
-        .btn-accent-navy {
-            background: linear-gradient(135deg, var(--accent-navy), #001a33);
-            color: white;
-            border: none;
-            transition: all 0.3s ease;
-            font-weight: 600;
-        }
-        
-        .btn-accent-navy:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 7px 15px rgba(0, 31, 63, 0.4);
+            background: #e55a2b;
             color: white;
         }
         
@@ -571,47 +404,59 @@
                 left: 0;
                 right: 0;
                 background: var(--navbar-bg);
-                backdrop-filter: blur(20px);
                 display: flex;
                 justify-content: space-around;
-                padding: 0.6rem;
+                padding: 0.5rem;
                 z-index: 1000;
-                box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.1);
-                border-top: 1px solid rgba(229, 231, 235, 0.2);
+                box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+                border-top: 1px solid rgba(0, 0, 0, 0.05);
+                transition: transform 0.3s ease;
             }
             
             .mobile-nav-item {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                padding: 0.5rem;
+                padding: 0.4rem;
                 color: var(--text-color);
                 text-decoration: none;
-                font-size: 0.75rem;
-                border-radius: 12px;
+                font-size: 0.7rem;
+                border-radius: 8px;
                 transition: all 0.3s ease;
                 flex: 1;
                 text-align: center;
                 position: relative;
+                background: none;
+                border: none;
+                cursor: pointer;
             }
             
             .mobile-nav-item.active {
-                background: linear-gradient(135deg, rgba(66, 133, 244, 0.15), rgba(0, 128, 128, 0.15));
-                color: var(--accent-blue);
+                background: var(--light-goldenrod);
+                color: var(--accent-goldenrod);
+            }
+            
+            [data-theme="dark"] .mobile-nav-item.active {
+                background: rgba(218, 165, 32, 0.2);
             }
             
             .mobile-nav-item i {
-                font-size: 1.3rem;
-                margin-bottom: 0.25rem;
+                font-size: 1.2rem;
+                margin-bottom: 0.2rem;
                 transition: all 0.3s ease;
             }
             
             .mobile-nav-item.active i {
-                transform: scale(1.2);
+                color: var(--accent-goldenrod);
             }
             
             .content-wrapper {
-                padding-bottom: 80px;
+                padding-bottom: 70px;
+            }
+            
+            /* Hide mobile nav when sidebar is open */
+            body.sidebar-open .mobile-bottom-nav {
+                transform: translateY(100%);
             }
         }
         
@@ -642,14 +487,6 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body class="d-flex flex-column min-vh-100">
-    <!-- Background Shapes -->
-    <div class="bg-shapes">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-        <div class="shape shape-3"></div>
-        <div class="shape shape-4"></div>
-    </div>
-
     <div class="container-fluid p-0">
         <!-- Toast Messages Container -->
         <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3">
@@ -696,22 +533,24 @@
                 
                 <div class="d-flex align-items-center">
                     {% if user.is_authenticated %}
-                    <!-- Cart Icon with Item Count -->
-                    <a href="{% url 'view_cart' %}" class="nav-link icon-link position-relative me-3">
+                    <!-- Cart Icon with Item Count - hidden on small screens -->
+                    <a href="{% url 'view_cart' %}" class="nav-link icon-link position-relative me-3 d-none d-md-block">
                         <i class="bi bi-cart3"></i>
                         {% if cart_item_count and cart_item_count > 0 %}
                         <span class="cart-badge">{{ cart_item_count }}</span>
                         {% endif %}
                     </a>
                     
-                    <a href="#" class="nav-link icon-link position-relative me-3 d-none d-sm-block">
+                    <!-- Notifications - hidden on small screens -->
+                    <a href="#" class="nav-link icon-link position-relative me-3 d-none d-md-block">
                         <i class="bi bi-bell"></i>
                         {% if notifications_count and notifications_count > 0 %}
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ notifications_count }}</span>
                         {% endif %}
                     </a>
                     
-                    <a href="{% url 'inbox' %}" class="nav-link icon-link position-relative me-3 d-none d-sm-block">
+                    <!-- Messages - hidden on small screens -->
+                    <a href="{% url 'inbox' %}" class="nav-link icon-link position-relative me-3 d-none d-md-block">
                         <i class="bi bi-chat-dots"></i>
                         {% if unread_messages_count and unread_messages_count > 0 %}
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ unread_messages_count }}</span>
@@ -757,7 +596,7 @@
             <div class="d-flex align-items-center justify-content-between mb-4 mt-2">
                 <a class="navbar-brand logo d-flex align-items-center fw-bold" href="{% url 'home' %}">
                     <i class="bi bi-gem me-2" style="background: linear-gradient(135deg, var(--logo-gradient-start), var(--logo-gradient-mid), var(--logo-gradient-end)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;"></i>
-                    HomaBay Souq
+                    Souq
                 </a>
                 <button type="button" class="btn-close" aria-label="Close" id="sidebar-close"></button>
             </div>
@@ -851,7 +690,6 @@
                                 <li><a href="{% url 'blog:post-list' %}" class="text-white-50 text-decoration-none">Blog</a></li>
                                 <li><a href="#" class="text-white-50 text-decoration-none">How It Works</a></li>
                                 <li><a href="#" class="text-white-50 text-decoration-none">Popular Items</a></li>
-
                             </ul>
                         </div>
                         <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
@@ -898,7 +736,7 @@
         
         <!-- Mobile Bottom Navigation -->
         <nav class="mobile-bottom-nav">
-            <a href="{% url 'home' %}" class="mobile-nav-item active">
+            <a href="{% url 'home' %}" class="mobile-nav-item">
                 <i class="bi bi-house-door"></i>
                 <span>Home</span>
             </a>
@@ -910,9 +748,20 @@
                 <i class="bi bi-cart3"></i>
                 <span>Cart</span>
                 {% if cart_item_count and cart_item_count > 0 %}
-                <span class="position-absolute top-0 end-0 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; padding: 0.2rem 0.3rem;">{{ cart_item_count }}</span>
+                <span class="position-absolute top-0 end-0 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; padding: 0.15rem 0.25rem;">{{ cart_item_count }}</span>
                 {% endif %}
             </a>
+            <a href="{% url 'inbox' %}" class="mobile-nav-item">
+                <i class="bi bi-chat-dots"></i>
+                <span>Messages</span>
+                {% if unread_messages_count and unread_messages_count > 0 %}
+                <span class="position-absolute top-0 end-0 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; padding: 0.15rem 0.25rem;">{{ unread_messages_count }}</span>
+                {% endif %}
+            </a>
+            <button class="mobile-nav-item" id="mobile-theme-toggle">
+                <i class="bi bi-sun-fill"></i>
+                <span>Theme</span>
+            </button>
             {% if user.is_authenticated %}
             <a href="{% url 'profile' user.pk %}" class="mobile-nav-item">
                 <i class="bi bi-person"></i>
@@ -930,21 +779,9 @@
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- AOS JS -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-
     <!-- Custom JS for sidebar toggle and theme switching -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Initialize AOS
-            AOS.init({
-                duration: 800,
-                easing: 'ease-in-out',
-                once: true,
-                mirror: false
-            });
-
-            const sidebar = document.getElementById('sidebar');
             const sidebarToggle = document.getElementById('sidebar-toggle');
             const sidebarClose = document.getElementById('sidebar-close');
             const themeToggle = document.getElementById('theme-toggle');
@@ -1011,23 +848,13 @@
                 }
             });
 
-            // Add fade-in animation to elements
-            const animateOnScroll = () => {
-                const elements = document.querySelectorAll('.fade-in-up');
-                elements.forEach(el => {
-                    const position = el.getBoundingClientRect();
-                    if (position.top < window.innerHeight - 100) {
-                        el.style.opacity = '1';
-                        el.style.transform = 'translateY(0)';
-                    }
+            // Mobile theme toggle
+            const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+            if (mobileThemeToggle) {
+                mobileThemeToggle.addEventListener('click', function() {
+                    if (themeToggle) themeToggle.click();
                 });
-            };
-
-            // Initial check
-            animateOnScroll();
-            
-            // Check on scroll
-            window.addEventListener('scroll', animateOnScroll);
+            }
         });
     </script>
     
