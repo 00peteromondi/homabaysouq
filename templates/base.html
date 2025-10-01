@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HomaBay Souq - {% block title %}Local Marketplace{% endblock %}</title>
+    <title>Souq - {% block title %}Local Marketplace{% endblock %}</title>
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -521,7 +521,7 @@
                 </button>
                 <a class="navbar-brand logo d-flex align-items-center fw-bold me-auto me-lg-0" href="{% url 'home' %}">
                     <i class="bi bi-gem me-2" style="background: linear-gradient(135deg, var(--logo-gradient-start), var(--logo-gradient-mid), var(--logo-gradient-end)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;"></i>
-                    HomaBay Souq
+                    Souq
                 </a>
 
                 <div class="d-none d-md-block flex-grow-1 mx-4" style="max-width: 500px;">
@@ -758,10 +758,10 @@
                 <span class="position-absolute top-0 end-0 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; padding: 0.15rem 0.25rem;">{{ unread_messages_count }}</span>
                 {% endif %}
             </a>
-            <button class="mobile-nav-item" id="mobile-theme-toggle">
-                <i class="bi bi-sun-fill"></i>
-                <span>Theme</span>
-            </button>
+            <a href="{% url 'order_list' %}" class="mobile-nav-item">
+                <i class="bi bi-bag"></i>
+                <span>Orders</span>
+            </a>
             {% if user.is_authenticated %}
             <a href="{% url 'profile' user.pk %}" class="mobile-nav-item">
                 <i class="bi bi-person"></i>
@@ -847,14 +847,6 @@
                     item.classList.remove('active');
                 }
             });
-
-            // Mobile theme toggle
-            const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
-            if (mobileThemeToggle) {
-                mobileThemeToggle.addEventListener('click', function() {
-                    if (themeToggle) themeToggle.click();
-                });
-            }
         });
     </script>
     
