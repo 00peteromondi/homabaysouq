@@ -220,19 +220,24 @@ ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
-SOCIALACCOUNT_EMAIL_VERIFICATION = 'optional'
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
+ACCOUNT_UNIQUE_EMAIL = True
 
-SOCIALACCOUNT_ADAPTER = 'users.adapters.CustomSocialAccountAdapter'
-SOCIALACCOUNT_AUTO_SIGNUP = False
-SOCIALACCOUNT_FORMS = {
-    'signup': 'users.social_forms.CustomSocialSignupForm',
-}
+# Social account settings
+SOCIALACCOUNT_AUTO_SIGNUP = True  # Show signup form to collect additional data
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'optional'
+SOCIALACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_QUERY_EMAIL = True
 SOCIALACCOUNT_STORE_TOKENS = True
+
+# Disable the problematic 3rdparty signup if it's causing issues
+SOCIALACCOUNT_ENABLED = True
+
+# Login redirects
 LOGIN_REDIRECT_URL = 'home'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
-SOCIALACCOUNT_LOGIN_ON_GET = False 
-
+SOCIALACCOUNT_LOGIN_ON_GET = False  # Show intermediate page
+ACCOUNT_LOGOUT_ON_GET = True  # Logout immediately on GET request
 # Social Auth Environment Variables
 GOOGLE_OAUTH_CLIENT_ID = os.environ.get('GOOGLE_OAUTH_CLIENT_ID', '')
 GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET', '')
