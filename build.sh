@@ -4,11 +4,17 @@ set -o errexit
 
 pip install -r requirements.txt
 
+# Makemigrations
+python manage.py makemigrations
+
 # Apply database migrations
 python manage.py migrate
 
 # Create social applications
 python manage.py setup_social_apps
+
+# Reset google ouath
+python reset_google_oauth.py
 
 # Create static directories
 mkdir -p media/listing_images

@@ -21,7 +21,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f'Created site: {site.domain}'))
         else:
             # Update the site domain if it's still example.com
-            if site.domain in ['example.com', 'localhost:8000']:
+            if site.domain in ['example.com', 'localhost:8000', 'homabaysouq.onrender.com']:
                 site.domain = 'homabaysouq.onrender.com'
                 site.name = 'HomaBay Souq'
                 site.save()

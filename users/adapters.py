@@ -2,8 +2,6 @@ from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.socialaccount.models import SocialApp
 from django.contrib.sites.models import Site
 from django.http import Http404
-from django.conf import settings
-from django.contrib import messages
 import os
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
@@ -16,9 +14,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
             return super().get_app(request, provider, client_id)
         except SocialApp.DoesNotExist:
             # If no app exists, try to create one on the fly
-            self.create_social_app_from_env(provider)
-            # Try again after creation
-            return super().get_app(request, provider, client_id)
+            return self.create_social_app_from_env(provider)
         except SocialApp.MultipleObjectsReturned:
             # If multiple apps found, get the current site and return the first one
             site = Site.objects.get_current()
@@ -49,7 +45,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
             raise Http404(f"Provider {provider} not supported")
         
         if not client_id or not secret:
-            raise Http404(f"No OAuth credentials found for {provider}. Please set {provider.upper()}_OAUTH_CLIENT_ID and {provider.upper()}_OAUTH_CLIENT_SECRET environment variables.")
+            raise Http404(f"No OAuth credentials found for {provider}")
         
         # Create the social app
         app, created = SocialApp.objects.get_or_create(
@@ -64,28 +60,14 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         
         return app
 
-    def pre_social_login(self, request, sociallogin):
-        """
-        This is called before the social login is complete.
-        We can use this to handle the user creation process.
-        """
-        user = sociallogin.user
-        if user.id:
-            # User already exists, just log them in
-            return
-        # New user - we'll handle this in save_user
-
     def save_user(self, request, sociallogin, form=None):
         """
         Saves a newly signed up social login.
         """
-        print(f"🔍 Social login data: {sociallogin.account.extra_data}")
-        
         user = super().save_user(request, sociallogin, form)
         
         # Extract data from social account
         extra_data = sociallogin.account.extra_data
-        print(f"🔍 Extra data: {extra_data}")
         
         # Update user fields with social data
         if extra_data:
@@ -103,21 +85,8 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
                     user.last_name = name_parts[1]
             if 'email' in extra_data and not user.email:
                 user.email = extra_data.get('email', '')
+            if not user.location:
+                user.location = 'Homabay'
         
-        print(f"🔍 Saving user: {user.username}, {user.email}, {user.first_name} {user.last_name}")
         user.save()
         return user
-
-    def get_connect_redirect_url(self, request, socialaccount):
-        """
-        Returns the default URL to redirect to after successfully
-        connecting a social account.
-        """
-        return '/'
-
-    def authentication_error(self, request, provider_id, error=None, exception=None, extra_context=None):
-        """
-        Handle authentication errors gracefully.
-        """
-        messages.error(request, f"Authentication failed with {provider_id}. Please try again.")
-        return super().authentication_error(request, provider_id, error, exception, extra_context)
