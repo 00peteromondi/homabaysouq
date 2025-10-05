@@ -23,6 +23,11 @@ from notifications.utils import (
 
 User = get_user_model()
 
+# In your views.py - Update the ListingListView
+from django.db.models import Count, Q
+from django.utils import timezone
+from datetime import timedelta
+
 class ListingListView(ListView):
     model = Listing
     template_name = 'listings/home.html'
@@ -30,7 +35,8 @@ class ListingListView(ListView):
     paginate_by = 12
 
     def get_queryset(self):
-        queryset = Listing.objects.filter(is_sold=False).order_by('-date_created')
+        # Remove is_sold filter to show all listings including sold ones
+        queryset = Listing.objects.all().order_by('-date_created')
         
         # Search functionality
         query = self.request.GET.get('q')
@@ -56,9 +62,10 @@ class ListingListView(ListView):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
         context['locations'] = Listing.HOMABAY_LOCATIONS
-        context['total_listings_count'] = Listing.objects.filter(is_sold=False).count()
+        context['total_listings_count'] = Listing.objects.all().count()  # Include sold items
         context['total_users_count'] = User.objects.count()
         context['total_categories_count'] = Category.objects.count()
+        
         try:
             from blog.models import BlogPost
             context['blog_posts'] = BlogPost.objects.filter(
@@ -68,14 +75,11 @@ class ListingListView(ListView):
             print(f"Error loading blog posts: {e}")
             context['blog_posts'] = []
         
-        
         # Add the missing context variables that home.html expects
         context['popular_categories'] = Category.objects.annotate(
             listing_count=Count('listing')
         ).order_by('-listing_count')[:6]
         
-        # Add placeholder values for missing variables
-        context['total_messages_count'] = 0  # Replace with actual count if you have messages
         # Get completed transactions count (orders with status 'delivered')
         try:
             from .models import Order
@@ -86,15 +90,12 @@ class ListingListView(ListView):
             print(f"Error loading completed transactions: {e}")
             context['successful_transactions'] = 0
         
-        # Alternative: Count all paid orders (if you want to include shipped orders too)
-        
-
         # For testimonials - create empty list since you don't have testimonials model
         context['testimonials'] = []
         
         # Efficiently get listing counts per category
         category_counts = (
-            Listing.objects.filter(is_sold=False)
+            Listing.objects.all()  # Include sold items
             .values('category')
             .annotate(count=Count('id'))
         )
@@ -111,8 +112,52 @@ class ListingListView(ListView):
         if category_id:
             context['selected_category'] = get_object_or_404(Category, id=category_id)
 
-        return context
+        # Get top sellers (users with most sales in current month)
+        current_month = timezone.now().month
+        current_year = timezone.now().year
+        
+        # This is a simplified version - you'll need to adjust based on your Order model
+        try:
+            from .models import Order, OrderItem
+            # Get users who have sold items in the current month
+            current_month_orders = Order.objects.filter(
+                created_at__month=current_month,
+                created_at__year=current_year,
+                status__in=['paid', 'shipped', 'delivered']
+            )
+            
+            # Get seller IDs from order items
+            seller_ids = OrderItem.objects.filter(
+                order__in=current_month_orders
+            ).values_list('listing__seller', flat=True).distinct()
+            
+            # Get top sellers with their sales count
+            top_sellers = User.objects.filter(
+                id__in=seller_ids
+            ).annotate(
+                monthly_sales=Count(
+                    'listings__order_items',
+                    filter=Q(
+                        listings__order_items__order__in=current_month_orders
+                    )
+                )
+            ).order_by('-monthly_sales')[:3]
+            
+            context['top_sellers'] = top_sellers
+            
+        except Exception as e:
+            print(f"Error loading top sellers: {e}")
+            context['top_sellers'] = []
+        
+        # If no top sellers this month, get active sellers with listings
+        if not context.get('top_sellers'):
+            active_sellers = User.objects.annotate(
+                listing_count=Count('listings')
+            ).filter(listing_count__gt=0).order_by('?')[:3]
+            context['active_sellers'] = active_sellers
 
+        return context
+    
 from django.db.models import Avg, Count
 from django.views.generic import DetailView
 from django.shortcuts import get_object_or_404

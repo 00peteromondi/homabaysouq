@@ -113,3 +113,4 @@ class ProfileUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['form'] = self.get_form()
         return context
+    
