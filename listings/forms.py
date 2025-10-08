@@ -1,13 +1,17 @@
 # listings/forms.py
 from django import forms
-from .models import Listing, Category
-from .models import Payment
+from .models import Listing, Category, Review, Payment
 
 class ListingForm(forms.ModelForm):
+    # Remove the multiple images field from here for now
+    # We'll handle multiple images in the view
     class Meta:
         model = Listing
         fields = ['title', 'description', 'price', 'category', 'location', 'image', 'condition', 'delivery_option', 'stock']
         widgets = {
+            'title': forms.TextInput(attrs={'placeholder': 'Enter a catchy title for your item'}),
+            'price': forms.NumberInput(attrs={'min': '0', 'step': '0.01', 'placeholder': '0.00'}),
+            'stock': forms.NumberInput(attrs={'min': '1', 'step': '1', 'placeholder': '1'}),
             'description': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Describe your item in detail...'}),
             'category': forms.Select(attrs={'class': 'form-select'}),
             'location': forms.Select(attrs={'class': 'form-select'}),
@@ -15,17 +19,13 @@ class ListingForm(forms.ModelForm):
             'delivery_option': forms.Select(attrs={'class': 'form-select'}),
         }
 
-        def clean_image(self):
-            image = self.cleaned_data.get('image')
-            if image:
-                # Cloudinary handles file validation, but you can add custom validation
-                if hasattr(image, 'size') and image.size > 10 * 1024 * 1024:  # 10MB limit
-                    raise forms.ValidationError("Image file too large ( > 10MB )")
-            return image
-
-# In listings/forms.py
-from django import forms
-from .models import Review
+    def clean_image(self):
+        image = self.cleaned_data.get('image')
+        if image:
+            # Cloudinary handles file validation, but you can add custom validation
+            if hasattr(image, 'size') and image.size > 10 * 1024 * 1024:  # 10MB limit
+                raise forms.ValidationError("Image file too large ( > 10MB )")
+        return image
 
 class CheckoutForm(forms.Form):
     shipping_address = forms.CharField(

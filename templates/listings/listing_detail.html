@@ -1,228 +1,1889 @@
+<!-- templates/listings/listing_detail.html -->
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ object.title }} - HomaBay Souq{% endblock %}
+{% block title %}{{ listing.title }} - HomaBay Souq{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Modern Listing Detail Styles */
+.listing-hero {
+    background: var(--card-bg);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+/* Enhanced Image Gallery Styles */
+.listing-gallery-container {
+    position: relative;
+    height: 500px;
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+.main-image-container {
+    position: relative;
+    height: 100%;
+    background: var(--card-bg-hover);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.main-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+    background: white;
+    cursor: zoom-in;
+}
+
+.main-image.zoomed {
+    cursor: zoom-out;
+    transform: scale(1.5);
+}
+
+.image-actions {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.image-actions .btn {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    color: var(--text-color);
+}
+
+.thumbnail-gallery {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.thumbnail-scroll-container {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    flex: 1;
+    padding: 0.5rem 0;
+}
+
+.thumbnail-scroll-container::-webkit-scrollbar {
+    display: none;
+}
+
+.thumbnail {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    background: white;
+}
+
+.thumbnail.active,
+.thumbnail:hover {
+    opacity: 1;
+    border-color: var(--primary-gemini);
+}
+
+.thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.thumbnail-nav {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    color: var(--text-color);
+}
+
+.thumbnail-nav:hover {
+    background: var(--primary-gemini);
+    color: white;
+    border-color: var(--primary-gemini);
+}
+
+.thumbnail-prev {
+    margin-right: 0.5rem;
+}
+
+.thumbnail-next {
+    margin-left: 0.5rem;
+}
+
+.image-counter {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+/* Fullscreen modal for images */
+.image-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 2rem;
+}
+
+.fullscreen-image {
+    max-width: 90%;
+    max-height: 80%;
+    object-fit: contain;
+}
+
+.fullscreen-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    font-size: 1.2rem;
+}
+
+.fullscreen-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    font-size: 1.5rem;
+}
+
+.fullscreen-prev {
+    left: 20px;
+}
+
+.fullscreen-next {
+    right: 20px;
+}
+
+.fullscreen-counter {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.listing-badges {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.status-badge.available {
+    background: rgba(52, 168, 83, 0.9);
+    color: white;
+}
+
+.status-badge.sold {
+    background: rgba(234, 67, 53, 0.9);
+    color: white;
+}
+
+.status-badge.stock {
+    background: rgba(66, 133, 244, 0.9);
+    color: white;
+}
+
+.listing-info {
+    padding: 2rem;
+}
+
+.listing-header {
+    margin-bottom: 1.5rem;
+}
+
+.listing-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+.listing-price {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-gemini);
+    margin-bottom: 1rem;
+}
+
+.price-history {
+    margin-bottom: 1rem;
+}
+
+.price-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.price-trend.trend-up {
+    background: rgba(52, 168, 83, 0.1);
+    color: var(--accent-green);
+    border: 1px solid rgba(52, 168, 83, 0.2);
+}
+
+.price-trend.trend-down {
+    background: rgba(234, 67, 53, 0.1);
+    color: var(--danger-color);
+    border: 1px solid rgba(234, 67, 53, 0.2);
+}
+
+.price-trend.trend-stable {
+    background: rgba(66, 133, 244, 0.1);
+    color: var(--primary-gemini);
+    border: 1px solid rgba(66, 133, 244, 0.2);
+}
+
+.listing-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.meta-tag {
+    background: var(--card-bg-hover);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: 15px;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-color);
+}
+
+.listing-description {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--text-color);
+    margin-bottom: 2rem;
+}
+
+.listing-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.action-button {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+    justify-content: center;
+}
+
+.action-button.primary {
+    background: var(--primary-gemini);
+    color: white;
+}
+
+.action-button.primary:hover {
+    background: #3367d6;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(66, 133, 244, 0.3);
+}
+
+.action-button.secondary {
+    background: transparent;
+    color: var(--text-color);
+    border: 2px solid var(--border-color);
+}
+
+.action-button.secondary:hover {
+    border-color: var(--primary-gemini);
+    color: var(--primary-gemini);
+    transform: translateY(-2px);
+}
+
+/* Enhanced Seller Card Styles */
+.seller-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.seller-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary-gemini);
+    margin-bottom: 1rem;
+}
+
+.seller-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: var(--text-color);
+}
+
+.seller-username {
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.seller-bio {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.verified-badge {
+    background: var(--accent-green);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.seller-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 0.75rem;
+    background: var(--card-bg-hover);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.stat-value.listings { color: var(--primary-gemini); }
+.stat-value.reviews { color: var(--accent-green); }
+.stat-value.rating { color: var(--accent-yellow); }
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.action-buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+/* Specifications Table */
+.specifications {
+    margin: 2rem 0;
+}
+
+.specs-table {
+    background: var(--card-bg-hover);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.spec-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.spec-row:last-child {
+    border-bottom: none;
+}
+
+.spec-label {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.spec-value {
+    color: var(--text-muted);
+}
+
+/* Reviews Section */
+.reviews-section {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rating-overview {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3rem;
+    margin-bottom: 2rem;
+    align-items: center;
+}
+
+.rating-score {
+    text-align: center;
+}
+
+.rating-number {
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--primary-gemini);
+    line-height: 1;
+}
+
+.rating-stars {
+    color: var(--accent-yellow);
+    font-size: 1.5rem;
+    margin: 0.5rem 0;
+}
+
+.rating-count {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.rating-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.rating-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.rating-label {
+    width: 20px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.rating-progress {
+    flex: 1;
+    height: 8px;
+    background: var(--card-bg-hover);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.rating-progress-fill {
+    height: 100%;
+    background: var(--accent-yellow);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.rating-count-small {
+    width: 30px;
+    text-align: right;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.review-item {
+    padding: 1.5rem;
+    background: var(--card-bg-hover);
+    border-radius: 15px;
+    border: 1px solid var(--border-color);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.reviewer-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.reviewer-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.reviewer-details h4 {
+    margin: 0;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.reviewer-stars {
+    color: var(--accent-yellow);
+    font-size: 0.875rem;
+}
+
+.review-date {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.review-content {
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.no-reviews {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted);
+}
+
+.no-reviews-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* FAQ Section */
+.faq-section {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.accordion-item {
+    background: var(--card-bg-hover);
+    border: 1px solid var(--border-color);
+    margin-bottom: 0.75rem;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.accordion-button {
+    background: var(--card-bg-hover);
+    color: var(--text-color);
+    font-weight: 600;
+    border: none;
+    padding: 1.25rem;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.accordion-button:not(.collapsed) {
+    background: var(--primary-gemini);
+    color: white;
+}
+
+.accordion-button::after {
+    content: '\f282';
+    font-family: 'bootstrap-icons';
+    font-size: 1.25rem;
+    transition: transform 0.3s ease;
+}
+
+.accordion-button:not(.collapsed)::after {
+    transform: rotate(180deg);
+}
+
+.accordion-body {
+    padding: 1.25rem;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* Similar Listings & Seller's Other Listings */
+.similar-listings, .seller-other-listings {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.similar-grid, .seller-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.similar-card, .seller-listing-card {
+    background: var(--card-bg-hover);
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+
+.similar-card:hover, .seller-listing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.similar-card img, .seller-listing-card img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+.similar-card-content, .seller-listing-info {
+    padding: 1rem;
+}
+
+.similar-card-title, .seller-listing-info h6 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+.similar-card-price, .seller-listing-info .price {
+    font-weight: 700;
+    color: var(--primary-gemini);
+    margin-bottom: 0.5rem;
+}
+
+.similar-card-location {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+/* Safety Tips & Management */
+.info-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.info-card h6 {
+    margin-bottom: 1rem;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.info-list li {
+    padding: 0.5rem 0;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-list li i {
+    color: var(--accent-green);
+}
+
+/* Shipping Information */
+.shipping-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.shipping-option, .shipping-time, .shipping-cost {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.shipping-option:last-child, .shipping-time:last-child, .shipping-cost:last-child {
+    border-bottom: none;
+}
+
+/* Return Policy */
+.return-policy p {
+    margin-bottom: 1rem;
+    color: var(--text-muted);
+}
+
+/* Social Sharing */
+.social-sharing {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.social-share-btn {
+    width: 45px;
+    height: 45px;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.social-share-btn.facebook { background: #1877f2; }
+.social-share-btn.twitter { background: #1da1f2; }
+.social-share-btn.whatsapp { background: #25d366; }
+.social-share-btn.link { background: var(--text-muted); }
+
+.social-share-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Recently Viewed Sidebar */
+.recently-viewed-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.recent-item {
+    display: flex;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--card-bg-hover);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.recent-item:hover {
+    border-color: var(--primary-gemini);
+}
+
+.recent-item img {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.recent-details {
+    flex: 1;
+}
+
+.recent-details a {
+    font-weight: 600;
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.recent-details a:hover {
+    color: var(--primary-gemini);
+}
+
+.recent-price {
+    font-weight: 700;
+    color: var(--primary-gemini);
+    font-size: 0.875rem;
+}
+
+/* Horizontal scrolling for mobile */
+.horizontal-scroll-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 1.5rem;
+    padding: 1rem 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-gemini) transparent;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-thumb {
+    background: var(--primary-gemini);
+    border-radius: 3px;
+}
+
+.horizontal-scroll-item {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    min-width: 280px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .listing-gallery-container {
+        height: 400px;
+    }
+    
+    .listing-title {
+        font-size: 1.5rem;
+    }
+    
+    .listing-price {
+        font-size: 2rem;
+    }
+    
+    .rating-overview {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        text-align: center;
+    }
+    
+    .seller-stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .stat-item {
+        padding: 0.5rem;
+    }
+    
+    .stat-value {
+        font-size: 1rem;
+    }
+    
+    .action-buttons-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .listing-actions {
+        flex-direction: column;
+    }
+    
+    .action-button {
+        justify-content: center;
+    }
+    
+    .similar-grid, .seller-grid {
+        display: flex;
+        overflow-x: auto;
+        gap: 1rem;
+        padding: 1rem 0.5rem;
+        scroll-snap-type: x mandatory;
+    }
+    
+    .similar-card, .seller-listing-card {
+        flex: 0 0 auto;
+        min-width: 250px;
+        scroll-snap-align: start;
+    }
+    
+    .thumbnail {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .thumbnail-nav {
+        display: none;
+    }
+    
+    .seller-avatar {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .seller-name {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .listing-gallery-container {
+        height: 300px;
+    }
+    
+    .seller-stats {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .main-image {
+        height: 250px;
+    }
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container py-4">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-            <li class="breadcrumb-item"><a href="#">{{ object.category.name }}</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ object.title }}</li>
+            <li class="breadcrumb-item"><a href="{% url 'all-listings' %}?category={{ listing.category.id }}">{{ listing.category.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ listing.title|truncatewords:5 }}</li>
         </ol>
     </nav>
 
     <div class="row">
-        <!-- Listing Images & Details -->
+        <!-- Main Content -->
         <div class="col-lg-8">
-            <div class="card mb-4">
+            <!-- Listing Hero Section -->
+            <div class="listing-hero">
                 <div class="row g-0">
                     <div class="col-md-6">
-                        <img src="{{ object.get_image_url }}" class="img-fluid rounded-start" alt="{{ object.title }}" style="height: 100%; object-fit: cover;">
+                        <!-- Enhanced Image Gallery -->
+                        <div class="listing-gallery-container">
+                            <div class="main-image-container">
+                                <img src="{{ listing.get_image_url }}" alt="{{ listing.title }}" 
+                                     id="main-image" class="main-image" data-zoom="{{ listing.get_image_url }}">
+                                <div class="listing-badges">
+                                    {% if listing.is_sold %}
+                                    <span class="status-badge sold">Sold</span>
+                                    {% else %}
+                                    <span class="status-badge available">Available</span>
+                                    {% endif %}
+                                    <span class="status-badge stock">
+                                        {% if listing.stock > 0 %}{{ listing.stock }} in stock{% else %}Out of Stock{% endif %}
+                                    </span>
+                                </div>
+                                <div class="image-actions">
+                                    <button class="btn btn-sm btn-light" id="zoom-toggle">
+                                        <i class="bi bi-zoom-in"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-light" id="fullscreen-toggle">
+                                        <i class="bi bi-arrows-fullscreen"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Thumbnail Gallery -->
+                            {% if listing.images.all or listing.get_image_url %}
+                            <div class="thumbnail-gallery">
+                                <button class="thumbnail-nav thumbnail-prev" id="thumb-prev">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                                <div class="thumbnail-scroll-container">
+                                    <!-- Main image thumbnail -->
+                                    <div class="thumbnail active" data-image="{{ listing.get_image_url }}">
+                                        <img src="{{ listing.get_image_url }}" alt="Main image">
+                                    </div>
+                                    <!-- Additional images -->
+                                    {% for image in listing.images.all %}
+                                    <div class="thumbnail" data-image="{{ image.image.url }}">
+                                        <img src="{{ image.image.url }}" alt="Image {{ forloop.counter }}">
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <button class="thumbnail-nav thumbnail-next" id="thumb-next">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Image Counter -->
+                            <div class="image-counter">
+                                <span id="current-image">1</span> of <span id="total-images">{{ listing.images.all|length|add:1 }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <span class="badge bg-{% if object.is_sold %}danger{% else %}success{% endif %}">
-                                    {% if object.is_sold %}Sold{% else %}Available{% endif %}
-                                </span>
-                                <span class="badge bg-{% if object.stock > 0 %}info{% else %}danger{% endif %}">
-                                    {% if object.stock > 0 %}In Stock{% else %}Out of Stock{% endif %}
-                                </span>
-                                <span class="text-muted">{{ object.date_created|timesince }} ago</span>
-                            </div>
-                            
-                            <h1 class="h3 fw-bold">{{ object.title }}</h1>
-                            <h2 class="h4 text-primary mb-3">KSh {{ object.price }}</h2>
-                            
-                            <div class="d-flex gap-2 mb-3">
-                                <span class="badge bg-light text-dark"><i class="bi bi-geo-alt me-1"></i> {{ object.get_location_display }}</span>
-                                <span class="badge bg-light text-dark"><i class="bi bi-grid me-1"></i> {{ object.category.name }}</span>
-                            </div>
-                            
-                            <p class="card-text">{{ object.description }}</p>
-                            
-                            <div class="mt-4">
-                                <h5 class="fw-bold mb-3">Item Details</h5>
-                                <div class="row">
-                                    <div class="col-6 mb-2">
-                                        <small class="text-muted">Condition</small>
-                                        <p class="mb-0">{{ object.get_condition_display }}</p>
-                                    </div>
-                                    <div class="col-6 mb-2">
-                                        <small class="text-muted">Delivery</small>
-                                        <p class="mb-0">{{ object.get_delivery_option_display }}</p>
-                                    </div>
-                                    <div class="col-6 mb-2">
-                                        <small class="text-muted">Category</small>
-                                        <p class="mb-0">{{ object.category.name }}</p>
-                                    </div>
-                                    <div class="col-6 mb-2">
-                                        <small class="text-muted">Location</small>
-                                        <p class="mb-0">{{ object.get_location_display }}</p>
-                                    </div>
-                                    <div class="col-6 mb-2">
-                                        <small class="text-muted">Stock</small>
-                                        <p class="mb-0">{{ object.stock }}</p>
-                                    </div>
-                                </div>
-                                <div class="mt-4">
-                                    <h5 class="fw-bold mb-3">Actions</h5>
-                                    <div class="d-flex gap-2">
-                                        {% if user.is_authenticated and object.stock > 0 %}
-                                            <form method="post" action="{% url 'add_to_cart' object.id %}">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-primary">Add to Cart</button>
-                                            </form>
+                        <div class="listing-info">
+                            <div class="listing-header">
+                                <h1 class="listing-title">{{ listing.title }}</h1>
+                                
+                                <!-- Price and Price History -->
+                                <div class="listing-price">KSh {{ listing.price }}</div>
+                                
+                                {% if listing.price_trend != 'stable' or listing.original_price %}
+                                <div class="price-history">
+                                    <div class="price-trend trend-{{ listing.price_trend }}">
+                                        <i class="bi bi-arrow-{% if listing.price_trend == 'up' %}up{% elif listing.price_trend == 'down' %}down{% else %}right{% endif %}"></i>
+                                        {% if listing.price_trend == 'up' %}
+                                        Price increased
+                                        {% elif listing.price_trend == 'down' %}
+                                        Price decreased
                                         {% else %}
-                                            <a href="{% url 'login' %}" class="btn btn-primary">Login to Add to Cart</a>
+                                        Price stable
                                         {% endif %}
-                                        <a href="{% url 'leave_listing_review' object.id %}" class="btn btn-secondary">Leave a Review</a>
+                                        {% if listing.original_price and listing.original_price != listing.price %}
+                                        (was KSh {{ listing.original_price }})
+                                        {% endif %}
                                     </div>
                                 </div>
+                                {% endif %}
+                                
+                                <div class="listing-meta">
+                                    <span class="meta-tag">
+                                        <i class="bi bi-geo-alt"></i>
+                                        {{ listing.get_location_display }}
+                                    </span>
+                                    <span class="meta-tag">
+                                        <i class="bi bi-grid"></i>
+                                        {{ listing.category.name }}
+                                    </span>
+                                    <span class="meta-tag">
+                                        <i class="bi bi-tag"></i>
+                                        {{ listing.get_condition_display }}
+                                    </span>
+                                    <span class="meta-tag">
+                                        <i class="bi bi-truck"></i>
+                                        {{ listing.get_delivery_option_display }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="listing-description">
+                                {{ listing.description|linebreaks }}
+                            </div>
+                            
+                            <!-- Product Specifications -->
+                            {% if listing.brand or listing.model or listing.dimensions or listing.weight or listing.color or listing.material %}
+                            <section class="specifications">
+                                <h5>Product Specifications</h5>
+                                <div class="specs-table">
+                                    {% if listing.brand %}
+                                    <div class="spec-row">
+                                        <span class="spec-label">Brand</span>
+                                        <span class="spec-value">{{ listing.brand }}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if listing.model %}
+                                    <div class="spec-row">
+                                        <span class="spec-label">Model</span>
+                                        <span class="spec-value">{{ listing.model }}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if listing.condition %}
+                                    <div class="spec-row">
+                                        <span class="spec-label">Condition</span>
+                                        <span class="spec-value">{{ listing.get_condition_display }}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if listing.dimensions %}
+                                    <div class="spec-row">
+                                        <span class="spec-label">Dimensions</span>
+                                        <span class="spec-value">{{ listing.dimensions }}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if listing.weight %}
+                                    <div class="spec-row">
+                                        <span class="spec-label">Weight</span>
+                                        <span class="spec-value">{{ listing.weight }}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if listing.color %}
+                                    <div class="spec-row">
+                                        <span class="spec-label">Color</span>
+                                        <span class="spec-value">{{ listing.color }}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if listing.material %}
+                                    <div class="spec-row">
+                                        <span class="spec-label">Material</span>
+                                        <span class="spec-value">{{ listing.material }}</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </section>
+                            {% endif %}
+                            
+                            <div class="listing-actions">
+                                {% if user.is_authenticated and user != listing.seller %}
+                                    {% if listing.stock > 0 and not listing.is_sold %}
+                                    <form method="post" action="{% url 'add_to_cart' listing.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="action-button primary">
+                                            <i class="bi bi-cart-plus"></i> Add to Cart
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    <a href="{% url 'leave_listing_review' listing.id %}" class="action-button secondary">
+                                        <i class="bi bi-star"></i> Leave Review
+                                    </a>
+                                {% elif not user.is_authenticated %}
+                                    <a href="{% url 'login' %}?next={{ request.path }}" class="action-button primary">Login to Purchase</a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Similar Listings -->
-            <div class="card mb-4">
-                <div class="card-header bg-transparent">
-                    <h5 class="mb-0">Similar Listings</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row row-cols-1 row-cols-md-2 g-3">
-                        {% for similar_listing in similar_listings|slice:":4" %}
-                        <div class="col">
-                            <div class="card h-100 listing-card">
-                                <img src="{{ similar_listing.get_image_url }}" class="card-img-top listing-img" alt="{{ similar_listing.title }}">
-                                <div class="card-body">
-                                    <h6 class="card-title">{{ similar_listing.title|truncatewords:5 }}</h6>
-                                    <p class="card-text price-tag mb-1">KSh {{ similar_listing.price }}</p>
-                                    <small class="text-muted">{{ similar_listing.get_location_display }}</small>
-                                </div>
-                                <div class="card-footer bg-transparent py-2">
-                                    <a href="{% url 'listing-detail' similar_listing.pk %}" class="btn btn-sm btn-outline-primary w-100">View</a>
-                                </div>
+
+            <!-- FAQ Section -->
+            {% if faqs %}
+            <section class="faq-section">
+                <h4 class="section-title">
+                    <i class="bi bi-question-circle"></i>
+                    Frequently Asked Questions
+                </h4>
+                <div class="accordion" id="listingFAQ">
+                    {% for faq in faqs %}
+                    <div class="accordion-item">
+                        <h5 class="accordion-header">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#faq{{ faq.id }}">
+                                {{ faq.question }}
+                            </button>
+                        </h5>
+                        <div id="faq{{ faq.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#listingFAQ">
+                            <div class="accordion-body">
+                                {{ faq.answer|linebreaks }}
                             </div>
                         </div>
-                        {% empty %}
-                        <div class="col-12">
-                            <p class="text-muted text-center mb-0">No similar listings found.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            <!-- Reviews Section -->
+            <div class="reviews-section">
+                <h3 class="section-title">
+                    <i class="bi bi-star-fill text-warning"></i>
+                    Customer Reviews 
+                    <span class="badge bg-primary ms-2">{{ reviews.count }}</span>
+                </h3>
+                
+                {% if reviews %}
+                <div class="rating-overview">
+                    <div class="rating-score">
+                        <div class="rating-number">{{ avg_rating }}</div>
+                        <div class="rating-stars">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= avg_rating %}
+                                    <i class="bi bi-star-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="rating-count">{{ reviews.count }} reviews</div>
+                    </div>
+                    <div class="rating-bars">
+                        {% for rating in rating_distribution %}
+                        <div class="rating-bar">
+                            <span class="rating-label">{{ rating.rating }}</span>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <div class="rating-progress">
+                                <div class="rating-progress-fill" style="width: {{ rating.percentage }}%"></div>
+                            </div>
+                            <span class="rating-count-small">{{ rating.count }}</span>
                         </div>
                         {% endfor %}
                     </div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Seller Info & Actions -->
-        <div class="col-lg-4">
-            <!-- Seller Card -->
-                        <!-- Seller Info Card: Uniform Styling -->
-            <div class="card mb-4 shadow-sm">
-                <div class="card-body text-center">
-                    <img src="{% if object.seller.profile_picture %}{{ object.seller.profile_picture.url }}{% else %}/static/images/default.png{% endif %}" class="profile-pic rounded-circle border mb-3" alt="{{ object.seller.username }}" style="width: 96px; height: 96px; object-fit: cover;">
-                    <h5 class="card-title fw-bold mb-1">{{ object.seller.first_name }} {{ object.seller.last_name }}</h5>
-                    <p class="card-text text-muted mb-3">@{{ object.seller.username }}</p>
-                    
-                    {% if object.seller.is_verified %}
-                    <span class="verified-badge d-inline-block mb-2 px-2 py-1 rounded bg-success text-white small">
-                        <i class="bi bi-patch-check-fill me-1"></i> Jirani Verified
-                    </span>
-                    {% endif %}
-                    
-                    <p class="card-text text-muted mb-3">{{ object.seller.bio|truncatewords:20 }}</p>
-                    
-                    <div class="d-flex justify-content-center gap-3 mb-4">
-                        <!-- Listings -->
-                        <div class="stat-card flex-fill text-center px-3 py-3 rounded bg-light shadow-sm">
-                            <div class="h4 mb-1 fw-bold text-primary">{{ listing.seller.listings.count }}</div>
-                            <small class="text-muted">Listings</small>
-                        </div>
-                        
-                        <!-- Reviews -->
-                        <div class="stat-card flex-fill text-center px-3 py-3 rounded bg-light shadow-sm">
-                            <div class="h4 mb-1 fw-bold text-success">{{ listing.reviews.count }}</div>
-                            <small class="text-muted">Reviews</small>
-                        </div>
-                        
-                        <!-- Rating -->
-                        <div class="stat-card flex-fill text-center px-3 py-3 rounded bg-light shadow-sm">
-                            <div class="h4 mb-1 fw-bold text-warning">
-                                {% if listing.average_rating > 0 %}
-                                    {{ listing.average_rating|floatformat:1 }} /5
-                                {% else %}
-                                    N/A
-                                {% endif %}
+
+                <div class="review-list">
+                    {% for review in reviews %}
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div class="reviewer-info">
+                                <img src="{% if review.user.profile_picture %}{{ review.user.profile_picture.url }}{% else %}{% static 'images/default_profile_pic.jpg' %}{% endif %}" 
+                                     alt="{{ review.user.username }}" class="reviewer-avatar">
+                                <div class="reviewer-details">
+                                    <h4>{{ review.user.get_full_name|default:review.user.username }}</h4>
+                                    <div class="reviewer-stars">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= review.rating %}
+                                                <i class="bi bi-star-fill"></i>
+                                            {% else %}
+                                                <i class="bi bi-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
                             </div>
-                            <small class="text-muted">Rating</small>
+                            <div class="review-date">{{ review.created_at|date:"M d, Y" }}</div>
                         </div>
-                        
-                        <!-- Liked/Favorite -->
-                        <div class="stat-card flex-fill text-center px-3 py-3 rounded bg-light shadow-sm position-relative">
-                            <div class="h4 mb-1 fw-bold text-danger">{{ listing.favorited_by.count }}</div>
-                            <form action="{% url 'toggle_favorite' listing.id %}" method="post" class="favorite-form mb-0">
-                                {% csrf_token %}
-                                <button type="submit" class="favorite-btn btn btn-link p-0 {% if is_favorited %}text-danger{% else %}text-secondary{% endif %}">
-                                    <i class="fas fa-heart fa-lg"></i>
-                                </button>
-                            </form>
-                            <small class="text-muted">Liked</small>
+                        <div class="review-content">
+                            {% if review.comment %}
+                                {{ review.comment|linebreaks }}
+                            {% else %}
+                                <em class="text-muted">No comment provided</em>
+                            {% endif %}
                         </div>
                     </div>
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'profile' object.seller.pk %}" class="btn btn-outline-primary">View Profile</a>
-                        {% if user.is_authenticated and user != object.seller %}
-                        <a href="{% url 'start-conversation' object.pk object.seller.pk %}" class="btn btn-primary">
-                            <i class="bi bi-chat me-1"></i> Contact Seller
-                        </a>
-                        <a href="{% url 'leave_seller_review' object.seller.id %}" class="btn btn-secondary">Leave a Review</a>
-                        {% elif not user.is_authenticated %}
-                        <a href="{% url 'login' %}" class="btn btn-primary">Login to Contact Seller</a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="no-reviews">
+                    <div class="no-reviews-icon">
+                        <i class="bi bi-chat-square-text"></i>
+                    </div>
+                    <h4>No reviews yet</h4>
+                    <p class="mb-3">Be the first to review this listing!</p>
+                    {% if user.is_authenticated and user != listing.seller %}
+                    <a href="{% url 'leave_listing_review' listing.id %}" class="action-button primary">
+                        <i class="bi bi-star me-1"></i> Write First Review
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Seller's Other Listings -->
+            {% if seller_other_listings %}
+            <section class="seller-other-listings">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="section-title">
+                        <i class="bi bi-grid-3x3-gap"></i>
+                        More from this Seller
+                    </h4>
+                    <a href="{% url 'profile' listing.seller.pk %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="seller-grid">
+                    {% for seller_listing in seller_other_listings %}
+                    <div class="seller-listing-card">
+                        <img src="{{ seller_listing.get_image_url }}" alt="{{ seller_listing.title }}">
+                        <div class="seller-listing-info">
+                            <h6>{{ seller_listing.title|truncatewords:5 }}</h6>
+                            <p class="price">KSh {{ seller_listing.price }}</p>
+                            <a href="{% url 'listing-detail' seller_listing.pk %}" class="btn btn-sm btn-primary w-100">View</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            <!-- Similar Listings -->
+            {% if similar_listings %}
+            <section class="similar-listings">
+                <h4 class="section-title">
+                    <i class="bi bi-arrow-left-right"></i>
+                    Similar Listings
+                </h4>
+                <div class="similar-grid">
+                    {% for similar_listing in similar_listings %}
+                    <div class="similar-card">
+                        <img src="{{ similar_listing.get_image_url }}" alt="{{ similar_listing.title }}">
+                        <div class="similar-card-content">
+                            <h5 class="similar-card-title">{{ similar_listing.title|truncatewords:5 }}</h5>
+                            <div class="similar-card-price">KSh {{ similar_listing.price }}</div>
+                            <div class="similar-card-location">{{ similar_listing.get_location_display }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Enhanced Seller Card -->
+            <div class="seller-card">
+                <div class="row align-items-center">
+                    <div class="col-12 col-sm-4 text-center text-sm-start">
+                        <img src="{% if listing.seller.profile.profile_picture %}{{ listing.seller.profile.profile_picture.url }}{% else %}{% static 'images/default_profile_pic.jpg' %}{% endif %}" 
+                             alt="{{ listing.seller.username }}" class="seller-avatar">
+                    </div>
+                    <div class="col-12 col-sm-8 text-center text-sm-start">
+                        <h3 class="seller-name">{{ listing.seller.get_full_name|default:listing.seller.username }}</h3>
+                        <p class="seller-username">@{{ listing.seller.username }}</p>
+                        
+                        {% if listing.seller.profile.bio %}
+                        <p class="seller-bio">{{ listing.seller.profile.bio }}</p>
+                        {% else %}
+                        <p class="seller-bio">This seller hasn't added a bio yet.</p>
                         {% endif %}
                         
+                        {% if listing.seller.profile.is_verified %}
+                        <div class="verified-badge">
+                            <i class="bi bi-patch-check-fill"></i>
+                            Verified Seller
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Seller Stats - Responsive Grid -->
+                <div class="seller-stats">
+                    <div class="stat-item">
+                        <div class="stat-value listings">{{ listing.seller.listings.count }}</div>
+                        <div class="stat-label">Listings</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value reviews">{{ seller_reviews_count }}</div>
+                        <div class="stat-label">Reviews</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value rating">
+                            {% if seller_avg_rating > 0 %}
+                                {{ seller_avg_rating }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </div>
+                        <div class="stat-label">Rating</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons - Stack on Mobile -->
+                <div class="seller-actions">
+                    <!-- Favorite Button -->
+                    <form action="{% url 'toggle_favorite' listing.id %}" method="post" class="favorite-form mb-2">
+                        {% csrf_token %}
+                        <button type="submit" class="action-button {% if is_favorited %}primary{% else %}secondary{% endif %} w-100">
+                            <i class="bi bi-heart{% if is_favorited %}-fill{% endif %}"></i>
+                            {% if is_favorited %}Liked{% else %}Like{% endif %}
+                            ({{ listing.favorites.count }})
+                        </button>
+                    </form>
+
+                    <!-- Main Action Buttons -->
+                    <div class="action-buttons-grid">
+                        <a href="{% url 'profile' listing.seller.pk %}" class="action-button secondary">
+                            <i class="bi bi-person"></i> Profile
+                        </a>
+                        {% if user.is_authenticated and user != listing.seller %}
+                        <a href="#" class="action-button primary">
+                            <i class="bi bi-chat"></i> Contact
+                        </a>
+                        
+                        {% elif not user.is_authenticated %}
+                        <a href="{% url 'login' %}?next={{ request.path }}" class="action-button primary w-100">
+                            Login to Contact Seller
+                        </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
-            
-            <!-- Safety Tips -->
-            <div class="card mb-4">
-                <div class="card-header bg-light">
-                    <h6 class="mb-0"><i class="bi bi-shield-check me-1"></i> Safety Tips</h6>
+
+            <!-- Social Sharing -->
+            <div class="info-card">
+                <h6><i class="bi bi-share"></i> Share this Listing</h6>
+                <div class="social-sharing">
+                    <button class="social-share-btn facebook" data-platform="facebook" onclick="shareOnFacebook()">
+                        <i class="bi bi-facebook"></i>
+                    </button>
+                    <button class="social-share-btn twitter" data-platform="twitter" onclick="shareOnTwitter()">
+                        <i class="bi bi-twitter"></i>
+                    </button>
+                    <button class="social-share-btn whatsapp" data-platform="whatsapp" onclick="shareOnWhatsApp()">
+                        <i class="bi bi-whatsapp"></i>
+                    </button>
+                    <button class="social-share-btn link" data-platform="copy" onclick="copyListingLink()">
+                        <i class="bi bi-link-45deg"></i>
+                    </button>
                 </div>
-                <div class="card-body">
-                    <ul class="list-unstyled mb-0">
-                        <li class="mb-2"><small><i class="bi bi-check-circle text-success me-1"></i> Meet in a public place</small></li>
-                        <li class="mb-2"><small><i class="bi bi-check-circle text-success me-1"></i> Inspect the item before buying</small></li>
-                        <li class="mb-2"><small><i class="bi bi-check-circle text-success me-1"></i> Avoid paying in advance</small></li>
-                        <li><small><i class="bi bi-check-circle text-success me-1"></i> Report suspicious activity</small></li>
+            </div>
+
+            <!-- Shipping Information -->
+            <div class="info-card">
+                <h6><i class="bi bi-truck"></i> Shipping Information</h6>
+                <div class="shipping-info">
+                    <div class="shipping-option">
+                        <strong>Delivery:</strong> {{ listing.get_delivery_option_display }}
+                    </div>
+                    <div class="shipping-time">
+                        <strong>Estimated Delivery:</strong> 2-5 business days
+                    </div>
+                    <div class="shipping-cost">
+                        <strong>Cost:</strong> 
+                        {% if listing.delivery_option == 'pickup' %}
+                        Free pickup
+                        {% else %}
+                        Calculated at checkout
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Return Policy -->
+            <div class="info-card">
+                <h6><i class="bi bi-arrow-left-right"></i> Return Policy</h6>
+                <div class="return-policy">
+                    <p>30-day return policy. Items must be in original condition.</p>
+                    <ul class="info-list">
+                        <li><i class="bi bi-check-circle text-success"></i> 30-day returns</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Money-back guarantee</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Buyer protection</li>
                     </ul>
                 </div>
             </div>
-            
-            <!-- Action Buttons for Owner -->
-            {% if user == object.seller %}
-            <div class="card">
-                <div class="card-header bg-light">
-                    <h6 class="mb-0"><i class="bi bi-gear me-1"></i> Manage Listing</h6>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'listing-update' object.pk %}" class="btn btn-outline-primary">
-                            <i class="bi bi-pencil me-1"></i> Edit Listing
-                        </a>
-                        <a href="{% url 'listing-delete' object.pk %}" class="btn btn-outline-danger">
-                            <i class="bi bi-trash me-1"></i> Delete Listing
-                        </a>
+
+            <!-- Safety Tips -->
+            <div class="info-card">
+                <h6><i class="bi bi-shield-check"></i> Safety Tips</h6>
+                <ul class="info-list">
+                    <li><i class="bi bi-check-circle text-success"></i> Meet in a public place</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Inspect the item before buying</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Avoid paying in advance</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Report suspicious activity</li>
+                </ul>
+            </div>
+
+            <!-- Recently Viewed Products -->
+            {% if recently_viewed_sidebar %}
+            <div class="info-card">
+                <h6><i class="bi bi-clock"></i> Recently Viewed</h6>
+                <div class="recently-viewed-sidebar">
+                    {% for recent in recently_viewed_sidebar %}
+                    <div class="recent-item">
+                        <img src="{{ recent.get_image_url }}" alt="{{ recent.title }}">
+                        <div class="recent-details">
+                            <a href="{% url 'listing-detail' recent.pk %}">{{ recent.title|truncatewords:3 }}</a>
+                            <div class="recent-price">KSh {{ recent.price }}</div>
+                        </div>
                     </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Management for Owner -->
+            {% if user == listing.seller %}
+            <div class="info-card">
+                <h6><i class="bi bi-gear"></i> Manage Listing</h6>
+                <div class="seller-actions">
+                    <a href="{% url 'listing-update' listing.pk %}" class="action-button secondary">
+                        <i class="bi bi-pencil"></i> Edit Listing
+                    </a>
+                    <a href="{% url 'listing-delete' listing.pk %}" class="action-button secondary">
+                        <i class="bi bi-trash"></i> Delete Listing
+                    </a>
                 </div>
             </div>
             {% endif %}
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced Image Gallery Functionality
+    const mainImage = document.getElementById('main-image');
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    const currentImageSpan = document.getElementById('current-image');
+    const totalImagesSpan = document.getElementById('total-images');
+    const zoomToggle = document.getElementById('zoom-toggle');
+    const fullscreenToggle = document.getElementById('fullscreen-toggle');
+    const thumbPrev = document.getElementById('thumb-prev');
+    const thumbNext = document.getElementById('thumb-next');
+    
+    let currentImageIndex = 0;
+    const images = [];
+    
+    // Collect all images
+    if (mainImage) {
+        images.push(mainImage.src);
+    }
+    thumbnails.forEach((thumb, index) => {
+        if (index > 0) { // Skip first thumbnail (main image duplicate)
+            images.push(thumb.getAttribute('data-image'));
+        }
+    });
+    
+    // Update image counter
+    if (totalImagesSpan) {
+        totalImagesSpan.textContent = images.length;
+    }
+    
+    // Thumbnail click functionality
+    if (thumbnails.length > 0) {
+        thumbnails.forEach((thumbnail, index) => {
+            thumbnail.addEventListener('click', function() {
+                const imageUrl = this.getAttribute('data-image');
+                mainImage.src = imageUrl;
+                mainImage.setAttribute('data-zoom', imageUrl);
+                
+                // Update active state
+                thumbnails.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update current image index
+                currentImageIndex = Array.from(thumbnails).indexOf(this);
+                if (currentImageSpan) {
+                    currentImageSpan.textContent = currentImageIndex + 1;
+                }
+            });
+        });
+    }
+    
+    // Zoom functionality
+    if (zoomToggle && mainImage) {
+        zoomToggle.addEventListener('click', function() {
+            mainImage.classList.toggle('zoomed');
+            zoomToggle.innerHTML = mainImage.classList.contains('zoomed') ? 
+                '<i class="bi bi-zoom-out"></i>' : '<i class="bi bi-zoom-in"></i>';
+        });
+    }
+    
+    // Fullscreen functionality
+    if (fullscreenToggle) {
+        fullscreenToggle.addEventListener('click', openFullscreen);
+    }
+    
+    // Thumbnail navigation
+    if (thumbPrev) {
+        thumbPrev.addEventListener('click', showPrevImage);
+    }
+    
+    if (thumbNext) {
+        thumbNext.addEventListener('click', showNextImage);
+    }
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (document.querySelector('.image-fullscreen')) {
+            if (e.key === 'Escape') {
+                closeFullscreen();
+            } else if (e.key === 'ArrowLeft') {
+                showPrevImage();
+            } else if (e.key === 'ArrowRight') {
+                showNextImage();
+            }
+        }
+    });
+    
+    function openFullscreen() {
+        const fullscreenHTML = `
+            <div class="image-fullscreen">
+                <button class="fullscreen-close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <img src="${images[currentImageIndex]}" class="fullscreen-image" alt="Fullscreen view">
+                <button class="fullscreen-nav fullscreen-prev">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <button class="fullscreen-nav fullscreen-next">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+                <div class="fullscreen-counter">
+                    ${currentImageIndex + 1} / ${images.length}
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', fullscreenHTML);
+        
+        // Add event listeners to fullscreen elements
+        const fullscreenClose = document.querySelector('.fullscreen-close');
+        const fullscreenPrev = document.querySelector('.fullscreen-prev');
+        const fullscreenNext = document.querySelector('.fullscreen-next');
+        
+        fullscreenClose.addEventListener('click', closeFullscreen);
+        fullscreenPrev.addEventListener('click', showPrevImage);
+        fullscreenNext.addEventListener('click', showNextImage);
+    }
+    
+    function closeFullscreen() {
+        const fullscreen = document.querySelector('.image-fullscreen');
+        if (fullscreen) {
+            fullscreen.remove();
+        }
+    }
+    
+    function showPrevImage() {
+        currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+        updateImageDisplay();
+    }
+    
+    function showNextImage() {
+        currentImageIndex = (currentImageIndex + 1) % images.length;
+        updateImageDisplay();
+    }
+    
+    function updateImageDisplay() {
+        const fullscreenImage = document.querySelector('.fullscreen-image');
+        const fullscreenCounter = document.querySelector('.fullscreen-counter');
+        
+        if (fullscreenImage) {
+            fullscreenImage.src = images[currentImageIndex];
+        }
+        
+        if (fullscreenCounter) {
+            fullscreenCounter.textContent = `${currentImageIndex + 1} / ${images.length}`;
+        }
+        
+        // Also update the main image and thumbnails if not in fullscreen
+        if (!document.querySelector('.image-fullscreen')) {
+            mainImage.src = images[currentImageIndex];
+            mainImage.setAttribute('data-zoom', images[currentImageIndex]);
+            
+            thumbnails.forEach((thumb, index) => {
+                thumb.classList.toggle('active', index === currentImageIndex);
+            });
+            
+            if (currentImageSpan) {
+                currentImageSpan.textContent = currentImageIndex + 1;
+            }
+        }
+    }
+
+    // Favorite button AJAX with modern animation
+    const favoriteForm = document.querySelector('.favorite-form');
+    if (favoriteForm) {
+        favoriteForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            const button = form.querySelector('button');
+            const icon = button.querySelector('i');
+            
+            // Add click animation
+            button.style.transform = 'scale(0.95)';
+            
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset animation
+                setTimeout(() => {
+                    button.style.transform = 'scale(1)';
+                }, 150);
+                
+                if (data.is_favorited) {
+                    button.classList.remove('secondary');
+                    button.classList.add('primary');
+                    icon.classList.remove('bi-heart');
+                    icon.classList.add('bi-heart-fill');
+                    button.innerHTML = `<i class="bi bi-heart-fill"></i> Liked (${data.favorite_count})`;
+                } else {
+                    button.classList.remove('primary');
+                    button.classList.add('secondary');
+                    icon.classList.remove('bi-heart-fill');
+                    icon.classList.add('bi-heart');
+                    button.innerHTML = `<i class="bi bi-heart"></i> Like (${data.favorite_count})`;
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    }
+
+    // Social Sharing Functions
+    window.shareOnFacebook = function() {
+        const url = encodeURIComponent(window.location.href);
+        const text = encodeURIComponent("Check out this listing: {{ listing.title }}");
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`, '_blank');
+    };
+
+    window.shareOnTwitter = function() {
+        const url = encodeURIComponent(window.location.href);
+        const text = encodeURIComponent("Check out this listing: {{ listing.title }}");
+        window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+    };
+
+    window.shareOnWhatsApp = function() {
+        const text = encodeURIComponent("Check out this listing: {{ listing.title }} - " + window.location.href);
+        window.open(`https://wa.me/?text=${text}`, '_blank');
+    };
+
+    window.copyListingLink = function() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            // Show success message
+            const originalText = document.querySelector('.social-share-btn.link i').className;
+            const button = document.querySelector('.social-share-btn.link');
+            button.innerHTML = '<i class="bi bi-check"></i>';
+            button.style.background = 'var(--accent-green)';
+            
+            setTimeout(() => {
+                button.innerHTML = '<i class="bi bi-link-45deg"></i>';
+                button.style.background = '';
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+        });
+    };
+
+    // Accordion functionality for FAQs
+    const accordionButtons = document.querySelectorAll('.accordion-button');
+    accordionButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const target = this.getAttribute('data-bs-target');
+            const collapseElement = document.querySelector(target);
+            
+            // Toggle active state
+            const isCollapsed = collapseElement.classList.contains('show');
+            accordionButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            if (!isCollapsed) {
+                this.classList.add('active');
+            }
+        });
+    });
+
+    // Mobile horizontal scrolling for similar listings and seller listings
+    function initHorizontalScrolling() {
+        const similarGrid = document.querySelector('.similar-grid');
+        const sellerGrid = document.querySelector('.seller-grid');
+        
+        if (window.innerWidth < 768) {
+            // Convert similar listings to horizontal scroll
+            if (similarGrid && !similarGrid.classList.contains('horizontal-scroll-container')) {
+                similarGrid.classList.add('horizontal-scroll-container');
+                document.querySelectorAll('.similar-card').forEach(card => {
+                    card.classList.add('horizontal-scroll-item');
+                });
+            }
+            
+            // Convert seller listings to horizontal scroll
+            if (sellerGrid && !sellerGrid.classList.contains('horizontal-scroll-container')) {
+                sellerGrid.classList.add('horizontal-scroll-container');
+                document.querySelectorAll('.seller-listing-card').forEach(card => {
+                    card.classList.add('horizontal-scroll-item');
+                });
+            }
+        } else {
+            // Revert to grid layout on larger screens
+            if (similarGrid && similarGrid.classList.contains('horizontal-scroll-container')) {
+                similarGrid.classList.remove('horizontal-scroll-container');
+                document.querySelectorAll('.similar-card').forEach(card => {
+                    card.classList.remove('horizontal-scroll-item');
+                });
+            }
+            
+            if (sellerGrid && sellerGrid.classList.contains('horizontal-scroll-container')) {
+                sellerGrid.classList.remove('horizontal-scroll-container');
+                document.querySelectorAll('.seller-listing-card').forEach(card => {
+                    card.classList.remove('horizontal-scroll-item');
+                });
+            }
+        }
+    }
+
+    // Initialize horizontal scrolling on load and resize
+    initHorizontalScrolling();
+    window.addEventListener('resize', initHorizontalScrolling);
+});
+</script>
 {% endblock %}

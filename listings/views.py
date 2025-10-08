@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.db.models import Q, Count, Avg
-from .models import Listing, Category, Favorite, Activity
+from .models import Listing, Category, Favorite, Activity, RecentlyViewed, Review, Order, OrderItem, Cart, CartItem, Payment, Escrow, ListingImage
 from .forms import ListingForm
 from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect
@@ -35,15 +35,16 @@ class ListingListView(ListView):
     paginate_by = 12
 
     def get_queryset(self):
-        # Remove is_sold filter to show all listings including sold ones
-        queryset = Listing.objects.all().order_by('-date_created')
+        queryset = Listing.objects.filter(is_active=True).order_by('-date_created')
         
         # Search functionality
         query = self.request.GET.get('q')
         if query:
             queryset = queryset.filter(
                 Q(title__icontains=query) | 
-                Q(description__icontains=query)
+                Q(description__icontains=query) |
+                Q(brand__icontains=query) |
+                Q(model__icontains=query)
             )
         
         # Filter by location
@@ -58,131 +59,118 @@ class ListingListView(ListView):
         
         return queryset
 
+    # In ListingListView class
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['categories'] = Category.objects.all()
+        context['categories'] = Category.objects.filter(is_active=True)
         context['locations'] = Listing.HOMABAY_LOCATIONS
-        context['total_listings_count'] = Listing.objects.all().count()  # Include sold items
+        context['total_listings_count'] = Listing.objects.filter(is_active=True).count()
         context['total_users_count'] = User.objects.count()
-        context['total_categories_count'] = Category.objects.count()
+        context['total_categories_count'] = Category.objects.filter(is_active=True).count()
         
-        try:
-            from blog.models import BlogPost
-            context['blog_posts'] = BlogPost.objects.filter(
-                status='published'
-            ).select_related('author').order_by('-published_at')[:3]
-        except Exception as e:
-            print(f"Error loading blog posts: {e}")
-            context['blog_posts'] = []
-        
-        # Add the missing context variables that home.html expects
-        context['popular_categories'] = Category.objects.annotate(
-            listing_count=Count('listing')
-        ).order_by('-listing_count')[:6]
-        
-        # Get completed transactions count (orders with status 'delivered')
-        try:
-            from .models import Order
-            context['successful_transactions'] = Order.objects.filter(
-                status__in=['paid', 'shipped', 'delivered']
+        # Add this: Create listings_count dictionary for category counts
+        listings_count = {}
+        for category in context['categories']:
+            listings_count[category.id] = Listing.objects.filter(
+                category=category, 
+                is_active=True
             ).count()
-        except Exception as e:
-            print(f"Error loading completed transactions: {e}")
-            context['successful_transactions'] = 0
-        
-        # For testimonials - create empty list since you don't have testimonials model
-        context['testimonials'] = []
-        
-        # Efficiently get listing counts per category
-        category_counts = (
-            Listing.objects.all()  # Include sold items
-            .values('category')
-            .annotate(count=Count('id'))
-        )
-        # Build a dict: {category_id: count}
-        listings_count = {cat['category']: cat['count'] for cat in category_counts}
-        # Ensure all categories are present, even if count is 0
-        for category in Category.objects.all():
-            listings_count.setdefault(category.id, 0)
         context['listings_count'] = listings_count
-
-        context['recent_activities'] = Activity.objects.select_related('user').order_by('-timestamp')[:5]
-
-        category_id = self.request.GET.get('category')
-        if category_id:
-            context['selected_category'] = get_object_or_404(Category, id=category_id)
-
-        # Get top sellers (users with most sales in current month)
-        current_month = timezone.now().month
-        current_year = timezone.now().year
         
-        # This is a simplified version - you'll need to adjust based on your Order model
-        try:
-            from .models import Order, OrderItem
-            # Get users who have sold items in the current month
-            current_month_orders = Order.objects.filter(
-                created_at__month=current_month,
-                created_at__year=current_year,
-                status__in=['paid', 'shipped', 'delivered']
-            )
-            
-            # Get seller IDs from order items
-            seller_ids = OrderItem.objects.filter(
-                order__in=current_month_orders
-            ).values_list('listing__seller', flat=True).distinct()
-            
-            # Get top sellers with their sales count
-            top_sellers = User.objects.filter(
-                id__in=seller_ids
-            ).annotate(
-                monthly_sales=Count(
-                    'listings__order_items',
-                    filter=Q(
-                        listings__order_items__order__in=current_month_orders
-                    )
-                )
-            ).order_by('-monthly_sales')[:3]
-            
-            context['top_sellers'] = top_sellers
-            
-        except Exception as e:
-            print(f"Error loading top sellers: {e}")
-            context['top_sellers'] = []
+        # Add successful transactions count (you might need to implement this)
+        context['successful_transactions'] = Order.objects.filter(status='delivered').count()
         
-        # If no top sellers this month, get active sellers with listings
-        if not context.get('top_sellers'):
-            active_sellers = User.objects.annotate(
-                listing_count=Count('listings')
-            ).filter(listing_count__gt=0).order_by('?')[:3]
-            context['active_sellers'] = active_sellers
+        # Featured listings for carousel
+        context['featured_listings'] = Listing.objects.filter(
+            is_featured=True, 
+            is_active=True,
+            is_sold=False
+        ).order_by('-date_created')[:8]
+        
+        # Popular categories with counts - use annotated counts instead
+        context['popular_categories'] = Category.objects.filter(
+            is_active=True
+        ).annotate(
+            listing_count=Count('listing', filter=Q(listing__is_active=True))
+        ).filter(listing_count__gt=0).order_by('-listing_count')[:8]
+        
+        # Recently viewed listings for authenticated users
+        if self.request.user.is_authenticated:
+            recently_viewed = RecentlyViewed.objects.filter(
+                user=self.request.user
+            ).select_related('listing').order_by('-viewed_at')[:6]
+            context['recently_viewed'] = [rv.listing for rv in recently_viewed]
+        
+        # Add featured users (you might need to implement this logic)
+        context['featured_users'] = User.objects.annotate(
+            listing_count=Count('listings', filter=Q(listings__is_active=True))
+        ).filter(listing_count__gt=0).order_by('-listing_count')[:3]
+        
+        if self.request.user.is_authenticated:
+            user_favorites = Favorite.objects.filter(
+                user=self.request.user
+            ).values_list('listing_id', flat=True)
+            context['user_favorites'] = list(user_favorites)
+        else:
+            context['user_favorites'] = []
+
+        context['blog_posts'] = BlogPost.objects.filter(status="published").order_by('-published_at')[:3]
 
         return context
-    
-from django.db.models import Avg, Count
-from django.views.generic import DetailView
-from django.shortcuts import get_object_or_404
-from .models import Listing, Favorite, Review
 
 class ListingDetailView(DetailView):
     model = Listing
     template_name = 'listings/listing_detail.html'
     context_object_name = 'listing'
     
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        
+        # Track recently viewed for authenticated users
+        if self.request.user.is_authenticated:
+            RecentlyViewed.objects.update_or_create(
+                user=self.request.user,
+                listing=obj,
+                defaults={'viewed_at': timezone.now()}
+            )
+        
+        return obj
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         listing = self.get_object()
         user = self.request.user
         
-        # Get all reviews for the listing (available to all users)
-        context['reviews'] = listing.reviews.select_related('user').all()
+        # Get all reviews for the listing
+        reviews = listing.reviews.select_related('user').all()
+        context['reviews'] = reviews
         
-        # Calculate average rating (available to all users)
+        # Calculate average rating
         avg_rating = listing.reviews.aggregate(
             avg_rating=Avg('rating')
         )['avg_rating']
         context['avg_rating'] = round(avg_rating, 1) if avg_rating else 0
         
-        # Check if the current user has favorited this listing (only for authenticated users)
+        # Calculate rating distribution
+        rating_counts = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0}
+        for review in reviews:
+            if 1 <= review.rating <= 5:
+                rating_counts[review.rating] += 1
+        
+        total_reviews = reviews.count()
+        rating_distribution = []
+        for rating in [5, 4, 3, 2, 1]:
+            count = rating_counts[rating]
+            percentage = (count / total_reviews * 100) if total_reviews > 0 else 0
+            rating_distribution.append({
+                'rating': rating,
+                'count': count,
+                'percentage': percentage
+            })
+        
+        context['rating_distribution'] = rating_distribution
+        
+        # Check if the current user has favorited this listing
         if user.is_authenticated:
             context['is_favorited'] = Favorite.objects.filter(
                 user=user, 
@@ -191,15 +179,64 @@ class ListingDetailView(DetailView):
         else:
             context['is_favorited'] = False
             
-        return context
+        # Get similar listings
+        context['similar_listings'] = Listing.objects.filter(
+            category=listing.category,
+            is_active=True,
+            is_sold=False
+        ).exclude(id=listing.id)[:6]
         
+        # Get seller's other listings
+        context['seller_other_listings'] = Listing.objects.filter(
+            seller=listing.seller,
+            is_active=True,
+            is_sold=False
+        ).exclude(id=listing.id)[:4]
+        
+        # Get seller statistics
+        seller = listing.seller
+        seller_listings = Listing.objects.filter(seller=seller, is_active=True)
+        seller_reviews = Review.objects.filter(listing__seller=seller)
+        
+        context['seller_reviews_count'] = seller_reviews.count()
+        seller_avg_rating = seller_reviews.aggregate(
+            avg_rating=Avg('rating')
+        )['avg_rating']
+        context['seller_avg_rating'] = round(seller_avg_rating, 1) if seller_avg_rating else 0
+        
+        # Get FAQs for this listing
+        context['faqs'] = listing.faqs.filter(is_active=True).order_by('order')
+        
+        # Get recently viewed for sidebar
+        if user.is_authenticated:
+            recently_viewed = RecentlyViewed.objects.filter(
+                user=user
+            ).exclude(listing=listing).select_related('listing').order_by('-viewed_at')[:4]
+            context['recently_viewed_sidebar'] = [rv.listing for rv in recently_viewed]
+        
+        # Get price history
+        context['price_history'] = listing.price_history.all()[:10]
+            
+        return context
+
+    
 class ListingCreateView(LoginRequiredMixin, CreateView):
     model = Listing
     form_class = ListingForm
 
     def form_valid(self, form):
         form.instance.seller = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        
+        # Handle multiple image uploads
+        images = self.request.FILES.getlist('images')
+        for image in images:
+            ListingImage.objects.create(
+                listing=form.instance,
+                image=image
+            )
+        
+        return response
 
 class ListingUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Listing
@@ -211,6 +248,20 @@ class ListingUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         listing = self.get_object()
         return self.request.user == listing.seller
 
+    def form_valid(self, form):
+        form.instance.seller = self.request.user
+        response = super().form_valid(form)
+        
+        # Handle multiple image uploads
+        images = self.request.FILES.getlist('images')
+        for image in images:
+            ListingImage.objects.create(
+                listing=form.instance,
+                image=image
+            )
+        
+        return response
+
 class ListingDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Listing
     success_url = '/'
@@ -221,8 +272,8 @@ class ListingDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 
 def all_listings(request):
-    # Get all non-sold listings
-    listings = Listing.objects.filter(is_sold=False).order_by('-date_created')
+    # Get all active listings
+    listings = Listing.objects.filter(is_active=True).order_by('-date_created')
     
     # Get filter parameters
     category_id = request.GET.get('category')
@@ -248,7 +299,9 @@ def all_listings(request):
     if search_query:
         listings = listings.filter(
             Q(title__icontains=search_query) | 
-            Q(description__icontains=search_query)
+            Q(description__icontains=search_query) |
+            Q(brand__icontains=search_query) |
+            Q(model__icontains=search_query)
         )
     
     # Apply sorting
@@ -262,7 +315,7 @@ def all_listings(request):
         listings = listings.order_by('-date_created')
     
     # Pagination
-    paginator = Paginator(listings, 12)  # Show 12 listings per page
+    paginator = Paginator(listings, 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
@@ -274,11 +327,13 @@ def all_listings(request):
                 'id': listing.id,
                 'title': listing.title,
                 'price': str(listing.price),
-                'image_url': listing.image.url,
+                'image_url': listing.get_image_url(),
                 'category': listing.category.name,
                 'location': listing.get_location_display(),
                 'date_created': listing.date_created.strftime('%b %d, %Y'),
                 'url': listing.get_absolute_url(),
+                'stock': listing.stock,
+                'is_sold': listing.is_sold,
             })
         
         return JsonResponse({
@@ -293,7 +348,7 @@ def all_listings(request):
     # For regular requests, return the full page
     context = {
         'listings': page_obj,
-        'categories': Category.objects.all(),
+        'categories': Category.objects.filter(is_active=True),
         'locations': Listing.HOMABAY_LOCATIONS,
         'selected_category': category_id,
         'selected_location': location,
@@ -303,6 +358,33 @@ def all_listings(request):
         'sort_by': sort_by,
         'total_listings_count': listings.count(),
     }
+    
+    # Add featured listings for carousel
+    context['featured_listings'] = Listing.objects.filter(
+        is_featured=True, 
+        is_active=True,
+        is_sold=False
+    ).order_by('-date_created')[:6]
+    
+    # Add popular categories
+    context['popular_categories'] = Category.objects.filter(
+        is_active=True
+    ).annotate(
+        listing_count=Count('listing', filter=Q(listing__is_active=True))
+    ).filter(listing_count__gt=0).order_by('-listing_count')[:12]
+    
+    # Add user favorites for template
+    if request.user.is_authenticated:
+        user_favorites = Favorite.objects.filter(
+            user=request.user
+        ).values_list('listing_id', flat=True)
+        context['user_favorites'] = list(user_favorites)
+        
+        # Recently viewed
+        recently_viewed = RecentlyViewed.objects.filter(
+            user=request.user
+        ).select_related('listing').order_by('-viewed_at')[:6]
+        context['recently_viewed'] = [rv.listing for rv in recently_viewed]
     
     return render(request, 'listings/all_listings.html', context)
 

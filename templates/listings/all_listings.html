@@ -6,203 +6,731 @@
 
 {% block extra_css %}
 <style>
-/* Custom CSS for the Listings Page */
-.card, .filter-sidebar .card, .filter-tag {
-    background-color: var(--card-bg);
+/* Modern Listings Styles */
+.listing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.listing-card {
+    background: var(--card-bg);
     border: 1px solid var(--border-color);
-    box-shadow: var(--shadow);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-hover);
-}
-
-.filter-sidebar .card {
-    border-radius: 1rem;
+    border-radius: 16px;
     overflow: hidden;
-    position: sticky;
-    top: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    position: relative;
 }
 
-.filter-header {
-    cursor: pointer;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border-color);
-    transition: background-color 0.3s ease;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.listing-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: var(--primary-gemini);
 }
 
-.filter-header:hover {
-    background-color: var(--card-bg-hover);
+.listing-card__image {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
 }
 
-.filter-header .bi {
+.listing-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     transition: transform 0.3s ease;
 }
 
-.filter-header[aria-expanded="true"] .bi {
-    transform: rotate(180deg);
+.listing-card:hover .listing-card__image img {
+    transform: scale(1.05);
 }
 
-.filter-content {
+.listing-card__badges {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.listing-card__category {
+    background: linear-gradient(135deg, var(--primary-gemini), #5a67d8);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+}
+
+.listing-card__status {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.listing-card__sold {
+    background: var(--danger-color);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.listing-card__favorite {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.listing-card__favorite:hover {
+    background: white;
+    transform: scale(1.1);
+}
+
+.listing-card__favorite.favorited {
+    background: var(--danger-color);
+    color: white;
+}
+
+.listing-card__content {
+    padding: 1.25rem;
+}
+
+.listing-card__title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+    color: var(--text-color);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.listing-card__meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.listing-card__price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-gemini);
+}
+
+.listing-card__location {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.listing-card__stock {
+    font-size: 0.875rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.listing-card__stock.in-stock {
+    background: rgba(52, 168, 83, 0.1);
+    color: var(--accent-green);
+    border: 1px solid rgba(52, 168, 83, 0.2);
+}
+
+.listing-card__stock.out-of-stock {
+    background: rgba(234, 67, 53, 0.1);
+    color: var(--danger-color);
+    border: 1px solid rgba(234, 67, 53, 0.2);
+}
+
+.listing-card__footer {
+    padding: 0 1.25rem 1.25rem;
+}
+
+.listing-card__button {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+}
+
+.listing-card__button--primary {
+    background: var(--primary-gemini);
+    color: white;
+}
+
+.listing-card__button--primary:hover {
+    background: #3367d6;
+    transform: translateY(-2px);
+}
+
+/* Modern Filter Styles */
+.filter-sidebar {
+    position: sticky;
+    top: 100px;
+}
+
+.filter-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.filter-card__header {
+    background: linear-gradient(135deg, var(--primary-gemini), #5a67d8);
+    color: white;
+    padding: 1rem 1.25rem;
+}
+
+.filter-card__title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-card__body {
+    padding: 1.25rem;
+}
+
+.filter-group {
+    margin-bottom: 1.5rem;
+}
+
+.filter-group:last-child {
+    margin-bottom: 0;
+}
+
+.filter-group__label {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--text-color);
+    display: block;
+}
+
+.filter-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--input-bg);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+}
+
+.filter-input:focus {
+    outline: none;
+    border-color: var(--primary-gemini);
+    box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+}
+
+.filter-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+}
+
+.price-range__inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.price-quick-select {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.price-chip {
+    background: var(--card-bg-hover);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.price-chip:hover {
+    border-color: var(--primary-gemini);
+    background: var(--primary-gemini-25);
+}
+
+.filter-button {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin-bottom: 0.75rem;
+}
+
+.filter-button--primary {
+    background: var(--primary-gemini);
+    color: white;
+}
+
+.filter-button--primary:hover {
+    background: #3367d6;
+    transform: translateY(-2px);
+}
+
+.filter-button--secondary {
+    background: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.filter-button--secondary:hover {
+    background: var(--card-bg-hover);
+    border-color: var(--primary-gemini);
+}
+
+/* Header and Controls */
+.listings-header {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.results-count {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.sort-select {
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.5rem 1rem;
+    color: var(--text-color);
+    font-size: 0.875rem;
+    min-width: 160px;
+}
+
+/* Active Filters */
+.active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.filter-tag {
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    padding: 0.5rem 0.875rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.filter-tag__remove {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.filter-tag__remove:hover {
+    background: var(--danger-color);
+    color: white;
+}
+
+/* Featured Listings */
+.featured-listings {
+    margin-bottom: 3rem;
+}
+
+.featured-carousel {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.featured-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    margin: 0 0.5rem;
+}
+
+.featured-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.featured-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: linear-gradient(135deg, #ff6b35, #daa520);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.featured-content {
     padding: 1rem;
 }
 
-.price-range {
+.featured-content h5 {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.featured-content .price {
+    font-weight: 700;
+    color: var(--primary-gemini);
+    margin-bottom: 0.75rem;
+}
+
+/* Category Quick Navigation */
+.category-quick-nav {
+    margin-bottom: 2rem;
+}
+
+.category-card {
     display: flex;
-    gap: 1rem;
+    flex-direction: column;
     align-items: center;
-}
-
-.price-input, .sort-dropdown {
-    background-color: var(--input-bg);
-    border: 1px solid var(--border-color);
+    padding: 1rem;
+    background: var(--card-bg);
+    border-radius: 12px;
+    text-decoration: none;
     color: var(--text-color);
-    border-radius: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+    height: 100%;
 }
 
-.price-input:focus, .sort-dropdown:focus {
+.category-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     border-color: var(--primary-gemini);
-    box-shadow: 0 0 0 0.25rem var(--primary-gemini-25);
-    outline: none;
+    text-decoration: none;
+    color: var(--text-color);
 }
 
+.category-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--primary-gemini);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.category-name {
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-align: center;
+    margin-bottom: 0.25rem;
+}
+
+.category-count {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Location Filters */
+.location-filters {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.location-chip {
+    display: inline-flex;
+    align-items: center;
+    background: var(--card-bg-hover);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.location-chip:hover {
+    background: var(--primary-gemini);
+    color: white;
+    text-decoration: none;
+    border-color: var(--primary-gemini);
+}
+
+/* Recently Viewed */
+.recently-viewed {
+    margin-top: 3rem;
+}
+
+.recent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.recent-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.recent-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.recent-card img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+}
+
+.recent-info {
+    padding: 0.75rem;
+}
+
+.recent-info h6 {
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.recent-info .price {
+    font-weight: 600;
+    color: var(--primary-gemini);
+    margin-bottom: 0.5rem;
+}
+
+/* Loading and Empty States */
 .loading-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: var(--loading-bg);
+    background: var(--loading-bg);
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     z-index: 9999;
-    transition: opacity 0.3s ease;
-    display: none;
+    backdrop-filter: blur(4px);
 }
 
 .loading-spinner {
-    width: 3rem;
-    height: 3rem;
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(66, 133, 244, 0.1);
+    border-left: 4px solid var(--primary-gemini);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
-.listing-grid {
-    transition: opacity 0.3s ease;
-}
-
-.pagination {
-    margin-top: 2rem;
-}
-
-.results-count {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-}
-
-.filter-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.filter-tag {
-    border-radius: 1rem;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.875rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background-color: var(--tag-bg);
-    color: var(--tag-text);
-}
-
-.filter-tag button {
-    background: none;
-    border: none;
-    color: var(--tag-text);
-    cursor: pointer;
-}
-
-.filter-tag button:hover {
-    color: var(--danger);
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .no-results {
     text-align: center;
-    padding: 3rem 1rem;
+    padding: 4rem 2rem;
     color: var(--text-muted);
 }
 
-.sort-dropdown {
-    min-width: 150px;
+.no-results__icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
 }
 
-.listing-card .card-img-top {
-    border-radius: 0.75rem 0.75rem 0 0;
-    height: 250px;
+.no-results__title {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+.no-results__description {
+    margin-bottom: 2rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 3rem;
+    gap: 0.5rem;
+}
+
+.page-item .page-link {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.page-item.active .page-link {
+    background: var(--primary-gemini);
+    border-color: var(--primary-gemini);
+    color: white;
+}
+
+.page-item:not(.active) .page-link:hover {
+    background: var(--card-bg-hover);
+    border-color: var(--primary-gemini);
+    transform: translateY(-2px);
+}
+
+/* Swiper Carousel */
+.swiper {
+    width: 100%;
+    height: 100%;
+}
+
+.swiper-slide {
+    text-align: center;
+    font-size: 18px;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.swiper-slide img {
+    display: block;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
 }
 
-.listing-card .position-relative {
-    overflow: hidden;
-}
-
-.listing-card .category-badge {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background-color: var(--primary-gemini);
-    color: white;
-    padding: 0.3rem 0.7rem;
-    border-radius: 0.5rem;
-    font-size: 0.8rem;
-    font-weight: 500;
-}
-
-.listing-card .price-tag {
-    font-size: 1.25rem;
-    font-weight: 700;
+.swiper-button-next, .swiper-button-prev {
     color: var(--primary-gemini);
 }
 
-.listing-card .card-footer {
-    border-top: none;
-}
-
-.btn-primary, .btn-primary:hover, .btn-primary:active {
-    background-color: var(--primary-gemini);
-    border-color: var(--primary-gemini);
-}
-
-.btn-outline-secondary {
-    border-color: var(--border-color);
-    color: var(--text-color);
-}
-
-.btn-outline-secondary:hover {
-    background-color: var(--card-bg-hover);
-    color: var(--text-color);
-}
-
+/* Responsive Design */
 @media (max-width: 768px) {
+    .listing-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .listings-header {
+        padding: 1rem;
+    }
+    
+    .price-range__inputs {
+        grid-template-columns: 1fr;
+    }
+    
     .filter-sidebar {
+        position: static;
         margin-bottom: 2rem;
     }
     
-    .price-range {
-        flex-direction: column;
-        align-items: stretch;
+    .recent-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .category-quick-nav .row {
+        margin: -0.5rem;
+    }
+    
+    .category-quick-nav .col-6 {
+        padding: 0.5rem;
     }
 }
+
+/* Modern Scrollbar */
+.listing-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.listing-grid::-webkit-scrollbar-track {
+    background: var(--card-bg-hover);
+    border-radius: 3px;
+}
+
+.listing-grid::-webkit-scrollbar-thumb {
+    background: var(--primary-gemini);
+    border-radius: 3px;
+}
+
+.listing-grid::-webkit-scrollbar-thumb:hover {
+    background: #3367d6;
+}
 </style>
+
+<!-- Swiper CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 {% endblock %}
 
 {% block content %}
@@ -215,77 +743,130 @@
         </ol>
     </nav>
 
-    <div class="row">
-        <!-- Filters Sidebar -->
-        <div class="col-lg-3 filter-sidebar">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-filter me-2"></i> Filters</h5>
+    <!-- Featured Listings Carousel -->
+    {% if featured_listings %}
+    <section class="featured-listings">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="h4 mb-0">
+                <i class="bi bi-star-fill text-warning me-2"></i>
+                Featured Listings
+            </h3>
+            <a href="{% url 'all-listings' %}?sort_by=featured" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="featured-carousel">
+            <div class="swiper featuredSwiper">
+                <div class="swiper-wrapper">
+                    {% for featured_listing in featured_listings %}
+                    <div class="swiper-slide">
+                        <div class="featured-card">
+                            <img src="{{ featured_listing.get_image_url }}" alt="{{ featured_listing.title }}">
+                            <div class="featured-badge">Featured</div>
+                            <div class="featured-content">
+                                <h5>{{ featured_listing.title|truncatewords:6 }}</h5>
+                                <p class="price">KSh {{ featured_listing.price }}</p>
+                                <a href="{% url 'listing-detail' featured_listing.pk %}" class="btn btn-primary btn-sm w-100">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
-                <div class="card-body">
-                    <!-- Filter Form -->
-                    <div id="filter-form">
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Quick Category Navigation -->
+    <section class="category-quick-nav mb-4">
+        <h5 class="mb-3">Browse by Category</h5>
+        <div class="row g-2">
+            {% for category in popular_categories %}
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{% url 'all-listings' %}?category={{ category.id }}" class="category-card">
+                    <div class="category-icon">
+                        <i class="bi {{ category.icon }}"></i>
+                    </div>
+                    <span class="category-name">{{ category.name }}</span>
+                    <span class="category-count">{{ category.listing_count }} items</span>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <div class="row">
+        <!-- Modern Filter Sidebar -->
+        <div class="col-lg-3">
+            <div class="filter-sidebar">
+                <div class="filter-card">
+                    <div class="filter-card__header">
+                        <h2 class="filter-card__title">
+                            <i class="bi bi-funnel"></i>
+                            Filters
+                        </h2>
+                    </div>
+                    <div class="filter-card__body">
                         <!-- Search -->
-                        <div class="mb-4">
-                            <label for="search" class="form-label">Search</label>
-                            <input type="text" class="form-control" id="search" name="q" value="{{ search_query|default:'' }}" placeholder="Search listings...">
+                        <div class="filter-group">
+                            <label class="filter-group__label">Search</label>
+                            <input type="text" class="filter-input" id="search" name="q" 
+                                   value="{{ search_query|default:'' }}" placeholder="What are you looking for?">
                         </div>
 
-                        <!-- Category Filter -->
-                        <div class="mb-4">
-                            <div class="filter-header" data-bs-toggle="collapse" data-bs-target="#categoryCollapse" aria-expanded="true">
-                                <h6 class="mb-0">Category</h6> <i class="bi bi-chevron-down"></i>
-                            </div>
-                            <div class="collapse show" id="categoryCollapse">
-                                <div class="filter-content">
-                                    <select class="form-select" id="category" name="category">
-                                        <option value="all" {% if not selected_category %}selected{% endif %}>All Categories</option>
-                                        {% for category in categories %}
-                                        <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
+                        <!-- Category -->
+                        <div class="filter-group">
+                            <label class="filter-group__label">Category</label>
+                            <select class="filter-input filter-select" id="category" name="category">
+                                <option value="all" {% if not selected_category %}selected{% endif %}>All Categories</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
                         </div>
 
-                        <!-- Location Filter -->
-                        <div class="mb-4">
-                            <div class="filter-header collapsed" data-bs-toggle="collapse" data-bs-target="#locationCollapse" aria-expanded="false">
-                                <h6 class="mb-0">Location</h6> <i class="bi bi-chevron-down"></i>
-                            </div>
-                            <div class="collapse" id="locationCollapse">
-                                <div class="filter-content">
-                                    <select class="form-select" id="location" name="location">
-                                        <option value="all" {% if not selected_location %}selected{% endif %}>All Locations</option>
-                                        {% for value, name in locations %}
-                                        <option value="{{ value }}" {% if selected_location == value %}selected{% endif %}>{{ name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
+                        <!-- Location -->
+                        <div class="filter-group">
+                            <label class="filter-group__label">Location</label>
+                            <select class="filter-input filter-select" id="location" name="location">
+                                <option value="all" {% if not selected_location %}selected{% endif %}>All Locations</option>
+                                {% for value, name in locations %}
+                                <option value="{{ value }}" {% if selected_location == value %}selected{% endif %}>
+                                    {{ name }}
+                                </option>
+                                {% endfor %}
+                            </select>
                         </div>
 
                         <!-- Price Range -->
-                        <div class="mb-4">
-                            <div class="filter-header collapsed" data-bs-toggle="collapse" data-bs-target="#priceCollapse" aria-expanded="false">
-                                <h6 class="mb-0">Price Range</h6> <i class="bi bi-chevron-down"></i>
-                            </div>
-                            <div class="collapse" id="priceCollapse">
-                                <div class="filter-content">
-                                    <div class="price-range">
-                                        <input type="number" class="form-control price-input" id="min_price" name="min_price" value="{{ min_price|default:'' }}" placeholder="Min" min="0">
-                                        <span class="text-muted">to</span>
-                                        <input type="number" class="form-control price-input" id="max_price" name="max_price" value="{{ max_price|default:'' }}" placeholder="Max" min="0">
-                                    </div>
-                                </div>
+                        <div class="filter-group">
+                            <label class="filter-group__label">Price Range</label>
+                            <div class="price-range__inputs">
+                                <input type="number" class="filter-input" id="min_price" name="min_price" 
+                                       value="{{ min_price|default:'' }}" placeholder="Min" min="0">
+                                <input type="number" class="filter-input" id="max_price" name="max_price" 
+                                       value="{{ max_price|default:'' }}" placeholder="Max" min="0">
                             </div>
                         </div>
 
-                        <button type="button" id="apply-filters" class="btn btn-primary w-100 mb-2">
-                            <i class="bi bi-filter me-1"></i> Apply Filters
+                        <!-- Quick Price Ranges -->
+                        <div class="filter-group">
+                            <label class="filter-group__label">Quick Price Ranges</label>
+                            <div class="price-quick-select">
+                                <button type="button" class="price-chip" data-min="0" data-max="1000">Under KSh 1,000</button>
+                                <button type="button" class="price-chip" data-min="1000" data-max="5000">KSh 1,000 - 5,000</button>
+                                <button type="button" class="price-chip" data-min="5000" data-max="10000">KSh 5,000 - 10,000</button>
+                                <button type="button" class="price-chip" data-min="10000" data-max="">Over KSh 10,000</button>
+                            </div>
+                        </div>
+
+                        <button type="button" id="apply-filters" class="filter-button filter-button--primary">
+                            <i class="bi bi-check-lg me-2"></i>Apply Filters
                         </button>
-                        <button type="button" id="reset-filters" class="btn btn-outline-secondary w-100">
-                            <i class="bi bi-x-circle me-1"></i> Reset Filters
+                        <button type="button" id="reset-filters" class="filter-button filter-button--secondary">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Reset All
                         </button>
                     </div>
                 </div>
@@ -294,27 +875,45 @@
 
         <!-- Listings Content -->
         <div class="col-lg-9">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="h4 mb-0">All Listings</h2>
-                <div class="d-flex align-items-center gap-2">
-                    <span class="results-count" id="results-count">
-                        Showing {{ listings|length }} of {{ total_listings_count }} listings
-                    </span>
-                    <select class="form-select form-select-sm sort-dropdown" id="sort-by">
-                        <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
-                        <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
-                        <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
-                        <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
-                    </select>
+            <!-- Header with Controls -->
+            <div class="listings-header">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div>
+                        <h1 class="h3 mb-1">Browse Listings</h1>
+                        <div class="results-count" id="results-count">
+                            {{ listings.paginator.count }} results found
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <label class="mb-0 text-muted small">Sort by:</label>
+                        <select class="sort-select" id="sort-by">
+                            <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+                            <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
+                            <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
+            <!-- Location-based Quick Filters -->
+            <section class="location-filters">
+                <h6 class="mb-3">Popular Locations</h6>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for value, name in locations %}
+                    <a href="{% url 'all-listings' %}?location={{ value }}" class="location-chip">
+                        <i class="bi bi-geo-alt me-1"></i>{{ name }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </section>
+
             <!-- Active Filters -->
-            <div class="filter-tags" id="active-filters">
+            <div class="active-filters" id="active-filters">
                 {% if search_query %}
                 <div class="filter-tag">
                     Search: "{{ search_query }}"
-                    <button type="button" class="remove-filter" data-filter="q">
+                    <button type="button" class="filter-tag__remove remove-filter" data-filter="q">
                         <i class="bi bi-x"></i>
                     </button>
                 </div>
@@ -325,7 +924,7 @@
                     {% if category.id == selected_category|add:0 %}
                     <div class="filter-tag">
                         Category: {{ category.name }}
-                        <button type="button" class="remove-filter" data-filter="category">
+                        <button type="button" class="filter-tag__remove remove-filter" data-filter="category">
                             <i class="bi bi-x"></i>
                         </button>
                     </div>
@@ -339,7 +938,7 @@
                     {% for value, name in locations %}
                         {% if value == selected_location %}{{ name }}{% endif %}
                     {% endfor %}
-                    <button type="button" class="remove-filter" data-filter="location">
+                    <button type="button" class="filter-tag__remove remove-filter" data-filter="location">
                         <i class="bi bi-x"></i>
                     </button>
                 </div>
@@ -347,8 +946,8 @@
                 
                 {% if min_price %}
                 <div class="filter-tag">
-                    Min Price: KSh {{ min_price }}
-                    <button type="button" class="remove-filter" data-filter="min_price">
+                    Min: KSh {{ min_price }}
+                    <button type="button" class="filter-tag__remove remove-filter" data-filter="min_price">
                         <i class="bi bi-x"></i>
                     </button>
                 </div>
@@ -356,73 +955,93 @@
                 
                 {% if max_price %}
                 <div class="filter-tag">
-                    Max Price: KSh {{ max_price }}
-                    <button type="button" class="remove-filter" data-filter="max_price">
+                    Max: KSh {{ max_price }}
+                    <button type="button" class="filter-tag__remove remove-filter" data-filter="max_price">
                         <i class="bi bi-x"></i>
                     </button>
                 </div>
                 {% endif %}
             </div>
 
-            <!-- Listings Grid -->
+            <!-- Modern Listings Grid -->
             <div class="listing-grid" id="listings-container">
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                    {% for listing in listings %}
-                    <div class="col">
-                        <div class="card listing-card h-100">
-                            <div class="position-relative">
-                                {% if listing.image %}
-                                    <img src="{{ listing.get_image_url }}" class="card-img-top listing-img" alt="{{ listing.title }}">
-                                {% else %}
-                                    <img src="/media/listing_images/default.png" alt="Default image" style="max-width: 100%; height: auto;">
+                {% for listing in listings %}
+                <div class="listing-card">
+                    <div class="listing-card__image">
+                        <img src="{{ listing.get_image_url }}" alt="{{ listing.title }}">
+                        <div class="listing-card__badges">
+                            <span class="listing-card__category">{{ listing.category.name }}</span>
+                            <div class="listing-card__status">
+                                {% if listing.is_sold %}
+                                <span class="listing-card__sold">Sold</span>
                                 {% endif %}
-                                <span class="category-badge badge bg-primary">{{ listing.category.name }}</span>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">{{ listing.title }}</h5>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="price-tag">KSh {{ listing.price }}</span>
-                                    <!-- In the listing card, add this near the price -->
-                                    {% if listing.stock > 0 %}
-                                        <small class="text-muted">{{ listing.stock }} in stock</small>
-                                    {% else %}
-                                        <small class="text-danger">Out of stock</small>
-                                    {% endif %}
-                                    <span class="badge bg-light text-dark">{{ listing.get_location_display }}</span>
-                                </div>
-                            </div>
-                            <div class="card-footer bg-transparent">
-                                
-                                    <a href="{% url 'listing-detail' listing.pk %}" class="btn btn-sm btn-outline-primary">View Details</a>
-                                    
-                                
+                                <form action="{% url 'toggle_favorite' listing.id %}" method="post" class="favorite-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="listing-card__favorite {% if listing.id in user_favorites %}favorited{% endif %}">
+                                        <i class="bi bi-heart{% if listing.id in user_favorites %}-fill{% endif %}"></i>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
-                    {% empty %}
-                    <div class="col-12">
-                        <div class="no-results">
-                            <i class="bi bi-search display-1 text-muted"></i>
-                            <h4 class="mt-3">No listings found</h4>
-                            <p class="text-muted">Try adjusting your filters or check back later for new listings.</p>
-                            <button id="reset-all-filters" class="btn btn-primary">Reset All Filters</button>
+                    
+                    <div class="listing-card__content">
+                        <h3 class="listing-card__title">{{ listing.title }}</h3>
+                        
+                        <div class="listing-card__meta">
+                            <span class="listing-card__price">KSh {{ listing.price }}</span>
+                            <span class="listing-card__location">
+                                <i class="bi bi-geo-alt"></i>
+                                {{ listing.get_location_display }}
+                            </span>
+                        </div>
+                        
+                        <div class="listing-card__stock {% if listing.stock > 0 %}in-stock{% else %}out-of-stock{% endif %}">
+                            {% if listing.stock > 0 %}
+                                {{ listing.stock }} available
+                            {% else %}
+                                Out of stock
+                            {% endif %}
                         </div>
                     </div>
-                    {% endfor %}
+                    
+                    <div class="listing-card__footer">
+                        <a href="{% url 'listing-detail' listing.pk %}" class="listing-card__button listing-card__button--primary">
+                            View Details
+                        </a>
+                    </div>
                 </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="no-results">
+                        <div class="no-results__icon">
+                            <i class="bi bi-search"></i>
+                        </div>
+                        <h3 class="no-results__title">No listings found</h3>
+                        <p class="no-results__description">
+                            Try adjusting your search filters or check back later for new listings.
+                        </p>
+                        <button id="reset-all-filters" class="filter-button filter-button--primary">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Reset All Filters
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
 
             <!-- Pagination -->
             {% if listings.has_other_pages %}
-            <nav aria-label="Listings pagination" class="mt-4">
-                <ul class="pagination justify-content-center">
+            <nav aria-label="Listings pagination">
+                <ul class="pagination">
                     {% if listings.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ listings.previous_page_number }}" data-page="{{ listings.previous_page_number }}">Previous</a>
+                        <a class="page-link" href="?page={{ listings.previous_page_number }}" data-page="{{ listings.previous_page_number }}">
+                            <i class="bi bi-chevron-left"></i> Previous
+                        </a>
                     </li>
                     {% else %}
                     <li class="page-item disabled">
-                        <span class="page-link">Previous</span>
+                        <span class="page-link"><i class="bi bi-chevron-left"></i> Previous</span>
                     </li>
                     {% endif %}
 
@@ -436,29 +1055,52 @@
 
                     {% if listings.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ listings.next_page_number }}" data-page="{{ listings.next_page_number }}">Next</a>
+                        <a class="page-link" href="?page={{ listings.next_page_number }}" data-page="{{ listings.next_page_number }}">
+                            Next <i class="bi bi-chevron-right"></i>
+                        </a>
                     </li>
                     {% else %}
                     <li class="page-item disabled">
-                        <span class="page-link">Next</span>
+                        <span class="page-link">Next <i class="bi bi-chevron-right"></i></span>
                     </li>
                     {% endif %}
                 </ul>
             </nav>
+            {% endif %}
+
+            <!-- Recently Viewed Listings -->
+            {% if recently_viewed %}
+            <section class="recently-viewed">
+                <h4 class="mb-4">Recently Viewed</h4>
+                <div class="recent-grid">
+                    {% for recent in recently_viewed %}
+                    <div class="recent-card">
+                        <img src="{{ recent.get_image_url }}" alt="{{ recent.title }}">
+                        <div class="recent-info">
+                            <h6>{{ recent.title|truncatewords:4 }}</h6>
+                            <p class="price">KSh {{ recent.price }}</p>
+                            <a href="{% url 'listing-detail' recent.pk %}" class="btn btn-sm btn-outline-primary w-100">View Again</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
             {% endif %}
         </div>
     </div>
 </div>
 
 <!-- Loading Overlay -->
-<div class="loading-overlay" id="loading-overlay">
-    <div class="spinner-border text-primary loading-spinner" role="status">
-        <span class="visually-hidden">Loading...</span>
-    </div>
+<div class="loading-overlay" id="loading-overlay" style="display: none;">
+    <div class="loading-spinner"></div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+<!-- Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<!-- Consolidated Script -->
 <script>
 // Debounce function to limit API calls
 function debounce(func, wait) {
@@ -473,8 +1115,26 @@ function debounce(func, wait) {
     };
 }
 
-// Main AJAX filtering functionality
+// Main AJAX filtering and UI functionality
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Swiper
+    if (typeof Swiper !== 'undefined') {
+        var featuredSwiper = new Swiper(".featuredSwiper", {
+            slidesPerView: 1,
+            spaceBetween: 20,
+            navigation: {
+                nextEl: ".swiper-button-next",
+                prevEl: ".swiper-button-prev",
+            },
+            breakpoints: {
+                640: { slidesPerView: 2 },
+                768: { slidesPerView: 3 },
+                1024: { slidesPerView: 4 },
+            },
+        });
+    }
+
+    // All Listings Page Functionality
     const listingsContainer = document.getElementById('listings-container');
     const loadingOverlay = document.getElementById('loading-overlay');
     const resultsCount = document.getElementById('results-count');
@@ -507,18 +1167,18 @@ document.addEventListener('DOMContentLoaded', function() {
             location: document.getElementById('location').value,
             min_price: document.getElementById('min_price').value,
             max_price: document.getElementById('max_price').value,
-            sort_by: sortSelect.value,
+            sort_by: sortSelect ? sortSelect.value : 'newest',
             page: currentPage
         };
     }
     
     // Function to update listings via AJAX
     function updateListings() {
-        if (isLoading) return;
+        if (isLoading || !listingsContainer) return;
         
         isLoading = true;
-        loadingOverlay.style.display = 'flex';
-        listingsContainer.style.opacity = '0.5';
+        if (loadingOverlay) loadingOverlay.style.display = 'flex';
+        if (listingsContainer) listingsContainer.style.opacity = '0.5';
         
         // Get filter values
         const filters = getFilterValues();
@@ -551,7 +1211,9 @@ document.addEventListener('DOMContentLoaded', function() {
             updatePagination(data);
             
             // Update results count
-            resultsCount.textContent = `Showing ${data.listings.length} of ${data.total_count} listings`;
+            if (resultsCount) {
+                resultsCount.textContent = `${data.total_count} results found`;
+            }
             
             // Update URL without reloading page
             const newUrl = `${window.location.pathname}?${params.toString()}`;
@@ -561,31 +1223,35 @@ document.addEventListener('DOMContentLoaded', function() {
             updateActiveFilters(filters);
             
             isLoading = false;
-            loadingOverlay.style.display = 'none';
-            listingsContainer.style.opacity = '1';
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+            if (listingsContainer) listingsContainer.style.opacity = '1';
         })
         .catch(error => {
             console.error('Error:', error);
             isLoading = false;
-            loadingOverlay.style.display = 'none';
-            listingsContainer.style.opacity = '1';
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+            if (listingsContainer) listingsContainer.style.opacity = '1';
             
             // Show error message
-            listingsContainer.innerHTML = `
-                <div class="col-12">
-                    <div class="no-results">
-                        <i class="bi bi-exclamation-triangle display-1 text-muted"></i>
-                        <h4 class="mt-3">Error loading listings</h4>
-                        <p class="text-muted">Please try again later.</p>
-                        <button onclick="location.reload()" class="btn btn-primary">Reload Page</button>
+            if (listingsContainer) {
+                listingsContainer.innerHTML = `
+                    <div class="col-12">
+                        <div class="no-results">
+                            <i class="bi bi-exclamation-triangle display-1 text-muted"></i>
+                            <h4 class="mt-3">Error loading listings</h4>
+                            <p class="text-muted">Please try again later.</p>
+                            <button onclick="location.reload()" class="btn btn-primary">Reload Page</button>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
         });
     }
     
     // Function to render listings
     function renderListings(listings) {
+        if (!listingsContainer) return;
+        
         if (listings.length === 0) {
             listingsContainer.innerHTML = `
                 <div class="col-12">
@@ -606,41 +1272,101 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        let html = '<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">';
+        let html = '';
         
         listings.forEach(listing => {
+            const stockClass = listing.stock > 0 ? 'in-stock' : 'out-of-stock';
+            const stockText = listing.stock > 0 ? `${listing.stock} available` : 'Out of stock';
+            const isFavorited = {% if user_favorites %} {{ listing.id }} in {{ user_favorites|safe }} {% else %} false {% endif %};
+            
             html += `
-                <div class="col">
-                    <div class="card listing-card h-100">
-                        <div class="position-relative">
-                            <img src="${listing.image_url}" class="card-img-top listing-img" alt="${listing.title}">
-                            <span class="category-badge badge bg-primary">${listing.category}</span>
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">${listing.title}</h5>
-                            <p class="card-text text-muted small">${listing.date_created}</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="price-tag">KSh ${listing.price}</span>
-                                
-                                <span class="badge bg-light text-dark">${listing.location}</span>
+                <div class="listing-card">
+                    <div class="listing-card__image">
+                        <img src="${listing.image_url}" alt="${listing.title}">
+                        <div class="listing-card__badges">
+                            <span class="listing-card__category">${listing.category}</span>
+                            <div class="listing-card__status">
+                                ${listing.is_sold ? '<span class="listing-card__sold">Sold</span>' : ''}
+                                <form action="{% url 'toggle_favorite' 0 %}".replace('0', listing.id) method="post" class="favorite-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="listing-card__favorite ${isFavorited ? 'favorited' : ''}">
+                                        <i class="bi bi-heart${isFavorited ? '-fill' : ''}"></i>
+                                    </button>
+                                </form>
                             </div>
                         </div>
-                        <div class="card-footer bg-transparent">
-                            
-                            <a href="${listing.url}" class="btn btn-sm btn-outline-primary">View Details</a>
-                            
+                    </div>
+                    
+                    <div class="listing-card__content">
+                        <h3 class="listing-card__title">${listing.title}</h3>
+                        
+                        <div class="listing-card__meta">
+                            <span class="listing-card__price">KSh ${listing.price}</span>
+                            <span class="listing-card__location">
+                                <i class="bi bi-geo-alt"></i>
+                                ${listing.location}
+                            </span>
                         </div>
+                        
+                        <div class="listing-card__stock ${stockClass}">
+                            ${stockText}
+                        </div>
+                    </div>
+                    
+                    <div class="listing-card__footer">
+                        <a href="${listing.url}" class="listing-card__button listing-card__button--primary">
+                            View Details
+                        </a>
                     </div>
                 </div>
             `;
         });
         
-        html += '</div>';
         listingsContainer.innerHTML = html;
+        
+        // Add event listeners to favorite buttons with smooth animations
+        document.querySelectorAll('.listing-card__favorite').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const form = this.closest('form');
+                const icon = this.querySelector('i');
+                
+                // Add click animation
+                this.style.transform = 'scale(0.9)';
+                
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Reset animation
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 150);
+                    
+                    if (data.is_favorited) {
+                        this.classList.add('favorited');
+                        icon.classList.remove('bi-heart');
+                        icon.classList.add('bi-heart-fill');
+                    } else {
+                        this.classList.remove('favorited');
+                        icon.classList.remove('bi-heart-fill');
+                        icon.classList.add('bi-heart');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
     }
     
     // Function to update pagination
     function updatePagination(data) {
+        if (!listingsContainer) return;
+        
         // Remove existing pagination
         const existingPagination = document.querySelector('.pagination');
         if (existingPagination) {
@@ -651,21 +1377,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.num_pages <= 1) return;
         
         let paginationHtml = `
-            <nav aria-label="Listings pagination" class="mt-4">
-                <ul class="pagination justify-content-center">
+            <nav aria-label="Listings pagination">
+                <ul class="pagination">
         `;
         
         // Previous button
         if (data.has_previous) {
             paginationHtml += `
                 <li class="page-item">
-                    <a class="page-link" href="#" data-page="${data.current_page - 1}">Previous</a>
+                    <a class="page-link" href="#" data-page="${data.current_page - 1}">
+                        <i class="bi bi-chevron-left"></i> Previous
+                    </a>
                 </li>
             `;
         } else {
             paginationHtml += `
                 <li class="page-item disabled">
-                    <span class="page-link">Previous</span>
+                    <span class="page-link"><i class="bi bi-chevron-left"></i> Previous</span>
                 </li>
             `;
         }
@@ -708,13 +1436,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.has_next) {
             paginationHtml += `
                 <li class="page-item">
-                    <a class="page-link" href="#" data-page="${data.current_page + 1}">Next</a>
+                    <a class="page-link" href="#" data-page="${data.current_page + 1}">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </a>
                 </li>
             `;
         } else {
             paginationHtml += `
                 <li class="page-item disabled">
-                    <span class="page-link">Next</span>
+                    <span class="page-link">Next <i class="bi bi-chevron-right"></i></span>
                 </li>
             `;
         }
@@ -739,6 +1469,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Function to update active filters display
     function updateActiveFilters(filters) {
+        if (!activeFilters) return;
+        
         let html = '';
         
         // Search filter
@@ -746,7 +1478,7 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `
                 <div class="filter-tag">
                     Search: "${filters.q}"
-                    <button type="button" class="remove-filter" data-filter="q">
+                    <button type="button" class="filter-tag__remove remove-filter" data-filter="q">
                         <i class="bi bi-x"></i>
                     </button>
                 </div>
@@ -758,7 +1490,7 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `
                 <div class="filter-tag">
                     Category: ${categoryMap[filters.category] || filters.category}
-                    <button type="button" class="remove-filter" data-filter="category">
+                    <button type="button" class="filter-tag__remove remove-filter" data-filter="category">
                         <i class="bi bi-x"></i>
                     </button>
                 </div>
@@ -770,7 +1502,7 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `
                 <div class="filter-tag">
                     Location: ${locationMap[filters.location] || filters.location}
-                    <button type="button" class="remove-filter" data-filter="location">
+                    <button type="button" class="filter-tag__remove remove-filter" data-filter="location">
                         <i class="bi bi-x"></i>
                     </button>
                 </div>
@@ -781,8 +1513,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (filters.min_price) {
             html += `
                 <div class="filter-tag">
-                    Min Price: KSh ${filters.min_price}
-                    <button type="button" class="remove-filter" data-filter="min_price">
+                    Min: KSh ${filters.min_price}
+                    <button type="button" class="filter-tag__remove remove-filter" data-filter="min_price">
                         <i class="bi bi-x"></i>
                     </button>
                 </div>
@@ -792,8 +1524,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (filters.max_price) {
             html += `
                 <div class="filter-tag">
-                    Max Price: KSh ${filters.max_price}
-                    <button type="button" class="remove-filter" data-filter="max_price">
+                    Max: KSh ${filters.max_price}
+                    <button type="button" class="filter-tag__remove remove-filter" data-filter="max_price">
                         <i class="bi bi-x"></i>
                     </button>
                 </div>
@@ -825,24 +1557,48 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('location').value = 'all';
         document.getElementById('min_price').value = '';
         document.getElementById('max_price').value = '';
-        sortSelect.value = 'newest';
+        if (sortSelect) sortSelect.value = 'newest';
         currentPage = 1;
         
         updateListings();
     }
     
-    // Event listeners
-    applyFiltersBtn.addEventListener('click', function() {
-        currentPage = 1;
-        updateListings();
+    // Quick price range buttons
+    document.querySelectorAll('.price-chip').forEach(chip => {
+        chip.addEventListener('click', function() {
+            const min = this.getAttribute('data-min');
+            const max = this.getAttribute('data-max');
+            
+            document.getElementById('min_price').value = min;
+            if (max) {
+                document.getElementById('max_price').value = max;
+            } else {
+                document.getElementById('max_price').value = '';
+            }
+            
+            currentPage = 1;
+            updateListings();
+        });
     });
     
-    sortSelect.addEventListener('change', function() {
-        currentPage = 1;
-        updateListings();
-    });
+    // Event listeners for All Listings page
+    if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', function() {
+            currentPage = 1;
+            updateListings();
+        });
+    }
     
-    resetFiltersBtn.addEventListener('click', resetAllFilters);
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            currentPage = 1;
+            updateListings();
+        });
+    }
+    
+    if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', resetAllFilters);
+    }
     
     // Attach event listener for the "no results" button if it exists
     document.addEventListener('click', function(e) {
@@ -851,40 +1607,47 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Add event listeners for input changes with debounce
-    document.getElementById('search').addEventListener('input', debounce(function() {
-        currentPage = 1;
-        updateListings();
-    }, 500));
+    // Add event listeners for input changes with debounce (All Listings page)
+    const searchInput = document.getElementById('search');
+    const categorySelect = document.getElementById('category');
+    const locationSelect = document.getElementById('location');
+    const minPriceInput = document.getElementById('min_price');
+    const maxPriceInput = document.getElementById('max_price');
     
-    document.getElementById('category').addEventListener('change', function() {
-        currentPage = 1;
-        updateListings();
-    });
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(function() {
+            currentPage = 1;
+            updateListings();
+        }, 500));
+    }
     
-    document.getElementById('location').addEventListener('change', function() {
-        currentPage = 1;
-        updateListings();
-    });
-    
-    document.getElementById('min_price').addEventListener('input', debounce(function() {
-        currentPage = 1;
-        updateListings();
-    }, 500));
-    
-    document.getElementById('max_price').addEventListener('input', debounce(function() {
-        currentPage = 1;
-        updateListings();
-    }, 500));
-    
-    // Add event listener to filter headers to rotate the chevron
-    document.querySelectorAll('.filter-header').forEach(header => {
-        header.addEventListener('click', function() {
-            const collapseElement = document.querySelector(this.getAttribute('data-bs-target'));
-            const isCollapsed = collapseElement.classList.contains('show');
-            this.setAttribute('aria-expanded', !isCollapsed);
+    if (categorySelect) {
+        categorySelect.addEventListener('change', function() {
+            currentPage = 1;
+            updateListings();
         });
-    });
+    }
+    
+    if (locationSelect) {
+        locationSelect.addEventListener('change', function() {
+            currentPage = 1;
+            updateListings();
+        });
+    }
+    
+    if (minPriceInput) {
+        minPriceInput.addEventListener('input', debounce(function() {
+            currentPage = 1;
+            updateListings();
+        }, 500));
+    }
+    
+    if (maxPriceInput) {
+        maxPriceInput.addEventListener('input', debounce(function() {
+            currentPage = 1;
+            updateListings();
+        }, 500));
+    }
 });
 </script>
 {% endblock %}

@@ -7,33 +7,68 @@ from django.urls import reverse
 from django.db.models import Avg
 from cloudinary.models import CloudinaryField
 
+from django.db import models
+from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils import timezone
+
+
 User = get_user_model()
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    icon = models.CharField(max_length=50, blank=True, help_text="Bootstrap icon class name")
+    icon = models.CharField(max_length=50, blank=True, default='bi-grid', help_text="Bootstrap icon class name")
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.name
 
     class Meta:
         verbose_name_plural = "Categories"
+        ordering = ['order', 'name']
 
+class ListingImage(models.Model):
+    listing = models.ForeignKey('Listing', on_delete=models.CASCADE, related_name='images')
+    
+    # Cloudinary field for images
+    if 'cloudinary' in settings.INSTALLED_APPS and hasattr(settings, 'CLOUDINARY_CLOUD_NAME') and settings.CLOUDINARY_CLOUD_NAME:
+        image = CloudinaryField(
+            'image',
+            folder='homabay_souq/listings/gallery/',
+            null=True,
+            blank=True
+        )
+    else:
+        image = models.ImageField(
+            upload_to='listing_images/gallery/',
+            null=True,
+            blank=True
+        )
+    
+    caption = models.CharField(max_length=200, blank=True)
+    order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-from django.db import models
-from django.conf import settings
+    class Meta:
+        ordering = ['order', 'created_at']
 
-# Try to import CloudinaryField, fallback to ImageField if not available
-try:
-    from cloudinary.models import CloudinaryField
-    CLOUDINARY_AVAILABLE = True
-except ImportError:
-    CLOUDINARY_AVAILABLE = False
-    from django.db.models import ImageField
+    def __str__(self):
+        return f"Image for {self.listing.title}"
 
+    def get_image_url(self):
+        """Safe method to get image URL"""
+        if self.image:
+            try:
+                return self.image.url
+            except Exception as e:
+                if hasattr(self.image, 'url'):
+                    return self.image.url
+                return '/static/images/default.png'
+        return '/static/images/default.png'
+    
 class Listing(models.Model):
-    # Pre-defined list of Homabay locations
     HOMABAY_LOCATIONS = [
         ('HB_Town', 'Homa Bay Town'),
         ('Kendu_Bay', 'Kendu Bay'),
@@ -62,7 +97,9 @@ class Listing(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     location = models.CharField(max_length=50, choices=HOMABAY_LOCATIONS)
-    if CLOUDINARY_AVAILABLE and hasattr(settings, 'CLOUDINARY_CLOUD_NAME') and settings.CLOUDINARY_CLOUD_NAME:
+    
+    # Image field with Cloudinary fallback
+    if 'cloudinary' in settings.INSTALLED_APPS and hasattr(settings, 'CLOUDINARY_CLOUD_NAME') and settings.CLOUDINARY_CLOUD_NAME:
         image = CloudinaryField(
             'image',
             folder='homabay_souq/listings/',
@@ -70,19 +107,37 @@ class Listing(models.Model):
             blank=True
         )
     else:
-        # Fallback to regular ImageField
         image = models.ImageField(
             upload_to='listing_images/',
             null=True,
             blank=True
         )
+    
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES, default='used')
     delivery_option = models.CharField(max_length=20, choices=DELIVERY_OPTIONS, default='pickup')
     stock = models.PositiveIntegerField(default=1)
     is_sold = models.BooleanField(default=False)
+    is_featured = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    
+    # Product specifications
+    brand = models.CharField(max_length=100, blank=True)
+    model = models.CharField(max_length=100, blank=True)
+    dimensions = models.CharField(max_length=100, blank=True, help_text="e.g., 10x5x3 inches")
+    weight = models.CharField(max_length=50, blank=True, help_text="e.g., 2.5 kg")
+    color = models.CharField(max_length=50, blank=True)
+    material = models.CharField(max_length=100, blank=True)
+    
+    # SEO and sharing
+    meta_description = models.TextField(blank=True)
+    slug = models.SlugField(unique=True, blank=True)
+    
     date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
     seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='listings', null=True)
     
+    # Price history (we'll track this via a separate model)
+    original_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -96,7 +151,6 @@ class Listing(models.Model):
     def get_delivery_option_display(self):
         return dict(self.DELIVERY_OPTIONS).get(self.delivery_option, 'Unknown')
 
-
     @property
     def average_rating(self):
         if self.reviews.count() > 0:
@@ -109,19 +163,51 @@ class Listing(models.Model):
             try:
                 return self.image.url
             except Exception as e:
-                # Fallback if Cloudinary is not configured
                 if hasattr(self.image, 'url'):
                     return self.image.url
                 return '/static/images/default.png'
         return '/static/images/default.png'
     
+    @property
+    def price_trend(self):
+        """Simple price trend indicator"""
+        if self.original_price and self.original_price > self.price:
+            return 'down'
+        elif self.original_price and self.original_price < self.price:
+            return 'up'
+        return 'stable'
+    
     def save(self, *args, **kwargs):
+        # Set original price on first save
+        if not self.pk and not self.original_price:
+            self.original_price = self.price
+        
         # Ensure the directory exists before saving
         if self.image:
-            # Create directory if it doesn't exist
+            import os
             os.makedirs(os.path.join(settings.MEDIA_ROOT, 'listing_images'), exist_ok=True)
+        
+        # Generate slug if not provided
+        if not self.slug:
+            from django.utils.text import slugify
+            self.slug = slugify(self.title)
+            # Ensure uniqueness
+            original_slug = self.slug
+            counter = 1
+            while Listing.objects.filter(slug=self.slug).exclude(pk=self.pk).exists():
+                self.slug = f"{original_slug}-{counter}"
+                counter += 1
+        
         super().save(*args, **kwargs)
 
+class PriceHistory(models.Model):
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='price_history')
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    date_changed = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name_plural = "Price Histories"
+        ordering = ['-date_changed']
 
 class Favorite(models.Model):
     user = models.ForeignKey(
@@ -135,10 +221,11 @@ class Favorite(models.Model):
         related_name='favorites'
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    
     class Meta:
         unique_together = ('user', 'listing')
         ordering = ['-created_at']
-        
+
 class Activity(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -153,12 +240,26 @@ class Activity(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.action} at {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
+
+class RecentlyViewed(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE)
+    viewed_at = models.DateTimeField(auto_now_add=True)
     
-# In your listings/models.py file, add these models
-from django.db import models
-from django.conf import settings
-from django.core.validators import MinValueValidator, MaxValueValidator
-from django.utils import timezone
+    class Meta:
+        unique_together = ('user', 'listing')
+        ordering = ['-viewed_at']
+
+class FAQ(models.Model):
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='faqs')
+    question = models.CharField(max_length=255)
+    answer = models.TextField()
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        ordering = ['order', 'id']
+    
 
 class Cart(models.Model):
     user = models.OneToOneField(

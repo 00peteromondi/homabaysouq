@@ -231,7 +231,7 @@ SOCIALACCOUNT_QUERY_EMAIL = True
 SOCIALACCOUNT_STORE_TOKENS = True
 
 # Disable the problematic 3rdparty signup if it's causing issues
-SOCIALACCOUNT_ENABLED = True
+SOCIALACCOUNT_ENABLED = False
 
 # Login redirects
 LOGIN_REDIRECT_URL = 'home'
