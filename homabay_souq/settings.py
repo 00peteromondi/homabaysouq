@@ -231,7 +231,7 @@ SOCIALACCOUNT_QUERY_EMAIL = True
 SOCIALACCOUNT_STORE_TOKENS = True
 
 # Disable the problematic 3rdparty signup if it's causing issues
-SOCIALACCOUNT_ENABLED = False
+SOCIALACCOUNT_ENABLED = True
 
 # Login redirects
 LOGIN_REDIRECT_URL = 'home'
@@ -288,7 +288,7 @@ if not DEBUG:
     EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
     EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
     EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='tslanaokpwdjgwlf')
     DEFAULT_FROM_EMAIL = 'HomaBay Souq <noreply@homabaysouq.com>'
 
     # Password reset timeout in seconds (24 hours)

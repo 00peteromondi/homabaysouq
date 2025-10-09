@@ -622,7 +622,7 @@
     }
     
     .extra-categories-container.show {
-        max-height: 500px;
+        max-height: 1500px;
         margin-top: 1.5rem;
     }
     
@@ -1963,7 +1963,7 @@
     
     <!-- FIXED: Extra categories container for side-by-side display -->
     <div class="extra-categories-container" id="extra-categories-container">
-        {% for category in categories|slice:"10:20" %}
+        {% for category in categories|slice:"10:34" %}
         <a href="{% url 'all-listings' %}?category={{ category.id }}" class="category-card category-{{ forloop.counter0|add:10|mod:10 }} text-decoration-none">
             <i class="bi bi-{{ category.icon|default:'grid' }} category-icon"></i>
             <div class="category-content">
@@ -2003,8 +2003,8 @@
 </section>
 
 <section class="container category-items-section">
-    {% for category in categories|slice:":10" %}
-    {% with category_listings=category.listing_set.all|slice:":12" %}
+    {% for category in categories|slice:":24" %}
+    {% with category_listings=category.listing_set.all|slice:":34" %}
     {% if category_listings %}
     <div class="category-block">
         <div class="category-header">
@@ -2085,37 +2085,6 @@
     </div>
 </section>
 
-<section class="container stats-section">
-    <div class="section-header">
-        <h2 class="section-title">Our Marketplace in Numbers</h2>
-        <p class="section-subtitle">See why thousands of buyers and sellers trust our platform</p>
-    </div>
-    
-    <div class="stats-card">
-        <div class="stats-grid">
-            <div class="stat-item stat-1">
-                <i class="bi bi-grid-3x3-gap-fill stat-icon"></i>
-                <div class="stat-value">{{ total_listings_count|intcomma }}</div>
-                <div class="stat-label">Active Listings</div>
-            </div>
-            <div class="stat-item stat-2">
-                <i class="bi bi-people-fill stat-icon"></i>
-                <div class="stat-value">{{ total_users_count|intcomma }}</div>
-                <div class="stat-label">Registered Users</div>
-            </div>
-            <div class="stat-item stat-3">
-                <i class="bi bi-tags-fill stat-icon"></i>
-                <div class="stat-value">{{ total_categories_count|intcomma }}</div>
-                <div class="stat-label">Categories</div>
-            </div>
-            <div class="stat-item stat-4">
-                <i class="bi bi-check-circle-fill stat-icon"></i>
-                <div class="stat-value">{{ successful_transactions|intcomma }}</div>
-                <div class="stat-label">Successful Transactions</div>
-            </div>
-        </div>
-    </div>
-</section>
 
 <section class="container sellers-section">
     <div class="section-header">
@@ -2136,7 +2105,7 @@
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-half"></i>
-                <span>4.5</span>
+                <span>{{ seller.seller_ratings }}</span>
             </div>
             <div class="seller-stats">
                 <div class="seller-stat">

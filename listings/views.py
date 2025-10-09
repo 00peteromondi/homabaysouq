@@ -105,6 +105,18 @@ class ListingListView(ListView):
         context['featured_users'] = User.objects.annotate(
             listing_count=Count('listings', filter=Q(listings__is_active=True))
         ).filter(listing_count__gt=0).order_by('-listing_count')[:3]
+
+        # Add seller ratings (average and count) for each listing in the page
+        seller_ratings = {}
+        seller_reviews_count = {}
+        for listing in context['listings']:
+            seller = listing.seller
+            reviews = Review.objects.filter(listing__seller=seller)
+            avg_rating = reviews.aggregate(avg_rating=Avg('rating'))['avg_rating']
+            seller_ratings[seller.id] = round(avg_rating, 1) if avg_rating else 0
+            seller_reviews_count[seller.id] = reviews.count()
+        context['seller_ratings'] = seller_ratings
+        context['seller_reviews_count'] = seller_reviews_count
         
         if self.request.user.is_authenticated:
             user_favorites = Favorite.objects.filter(
