@@ -1,4 +1,4 @@
-<!-- templates/accounts/profile_edit.html -->
+
 {% extends 'base.html' %}
 {% load static %}
 
@@ -9,15 +9,17 @@
     .profile-edit-container {
         max-width: 900px;
         margin: 0 auto;
+        padding: 2rem 1rem;
     }
 
     .edit-header {
-        background: linear-gradient(135deg, var(--primary-gemini) 0%, #0d47a1 100%);
+        background: linear-gradient(135deg, var(--vibrant-blue), var(--vibrant-purple));
         color: white;
-        border-radius: 20px 20px 0 0;
-        padding: 2.5rem;
+        border-radius: 2rem 2rem 0 0;
+        padding: 3rem 2rem;
         position: relative;
         overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
     }
 
     .edit-header::before {
@@ -27,7 +29,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" preserveAspectRatio="none"><path d="M0,0 L1000,0 L1000,1000 Z" fill="rgba(255,255,255,0.1)"/></svg>');
         background-size: cover;
     }
 
@@ -35,8 +37,8 @@
         background: rgba(255, 255, 255, 0.2);
         border: none;
         border-radius: 12px;
-        width: 44px;
-        height: 44px;
+        width: 50px;
+        height: 50px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -44,26 +46,30 @@
         transition: all 0.3s ease;
         backdrop-filter: blur(10px);
         text-decoration: none;
+        position: absolute;
+        top: 2rem;
+        left: 2rem;
     }
 
     .back-btn-modern:hover {
         background: rgba(255, 255, 255, 0.3);
-        transform: translateX(-2px);
+        transform: translateX(-3px);
         color: white;
     }
 
     .profile-edit-card-modern {
         background: var(--card-bg);
-        border-radius: 0 0 20px 20px;
+        border-radius: 0 0 2rem 2rem;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
         overflow: hidden;
     }
 
     .profile-pic-section-modern {
         text-align: center;
         padding: 3rem 2rem;
-        background: linear-gradient(to bottom, rgba(var(--primary-gemini-rgb), 0.02) 0%, transparent 100%);
-        border-bottom: 1px solid rgba(var(--border-color-rgb), 0.2);
+        background: linear-gradient(to bottom, rgba(59, 130, 246, 0.02) 0%, transparent 100%);
+        border-bottom: 1px solid var(--border-color);
     }
 
     .profile-pic-wrapper-modern {
@@ -73,22 +79,23 @@
     }
 
     .profile-pic-modern {
-        width: 140px;
-        height: 140px;
+        width: 150px;
+        height: 150px;
         border-radius: 50%;
         object-fit: cover;
         border: 4px solid white;
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
         transition: all 0.3s ease;
+        background: var(--card-bg);
     }
 
     .upload-btn-modern {
         position: absolute;
-        bottom: 8px;
-        right: 8px;
-        width: 44px;
-        height: 44px;
-        background: var(--primary-gemini);
+        bottom: 10px;
+        right: 10px;
+        width: 50px;
+        height: 50px;
+        background: var(--vibrant-blue);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -101,7 +108,7 @@
     }
 
     .upload-btn-modern:hover {
-        background: var(--primary-gemini-dark);
+        background: var(--vibrant-purple);
         transform: scale(1.1);
     }
 
@@ -110,13 +117,14 @@
     }
 
     .section-title-modern {
-        font-size: 1.3rem;
+        font-size: 1.5rem;
         font-weight: 700;
         color: var(--text-color);
         margin-bottom: 1.5rem;
         padding-bottom: 0.75rem;
-        border-bottom: 2px solid rgba(var(--primary-gemini-rgb), 0.1);
+        border-bottom: 2px solid rgba(59, 130, 246, 0.1);
         position: relative;
+        font-family: 'Poppins', sans-serif;
     }
 
     .section-title-modern::after {
@@ -124,9 +132,9 @@
         position: absolute;
         bottom: -2px;
         left: 0;
-        width: 50px;
+        width: 60px;
         height: 2px;
-        background: var(--primary-gemini);
+        background: var(--vibrant-blue);
         border-radius: 2px;
     }
 
@@ -147,6 +155,7 @@
         font-weight: 600;
         color: var(--text-color);
         font-size: 0.95rem;
+        font-family: 'Inter', sans-serif;
     }
 
     .input-modern {
@@ -159,11 +168,12 @@
         font-size: 1rem;
         transition: all 0.3s ease;
         outline: none;
+        font-family: 'Inter', sans-serif;
     }
 
     .input-modern:focus {
-        border-color: var(--primary-gemini);
-        box-shadow: 0 0 0 3px rgba(var(--primary-gemini-rgb), 0.1);
+        border-color: var(--vibrant-blue);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         transform: translateY(-1px);
     }
 
@@ -178,10 +188,16 @@
         color: var(--text-muted);
         text-align: right;
         margin-top: 0.5rem;
+        font-family: 'Inter', sans-serif;
     }
 
     .char-counter-modern.warning {
-        color: #ff6b35;
+        color: var(--vibrant-orange);
+        font-weight: 600;
+    }
+
+    .char-counter-modern.error {
+        color: var(--vibrant-red);
         font-weight: 600;
     }
 
@@ -189,18 +205,19 @@
         display: flex;
         align-items: center;
         gap: 1rem;
-        padding: 1.25rem;
-        background: rgba(var(--primary-gemini-rgb), 0.03);
+        padding: 1.5rem;
+        background: rgba(59, 130, 246, 0.05);
         border-radius: 12px;
-        border: 2px solid rgba(var(--border-color-rgb), 0.1);
+        border: 2px solid rgba(59, 130, 246, 0.1);
         margin: 1.5rem 0;
     }
 
     .switch-modern {
         position: relative;
         display: inline-block;
-        width: 54px;
-        height: 30px;
+        width: 60px;
+        height: 34px;
+        flex-shrink: 0;
     }
 
     .switch-modern input {
@@ -224,8 +241,8 @@
     .slider-modern:before {
         position: absolute;
         content: "";
-        height: 22px;
-        width: 22px;
+        height: 26px;
+        width: 26px;
         left: 4px;
         bottom: 4px;
         background-color: white;
@@ -235,11 +252,24 @@
     }
 
     input:checked + .slider-modern {
-        background-color: var(--primary-gemini);
+        background-color: var(--vibrant-blue);
     }
 
     input:checked + .slider-modern:before {
-        transform: translateX(24px);
+        transform: translateX(26px);
+    }
+
+    .switch-label {
+        font-weight: 600;
+        color: var(--text-color);
+        font-family: 'Inter', sans-serif;
+    }
+
+    .switch-description {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-top: 0.25rem;
+        font-family: 'Inter', sans-serif;
     }
 
     .form-actions-modern {
@@ -247,8 +277,9 @@
         gap: 1rem;
         justify-content: flex-end;
         padding-top: 2rem;
-        border-top: 1px solid rgba(var(--border-color-rgb), 0.2);
+        border-top: 1px solid var(--border-color);
         margin-top: 2rem;
+        flex-wrap: wrap;
     }
 
     .btn-modern {
@@ -263,18 +294,19 @@
         gap: 0.5rem;
         text-decoration: none;
         font-size: 1rem;
+        font-family: 'Inter', sans-serif;
     }
 
     .btn-primary-modern {
-        background: var(--primary-gemini);
+        background: linear-gradient(135deg, var(--vibrant-blue), var(--vibrant-purple));
         color: white;
-        box-shadow: 0 4px 16px rgba(var(--primary-gemini-rgb), 0.3);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
     }
 
     .btn-primary-modern:hover {
-        background: var(--primary-gemini-dark);
+        background: linear-gradient(135deg, var(--vibrant-purple), var(--vibrant-pink));
         transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(var(--primary-gemini-rgb), 0.4);
+        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
         color: white;
     }
 
@@ -285,23 +317,36 @@
     }
 
     .btn-outline-modern:hover {
-        border-color: var(--primary-gemini);
-        color: var(--primary-gemini);
+        border-color: var(--vibrant-blue);
+        color: var(--vibrant-blue);
         transform: translateY(-2px);
-        background: rgba(var(--primary-gemini-rgb), 0.05);
+        background: rgba(59, 130, 246, 0.05);
+    }
+
+    .btn-danger-modern {
+        background: transparent;
+        color: var(--vibrant-red);
+        border: 2px solid var(--vibrant-red);
+    }
+
+    .btn-danger-modern:hover {
+        background: var(--vibrant-red);
+        color: white;
+        transform: translateY(-2px);
     }
 
     .error-message-modern {
-        color: #ff4757;
+        color: var(--vibrant-red);
         font-size: 0.85rem;
         margin-top: 0.5rem;
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        font-family: 'Inter', sans-serif;
     }
 
     .success-message-modern {
-        background: linear-gradient(135deg, #00b894, #00a085);
+        background: linear-gradient(135deg, var(--vibrant-green), var(--vibrant-emerald));
         color: white;
         padding: 1rem 1.5rem;
         border-radius: 12px;
@@ -309,12 +354,73 @@
         display: flex;
         align-items: center;
         gap: 0.75rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .security-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .security-action {
+        background: rgba(59, 130, 246, 0.05);
+        border: 1px solid rgba(59, 130, 246, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .security-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        border-color: var(--vibrant-blue);
+    }
+
+    .security-icon {
+        width: 60px;
+        height: 60px;
+        background: var(--vibrant-blue);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        margin: 0 auto 1rem;
+    }
+
+    .security-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+        font-family: 'Inter', sans-serif;
+    }
+
+    .security-description {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+        font-family: 'Inter', sans-serif;
     }
 
     @media (max-width: 768px) {
+        .profile-edit-container {
+            padding: 1rem 0.5rem;
+        }
+
         .edit-header {
             padding: 2rem 1.5rem;
-            border-radius: 16px 16px 0 0;
+            border-radius: 1.5rem 1.5rem 0 0;
+        }
+
+        .back-btn-modern {
+            top: 1.5rem;
+            left: 1.5rem;
+            width: 44px;
+            height: 44px;
         }
 
         .form-section-modern {
@@ -343,6 +449,10 @@
         .success-message-modern {
             margin: 1rem 1.5rem 0;
         }
+
+        .security-actions {
+            grid-template-columns: 1fr;
+        }
     }
 
     /* Animation for form elements */
@@ -360,57 +470,48 @@
     .form-group-modern {
         animation: fadeInUp 0.6s ease-out;
     }
-
-    .form-group-modern:nth-child(1) { animation-delay: 0.1s; }
-    .form-group-modern:nth-child(2) { animation-delay: 0.2s; }
-    .form-group-modern:nth-child(3) { animation-delay: 0.3s; }
-    .form-group-modern:nth-child(4) { animation-delay: 0.4s; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="profile-edit-container">
     <!-- Modern Header -->
-    <div class="edit-header">
-        <div class="d-flex align-items-center justify-content-between position-relative">
-            <a href="{% url 'profile' user.pk %}" class="back-btn-modern">
-                <i class="bi bi-arrow-left"></i>
-            </a>
-            <div class="text-center flex-grow-1">
-                <h1 class="h3 mb-1">Edit Profile</h1>
-                <p class="mb-0 opacity-90">Update your personal information and preferences</p>
-            </div>
-            <div style="width: 44px;"></div>
+    <div class="edit-header text-center">
+        <a href="{% url 'profile' user.pk %}" class="back-btn-modern">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div class="position-relative">
+            <h1 class="h2 mb-2">Edit Profile</h1>
+            <p class="mb-0 opacity-90">Update your personal information and preferences</p>
         </div>
     </div>
 
-    <!-- Success Messages -->
-    {% if messages %}
-        {% for message in messages %}
-            {% if message.tags == 'success' %}
-            <div class="success-message-modern">
-                <i class="bi bi-check-circle-fill"></i>
-                <span>{{ message }}</span>
-            </div>
-            {% endif %}
-        {% endfor %}
-    {% endif %}
-
     <!-- Modern Profile Card -->
     <div class="profile-edit-card-modern">
-        
+        <!-- Success Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'success' %}
+                <div class="success-message-modern">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>{{ message }}</span>
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
 
         <!-- Main Form -->
-        <form method="post" enctype="multipart/form-data" class="form-section-modern">
+        <form method="post" enctype="multipart/form-data" class="form-section-modern" id="profileForm">
             {% csrf_token %}
 
             <!-- Profile Picture Section -->
             <div class="profile-pic-section-modern">
                 <div class="profile-pic-wrapper-modern">
                     <img id="profile-pic-preview" 
-                        src="{% if form.instance.profile_picture %}{{ form.instance.get_profile_picture_url }}{% else %}{% static 'images/default.png' %}{% endif %}" 
-                        class="profile-pic-modern" 
-                        alt="Profile Picture">
+                         src="{% if form.instance.profile_picture %}{{ form.instance.get_profile_picture_url }}{% else %}{% static 'images/default_profile_pic.jpg' %}{% endif %}" 
+                         class="profile-pic-modern" 
+                         alt="Profile Picture"
+                         onerror="this.src='{% static 'images/default_profile_pic.jpg' %}'">
                     <label for="id_profile_picture" class="upload-btn-modern" title="Change Profile Picture">
                         <i class="bi bi-camera"></i>
                     </label>
@@ -445,7 +546,8 @@
                            value="{{ form.first_name.value|default:'' }}" 
                            class="input-modern {% if form.first_name.errors %}error{% endif %}" 
                            id="{{ form.first_name.id_for_label }}" 
-                           placeholder="Enter your first name">
+                           placeholder="Enter your first name"
+                           required>
                     {% if form.first_name.errors %}
                         <div class="error-message-modern">{{ form.first_name.errors }}</div>
                     {% endif %}
@@ -458,7 +560,8 @@
                            value="{{ form.last_name.value|default:'' }}" 
                            class="input-modern {% if form.last_name.errors %}error{% endif %}" 
                            id="{{ form.last_name.id_for_label }}" 
-                           placeholder="Enter your last name">
+                           placeholder="Enter your last name"
+                           required>
                     {% if form.last_name.errors %}
                         <div class="error-message-modern">{{ form.last_name.errors }}</div>
                     {% endif %}
@@ -471,7 +574,8 @@
                            value="{{ form.username.value|default:'' }}" 
                            class="input-modern {% if form.username.errors %}error{% endif %}" 
                            id="{{ form.username.id_for_label }}" 
-                           placeholder="Choose a username">
+                           placeholder="Choose a username"
+                           required>
                     {% if form.username.errors %}
                         <div class="error-message-modern">{{ form.username.errors }}</div>
                     {% endif %}
@@ -484,7 +588,8 @@
                            value="{{ form.email.value|default:'' }}" 
                            class="input-modern {% if form.email.errors %}error{% endif %}" 
                            id="{{ form.email.id_for_label }}" 
-                           placeholder="your.email@example.com">
+                           placeholder="your.email@example.com"
+                           required>
                     {% if form.email.errors %}
                         <div class="error-message-modern">{{ form.email.errors }}</div>
                     {% endif %}
@@ -498,7 +603,7 @@
                           class="input-modern textarea-modern {% if form.bio.errors %}error{% endif %}" 
                           id="{{ form.bio.id_for_label }}" 
                           rows="4" 
-                          placeholder="Tell others about yourself...">{{ form.bio.value|default:'' }}</textarea>
+                          placeholder="Tell others about yourself... (Max 500 characters)">{{ form.bio.value|default:'' }}</textarea>
                 <div class="char-counter-modern" id="bio-counter">0/500 characters</div>
                 {% if form.bio.errors %}
                     <div class="error-message-modern">{{ form.bio.errors }}</div>
@@ -510,7 +615,7 @@
             <div class="form-grid-modern">
                 <div class="form-group-modern">
                     <label for="{{ form.phone_number.id_for_label }}" class="form-label-modern">Phone Number</label>
-                    <input type="text" 
+                    <input type="tel" 
                            name="phone_number" 
                            value="{{ form.phone_number.value|default:'' }}" 
                            class="input-modern {% if form.phone_number.errors %}error{% endif %}" 
@@ -520,6 +625,20 @@
                         <div class="error-message-modern">{{ form.phone_number.errors }}</div>
                     {% endif %}
                     <small class="text-muted">Include country code for international numbers</small>
+                </div>
+
+                <div class="form-group-modern">
+                    <label for="{{ form.location.id_for_label }}" class="form-label-modern">Location</label>
+                    <input type="text" 
+                           name="location" 
+                           value="{{ form.location.value|default:'' }}" 
+                           class="input-modern {% if form.location.errors %}error{% endif %}" 
+                           id="{{ form.location.id_for_label }}" 
+                           placeholder="Your area in Homabay"
+                           required>
+                    {% if form.location.errors %}
+                        <div class="error-message-modern">{{ form.location.errors }}</div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -531,18 +650,48 @@
                     <span class="slider-modern"></span>
                 </label>
                 <div>
-                    <label for="show_contact_info" class="form-label-modern mb-1">Show contact information</label>
-                    <p class="text-muted mb-0 small">Allow other users to see your phone number and email</p>
+                    <div class="switch-label">Show contact information</div>
+                    <div class="switch-description">Allow other users to see your phone number and email</div>
+                </div>
+            </div>
+
+            <!-- Security Section -->
+            <h3 class="section-title-modern">Security</h3>
+            <div class="security-actions">
+                <div class="security-action">
+                    <div class="security-icon">
+                        <i class="bi bi-shield-lock"></i>
+                    </div>
+                    <div class="security-title">Change Password</div>
+                    <div class="security-description">Update your password to keep your account secure</div>
+                    <a href="{% url 'password_change' %}" class="btn-modern btn-outline-modern">
+                        <i class="bi bi-key"></i>
+                        Change Password
+                    </a>
+                </div>
+                
+                <div class="security-action">
+                    <div class="security-icon" style="background: var(--vibrant-orange);">
+                        <i class="bi bi-trash"></i>
+                    </div>
+                    <div class="security-title">Delete Account</div>
+                    <div class="security-description">Permanently delete your account and all data</div>
+                    <button type="button" class="btn-modern btn-danger-modern" id="deleteAccountBtn">
+                        <i class="bi bi-trash"></i>
+                        Delete Account
+                    </button>
                 </div>
             </div>
 
             <!-- Form Actions -->
             <div class="form-actions-modern">
                 <a href="{% url 'profile' user.pk %}" class="btn-modern btn-outline-modern">
-                    <i class="bi bi-x-circle"></i> Cancel
+                    <i class="bi bi-x-circle"></i>
+                    Cancel
                 </a>
                 <button type="submit" class="btn-modern btn-primary-modern">
-                    <i class="bi bi-check-circle"></i> Save Changes
+                    <i class="bi bi-check-circle"></i>
+                    Save Changes
                 </button>
             </div>
         </form>
@@ -561,8 +710,16 @@
             fileInput.addEventListener('change', function(event) {
                 const [file] = event.target.files;
                 if (file) {
+                    // Validate file size (5MB limit)
                     if (file.size > 5 * 1024 * 1024) {
                         showNotification('Please select an image smaller than 5MB', 'error');
+                        fileInput.value = '';
+                        return;
+                    }
+                    
+                    // Validate file type
+                    if (!file.type.startsWith('image/')) {
+                        showNotification('Please select a valid image file', 'error');
                         fileInput.value = '';
                         return;
                     }
@@ -591,15 +748,18 @@
                 const currentLength = bioField.value.length;
                 bioCounter.textContent = `${currentLength}/${maxLength} characters`;
                 
-                if (currentLength > maxLength * 0.9) {
+                if (currentLength > maxLength * 0.8) {
                     bioCounter.classList.add('warning');
                 } else {
                     bioCounter.classList.remove('warning');
                 }
                 
                 if (currentLength > maxLength) {
+                    bioCounter.classList.add('error');
                     bioField.value = bioField.value.substring(0, maxLength);
                     updateBioCounter();
+                } else {
+                    bioCounter.classList.remove('error');
                 }
             }
             
@@ -612,7 +772,7 @@
         inputs.forEach(input => {
             input.addEventListener('blur', function() {
                 if (this.value.trim() === '' && this.hasAttribute('required')) {
-                    this.style.borderColor = '#ff4757';
+                    this.style.borderColor = 'var(--vibrant-red)';
                 } else {
                     this.style.borderColor = '';
                 }
@@ -620,17 +780,34 @@
             
             input.addEventListener('input', function() {
                 this.style.borderColor = '';
+                
+                // Phone number formatting
+                if (this.id === 'id_phone_number') {
+                    this.value = this.value.replace(/[^\d+]/g, '');
+                }
             });
         });
 
         // Enhanced form submission
-        const form = document.querySelector('form');
+        const form = document.getElementById('profileForm');
         if (form) {
             form.addEventListener('submit', function(e) {
                 const submitBtn = this.querySelector('button[type="submit"]');
                 const originalText = submitBtn.innerHTML;
+                
+                // Show loading state
                 submitBtn.innerHTML = '<i class="bi bi-arrow-repeat spinner"></i> Saving...';
                 submitBtn.disabled = true;
+                
+                // Validate bio length
+                const bioField = document.getElementById('{{ form.bio.id_for_label }}');
+                if (bioField && bioField.value.length > 500) {
+                    e.preventDefault();
+                    showNotification('Bio must be 500 characters or less', 'error');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    return;
+                }
                 
                 // Re-enable after 5 seconds if still processing (safety net)
                 setTimeout(() => {
@@ -640,18 +817,72 @@
             });
         }
 
+        // Delete account confirmation
+        const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+        if (deleteAccountBtn) {
+            deleteAccountBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.')) {
+                    // In a real application, this would trigger the account deletion process
+                    showNotification('Account deletion feature would be implemented here', 'warning');
+                }
+            });
+        }
+
         // Simple notification function
         function showNotification(message, type) {
-            // You can replace this with a proper toast notification
-            const alertClass = type === 'error' ? 'alert-danger' : 'alert-success';
+            const alertClass = type === 'error' ? 'alert-danger' : type === 'warning' ? 'alert-warning' : 'alert-success';
+            const icon = type === 'error' ? 'bi-exclamation-triangle' : type === 'warning' ? 'bi-exclamation-circle' : 'bi-check-circle';
+            
             const notification = document.createElement('div');
             notification.className = `alert ${alertClass} alert-dismissible fade show`;
             notification.innerHTML = `
+                <i class="bi ${icon} me-2"></i>
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-            document.querySelector('.form-section-modern').prepend(notification);
+            
+            // Insert at the top of the form section
+            const formSection = document.querySelector('.form-section-modern');
+            formSection.insertBefore(notification, formSection.firstChild);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 5000);
         }
+
+        // Initialize character counters for any other text areas
+        const textAreas = document.querySelectorAll('textarea');
+        textAreas.forEach(textarea => {
+            if (textarea.id !== '{{ form.bio.id_for_label }}') {
+                const counter = document.createElement('div');
+                counter.className = 'char-counter-modern';
+                counter.textContent = `${textarea.value.length}/500 characters`;
+                textarea.parentNode.appendChild(counter);
+                
+                textarea.addEventListener('input', function() {
+                    const maxLength = 500;
+                    const currentLength = this.value.length;
+                    counter.textContent = `${currentLength}/${maxLength} characters`;
+                    
+                    if (currentLength > maxLength * 0.8) {
+                        counter.classList.add('warning');
+                    } else {
+                        counter.classList.remove('warning');
+                    }
+                    
+                    if (currentLength > maxLength) {
+                        counter.classList.add('error');
+                        this.value = this.value.substring(0, maxLength);
+                        counter.textContent = `${maxLength}/${maxLength} characters`;
+                    } else {
+                        counter.classList.remove('error');
+                    }
+                });
+            }
+        });
     });
 </script>
 {% endblock %}

@@ -289,8 +289,22 @@ if not DEBUG:
     EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
     EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
     EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+    DEFAULT_FROM_EMAIL = 'HomaBay Souq <noreply@homabaysouq.com>'
+
+    # Password reset timeout in seconds (24 hours)
+    PASSWORD_RESET_TIMEOUT = 86400
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    # Email Configuration
+    EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+    EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+    EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+    EMAIL_HOST_USER = '00peteromondi@gmail.com'
+    EMAIL_HOST_PASSWORD = 'tslanaokpwdjgwlf'
+    DEFAULT_FROM_EMAIL = 'HomaBay Souq <noreply@homabaysouq.com>'
+
+    # Password reset timeout in seconds (24 hours)
+    PASSWORD_RESET_TIMEOUT = 86400
 
 # Logging configuration
 LOGGING = {
@@ -335,3 +349,4 @@ HOMABAY_SOUQ = {
     'SITE_NAME': 'HomaBay Souq',
     'SITE_DESCRIPTION': 'Buy and sell with people in your Homabay community',
 }
+

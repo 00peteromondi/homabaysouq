@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.views import PasswordChangeView
 from django.views.generic import DetailView, UpdateView
 from django.urls import reverse_lazy
 from django.contrib import messages
@@ -70,7 +71,12 @@ class ProfileDetailView(DetailView):
         context['saved_count'] = saved_listings.count() if saved_listings is not None else 0
 
         # Rating average (you'll need to implement reviews for this to work)
-        context['rating_average'] = 0  # Placeholder - implement your review system
+        context['rating_average'] = 4.5  # Placeholder - implement your review system
+
+        # Member since
+        from django.utils import timezone
+        from django.utils.timesince import timesince
+        context['member_since'] = profile_user.date_joined.strftime("%B %Y")
 
         return context
 
@@ -95,6 +101,7 @@ class ProfileUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         form.fields['phone_number'].initial = self.object.phone_number
         form.fields['bio'].initial = self.object.bio
         form.fields['show_contact_info'].initial = self.object.show_contact_info
+        
         return form
     
     def form_valid(self, form):
@@ -113,4 +120,11 @@ class ProfileUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['form'] = self.get_form()
         return context
+
+class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
+    template_name = 'users/password_change.html'
+    success_url = reverse_lazy('password_change_done')
     
+    def form_valid(self, form):
+        messages.success(self.request, 'Your password has been changed successfully!')
+        return super().form_valid(form)

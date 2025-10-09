@@ -224,25 +224,48 @@ class ListingCreateView(LoginRequiredMixin, CreateView):
     model = Listing
     form_class = ListingForm
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Add categories to context for the form
+        context['categories'] = Category.objects.filter(is_active=True)
+        return context
+
     def form_valid(self, form):
         form.instance.seller = self.request.user
         response = super().form_valid(form)
         
-        # Handle multiple image uploads
+        # Handle main image
+        if 'image' in self.request.FILES:
+            form.instance.image = self.request.FILES['image']
+            form.instance.save()
+        
+        # Handle multiple image uploads for gallery
         images = self.request.FILES.getlist('images')
         for image in images:
-            ListingImage.objects.create(
-                listing=form.instance,
-                image=image
-            )
+            # Validate file type and size
+            if image.content_type.startswith('image/') and image.size <= 10 * 1024 * 1024:  # 10MB limit
+                ListingImage.objects.create(
+                    listing=form.instance,
+                    image=image
+                )
         
+        # Create activity log
+        Activity.objects.create(
+            user=self.request.user,
+            action=f"Created listing: {form.instance.title}"
+        )
+        
+        messages.success(self.request, "Listing created successfully!")
         return response
 
 class ListingUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Listing
     form_class = ListingForm
 
-    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Category.objects.filter(is_active=True)
+        return context
 
     def test_func(self):
         listing = self.get_object()
@@ -250,18 +273,31 @@ class ListingUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def form_valid(self, form):
         form.instance.seller = self.request.user
+        
+        # Handle main image update
+        if 'image' in self.request.FILES:
+            form.instance.image = self.request.FILES['image']
+        
         response = super().form_valid(form)
         
         # Handle multiple image uploads
         images = self.request.FILES.getlist('images')
         for image in images:
-            ListingImage.objects.create(
-                listing=form.instance,
-                image=image
-            )
+            if image.content_type.startswith('image/') and image.size <= 10 * 1024 * 1024:
+                ListingImage.objects.create(
+                    listing=form.instance,
+                    image=image
+                )
         
+        # Create activity log
+        Activity.objects.create(
+            user=self.request.user,
+            action=f"Updated listing: {form.instance.title}"
+        )
+        
+        messages.success(self.request, "Listing updated successfully!")
         return response
-
+        
 class ListingDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Listing
     success_url = '/'
