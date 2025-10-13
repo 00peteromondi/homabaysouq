@@ -18,7 +18,7 @@
         <div class="col-lg-8">
             <div class="card shadow-lg border-0 mb-4">
                 <div class="card-header bg-gradient-primary text-white py-3">
-                    <h4 class="mb-0"><i class="bi bi-truck me-2"></i> Shipping & Payment Details</h4>
+                    <h4 class="mb-0"><i class="bi bi-truck me-2"></i> Shipping Details</h4>
                 </div>
                 <div class="card-body">
                     <form method="post" id="checkoutForm">
@@ -59,29 +59,9 @@
                             </div>
                         </div>
                         
-                        <div class="mb-4">
-                            <h6 class="mb-3">Payment Method</h6>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="radio" name="payment_method" id="mpesa" value="mpesa" checked>
-                                <label class="form-check-label d-flex align-items-center" for="mpesa">
-                                    <i class="bi bi-phone me-2 text-success"></i>
-                                    M-Pesa
-                                </label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="radio" name="payment_method" id="card" value="card">
-                                <label class="form-check-label d-flex align-items-center" for="card">
-                                    <i class="bi bi-credit-card me-2 text-primary"></i>
-                                    Credit/Debit Card
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="payment_method" id="cash" value="cash">
-                                <label class="form-check-label d-flex align-items-center" for="cash">
-                                    <i class="bi bi-cash-coin me-2 text-warning"></i>
-                                    Cash on Delivery
-                                </label>
-                            </div>
+                        <div class="alert alert-info mb-4">
+                            <h6><i class="bi bi-info-circle me-2"></i>Payment Information</h6>
+                            <p class="mb-0">You will be redirected to our secure payment page after placing your order. We support M-Pesa, credit/debit cards, and cash on delivery.</p>
                         </div>
                         
                         <div class="form-check mb-4">
@@ -175,11 +155,6 @@
     background: linear-gradient(135deg, var(--primary-gemini) 0%, #0d47a1 100%) !important;
 }
 
-.form-check-input:checked {
-    background-color: var(--primary-gemini);
-    border-color: var(--primary-gemini);
-}
-
 .sticky-top {
     z-index: 10;
 }
@@ -220,58 +195,9 @@ document.addEventListener('DOMContentLoaded', function() {
         placeOrderBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Processing...';
         placeOrderBtn.disabled = true;
         
-        // Simulate payment processing
-        const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
-        
-        if (paymentMethod === 'mpesa') {
-            // Simulate M-Pesa prompt
-            simulateMpesaPayment();
-        } else {
-            // Submit form for other methods
-            this.submit();
-        }
+        // Submit form
+        this.submit();
     });
-    
-    function simulateMpesaPayment() {
-        // Show M-Pesa simulation
-        const modalHtml = `
-            <div class="modal fade" id="mpesaModal" tabindex="-1">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success text-white">
-                            <h5 class="modal-title">M-Pesa Payment</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body text-center py-4">
-                            <i class="bi bi-phone text-success display-4 mb-3"></i>
-                            <h5>Check your phone</h5>
-                            <p class="text-muted">Enter your M-Pesa PIN to complete payment of KSh {{ cart.get_total_price }}</p>
-                            <div class="spinner-border text-success mt-3" role="status">
-                                <span class="visually-hidden">Processing...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        const modalElement = document.getElementById('mpesaModal');
-        const modal = new bootstrap.Modal(modalElement);
-        
-        modal.show();
-        
-        // Simulate payment processing
-        setTimeout(() => {
-            modal.hide();
-            checkoutForm.submit();
-        }, 3000);
-        
-        // Clean up modal
-        modalElement.addEventListener('hidden.bs.modal', function() {
-            modalElement.remove();
-        });
-    }
     
     // Real-time form validation
     const inputs = checkoutForm.querySelectorAll('input, select, textarea');

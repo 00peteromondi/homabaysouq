@@ -23,12 +23,18 @@
                 
                 <h5>Items</h5>
                 <ul class="list-group">
-                    {% for item in order.order_items.all %}
+                    {% for item in order_items %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
                             <img src="{{ item.listing.image.url }}" alt="{{ item.listing.title }}" width="50" height="50">
                             {{ item.quantity }} x {{ item.listing.title }}
                         </div>
+                        <!-- Add this near the total amount display -->
+                        {% if is_seller and not is_buyer %}
+                        <div class="alert alert-info">
+                            <strong>Your Items Total:</strong> KSh {{ seller_specific_total }}
+                        </div>
+                        {% endif %}
                         <span>KSh {{ item.get_total_price }}</span>
                     </li>
                     {% endfor %}
@@ -36,7 +42,139 @@
             </div>
         </div>
     </div>
-    
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Order Status Timeline -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Order Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <div class="timeline-item {% if order.status != 'pending' %}completed{% endif %}">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6>Payment Received</h6>
+                                    <small class="text-muted">
+                                        {% if order.payment.completed_at %}
+                                            {{ order.payment.completed_at|date:"M d, Y H:i" }}
+                                        {% else %}
+                                            Pending
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="timeline-item {% if order.status == 'shipped' or order.status ==  'delivered' %}completed{% endif %}">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6>Order Shipped</h6>
+                                    <small class="text-muted">
+                                        {% if order.shipped_at %}
+                                            {{ order.shipped_at|date:"M d, Y H:i" }}
+                                        {% else %}
+                                            Seller preparing order
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="timeline-item {% if order.status == 'delivered' %}completed{% endif %}">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6>Delivery Confirmation</h6>
+                                    <small class="text-muted">
+                                        {% if order.delivered_at %}
+                                            Confirmed on {{ order.delivered_at|date:"M d, Y H:i" }}
+                                        {% else %}
+                                            Waiting for your confirmation
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Delivery Confirmation Button -->
+                        {% if order.status == 'shipped' and is_buyer %}
+                        <div class="alert alert-warning mt-4">
+                            <h6><i class="bi bi-truck me-2"></i>Confirm Delivery</h6>
+                            <p class="mb-3">Your order has been shipped. Please confirm delivery once you receive the items to release payment to the seller.</p>
+                            
+                            <form method="post" action="{% url 'confirm_delivery' order.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success" 
+                                        onclick="return confirm('Have you received your order and verified everything is correct?')">
+                                    <i class="bi bi-check-circle me-2"></i>Confirm Delivery Received
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                        
+                        {% if order.status == 'delivered' %}
+                        <div class="alert alert-success mt-4">
+                            <h6><i class="bi bi-check-circle me-2"></i>Delivery Confirmed</h6>
+                            <p class="mb-0">Thank you for confirming delivery! Payment has been released to the seller.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Tracking Information -->
+                {% if order.tracking_number %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Delivery Tracking</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Tracking Number:</strong>
+                                <p class="mb-2">{{ order.tracking_number }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Status:</strong>
+                                <p class="mb-2">{{ order.get_status_display }}</p>
+                            </div>
+                        </div>
+                        {% if order.status == 'shipped' %}
+                        <div class="alert alert-info mt-3">
+                            <small>
+                                <i class="bi bi-info-circle me-2"></i>
+                                Your order is on the way. You'll receive updates about your delivery status.
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Order Summary Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Order Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- ... existing order summary ... -->
+                        
+                        <!-- Important Notice -->
+                        {% if order.status == 'shipped' and is_buyer %}
+                        <div class="alert alert-warning mt-3">
+                            <h6><i class="bi bi-exclamation-triangle me-2"></i>Important</h6>
+                            <p class="small mb-0">
+                                Funds are held in escrow until you confirm delivery. 
+                                This protects you in case of issues with your order.
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
@@ -59,7 +197,12 @@
                 {% endif %}
                 
                 {% if order.status == 'delivered' %}
-                    <a href="{% url 'leave_review' order.id %}" class="btn btn-info btn-block mb-2">Leave Review</a>
+                    <div class="alert alert-success text-center">
+                        <i class="bi bi-check-circle me-2"></i> Order Completed
+                        <br>
+                        Thank you for shopping with us!
+                    </div>
+                    <a href="{% url 'leave_seller_review' order.id %}" class="btn btn-secondary btn-block mt-2">Leave a Review</a>
                 {% endif %}
             </div>
         </div>

@@ -37,11 +37,7 @@ class CheckoutForm(forms.Form):
         max_length=15,
         help_text="Your phone number for delivery updates"
     )
-    payment_method = forms.ChoiceField(
-        choices=Payment.PAYMENT_METHODS,
-        initial='mpesa',
-        widget=forms.RadioSelect
-    )
+    
     first_name = forms.CharField(max_length=30,
         help_text="Your first name"
 

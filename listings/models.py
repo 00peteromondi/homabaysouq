@@ -332,6 +332,14 @@ class Order(models.Model):
     shipping_address = models.TextField(blank=True)
     city = models.CharField(max_length=100, blank=True)
     postal_code = models.CharField(max_length=20, blank=True)
+
+    tracking_number = models.CharField(max_length=100, blank=True)
+    shipped_at = models.DateTimeField(null=True, blank=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+    
+    # Delivery system integration
+    delivery_request_id = models.CharField(max_length=100, blank=True)
+    driver_assigned = models.BooleanField(default=False)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -361,6 +369,18 @@ class Order(models.Model):
                 listing.stock = 0
                 listing.is_sold = True
                 listing.save()
+
+        
+    def can_be_shipped(self):
+        """Check if order can be shipped"""
+        return self.status == 'paid'
+    
+    def can_confirm_delivery(self):
+        """Check if delivery can be confirmed"""
+        return self.status == 'shipped'
+
+
+                
                 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
@@ -376,6 +396,8 @@ class OrderItem(models.Model):
         return self.quantity * self.price
 
 
+
+
 class Payment(models.Model):
     PAYMENT_METHODS = [
         ('mpesa', 'M-Pesa'),
@@ -385,6 +407,7 @@ class Payment(models.Model):
 
     PAYMENT_STATUS = [
         ('pending', 'Pending'),
+        ('initiated', 'M-Pesa Initiated'),
         ('completed', 'Completed'),
         ('failed', 'Failed'),
         ('refunded', 'Refunded'),
@@ -399,8 +422,37 @@ class Payment(models.Model):
     method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='mpesa')
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
     transaction_id = models.CharField(max_length=100, blank=True)
+    mpesa_phone_number = models.CharField(max_length=15, blank=True)
+    mpesa_checkout_request_id = models.CharField(max_length=100, blank=True)
+    mpesa_merchant_request_id = models.CharField(max_length=100, blank=True)
+    mpesa_result_code = models.IntegerField(null=True, blank=True)
+    mpesa_result_desc = models.TextField(blank=True)
+    mpesa_callback_data = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
+
+    # Add these for real escrow
+    is_held_in_escrow = models.BooleanField(default=True)
+    actual_release_date = models.DateTimeField(null=True, blank=True)
+    seller_payout_reference = models.CharField(max_length=100, blank=True)
+    
+    def hold_in_escrow(self):
+        """Actually move funds to escrow account"""
+        # Implementation depends on your payment processor
+        # This would typically involve:
+        # 1. Capturing payment but not settling to seller
+        # 2. Moving to a separate escrow account
+        # 3. Setting up automatic release after X days or manual release
+        pass
+    
+    def release_to_seller(self):
+        """Actually transfer funds from escrow to seller"""
+        # Implementation depends on your payment processor
+        # This would typically involve:
+        # 1. Releasing from escrow account to seller's balance
+        # 2. Creating a payout transaction
+        # 3. Updating accounting records
+        pass
 
     def __str__(self):
         return f"Payment for Order #{self.order.id}"
@@ -414,6 +466,60 @@ class Payment(models.Model):
         # Mark order as paid
         self.order.mark_as_paid()
 
+    
+    def initiate_mpesa_payment(self, phone_number):
+        """Initiate M-Pesa STK push with proper error handling"""
+        from .mpesa_utils import mpesa_gateway
+        
+        result = mpesa_gateway.stk_push(
+            phone_number=phone_number,
+            amount=self.amount,
+            account_reference=f"ORDER{self.order.id}",
+            transaction_desc=f"Payment for order #{self.order.id}"
+        )
+        
+        if result['success']:
+            self.status = 'initiated'
+            self.method = 'mpesa'
+            self.mpesa_phone_number = phone_number
+            self.mpesa_checkout_request_id = result['checkout_request_id']
+            self.mpesa_merchant_request_id = result['merchant_request_id']
+            self.save()
+            
+            # For simulation mode, auto-complete after delay
+            if not mpesa_gateway.has_valid_credentials:
+                self._simulate_payment_completion()
+            
+            return True, result['response_description']
+        else:
+            self.status = 'failed'
+            self.save()
+            return False, result['error']
+
+    def _simulate_payment_completion(self):
+        """Simulate payment completion for development"""
+        import threading
+        import time
+        
+        import logging
+        logger = logging.getLogger(__name__)
+
+        def complete_payment():
+            time.sleep(10)  # Wait 10 seconds to simulate payment processing
+            try:
+                # Refresh the payment object
+                payment = Payment.objects.get(id=self.id)
+                if payment.status == 'initiated':  # Only complete if still initiated
+                    payment.mark_as_completed(f"MPESA{int(time.time())}")
+                    logger.info(f"Simulated payment completion for order #{payment.order.id}")
+            except Payment.DoesNotExist:
+                logger.error("Payment no longer exists for simulation")
+            except Exception as e:
+                logger.error(f"Error in payment simulation: {str(e)}")
+        
+        thread = threading.Thread(target=complete_payment)
+        thread.daemon = True
+        thread.start()
 
 class Escrow(models.Model):
     ESCROW_STATUS = [
@@ -432,6 +538,25 @@ class Escrow(models.Model):
     status = models.CharField(max_length=20, choices=ESCROW_STATUS, default='held')
     created_at = models.DateTimeField(auto_now_add=True)
     released_at = models.DateTimeField(null=True, blank=True)
+    auto_release_date = models.DateTimeField(null=True, blank=True)
+    dispute_resolved_at = models.DateTimeField(null=True, blank=True)
+
+    def schedule_auto_release(self, days=7):
+        """Automatically release funds after X days if no dispute"""
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        self.auto_release_date = timezone.now() + timedelta(days=days)
+        self.save()
+    
+    def check_auto_release(self):
+        """Check if escrow should be automatically released"""
+        if (self.auto_release_date and 
+            timezone.now() >= self.auto_release_date and
+            self.status == 'held'):
+            self.release_funds()
+            return True
+        return False
 
     def __str__(self):
         return f"Escrow for Order #{self.order.id}"

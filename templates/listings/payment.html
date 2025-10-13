@@ -25,6 +25,8 @@
         border-radius: 12px;
         transition: all 0.3s ease;
         cursor: pointer;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
     }
     
     .payment-method-card:hover {
@@ -48,7 +50,7 @@
         color: #856404;
     }
     
-    .status-paid {
+    .status-initiated {
         background-color: #d1edff;
         color: #0c5460;
     }
@@ -56,6 +58,11 @@
     .status-completed {
         background-color: #d4edda;
         color: #155724;
+    }
+    
+    .status-failed {
+        background-color: #f8d7da;
+        color: #721c24;
     }
     
     .mpesa-simulation {
@@ -153,125 +160,61 @@
                     <!-- Payment Status -->
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="mb-0">Payment Details</h4>
-                        <span class="payment-status status-{{ order.status }}">
-                            {{ order.get_status_display }}
+                        <span class="payment-status status-{{ order.payment.status }}">
+                            {{ order.payment.get_status_display }}
                         </span>
                     </div>
                     
-                    <!-- Payment Timeline -->
-                    <div class="payment-timeline mb-4">
-                        <div class="timeline-step {% if order.status == 'pending' %}active{% elif order.status != 'pending' %}completed{% endif %}">
-                            <h6>Order Placed</h6>
-                            <p class="text-muted mb-0">Your order has been received</p>
-                            <small class="text-muted">{{ order.created_at|date:"M d, Y H:i" }}</small>
-                        </div>
-                        
-                        <div class="timeline-step {% if order.status == 'paid' %}active{% elif order.status in 'confirmed shipped delivered' %}completed{% endif %}">
-                            <h6>Payment Processing</h6>
-                            <p class="text-muted mb-0">Complete your payment securely</p>
-                            {% if order.paid_at %}
-                                <small class="text-muted">{{ order.paid_at|date:"M d, Y H:i" }}</small>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="timeline-step {% if order.status == 'confirmed' %}active{% elif order.status in 'shipped delivered' %}completed{% endif %}">
-                            <h6>Order Confirmed</h6>
-                            <p class="text-muted mb-0">Seller prepares your items</p>
-                        </div>
-                        
-                        <div class="timeline-step {% if order.status == 'shipped' %}active{% elif order.status == 'delivered' %}completed{% endif %}">
-                            <h6>Shipped</h6>
-                            <p class="text-muted mb-0">Your order is on the way</p>
-                        </div>
-                        
-                        <div class="timeline-step {% if order.status == 'delivered' %}completed{% endif %}">
-                            <h6>Delivered</h6>
-                            <p class="text-muted mb-0">Order successfully delivered</p>
-                            {% if order.delivered_at %}
-                                <small class="text-muted">{{ order.delivered_at|date:"M d, Y H:i" }}</small>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <!-- Payment Methods -->
+                    <!-- Payment Method Selection (Only show if payment is pending) -->
+                    {% if order.payment.status == 'pending' %}
                     <div class="mb-4">
-                        <h5 class="mb-3">Select Payment Method</h5>
+                        <h5 class="mb-3">Choose Payment Method</h5>
                         
-                        <div class="row g-3">
-                            <!-- M-Pesa Option -->
-                            <div class="col-md-6">
-                                <div class="payment-method-card p-3 {% if order.payment.method == 'mpesa' or not order.payment.method %}selected{% endif %}" 
-                                     data-method="mpesa">
-                                    <div class="form-check mb-0">
-                                        <input class="form-check-input" type="radio" name="paymentMethod" 
-                                               id="mpesa" value="mpesa" 
-                                               {% if order.payment.method == 'mpesa' or not order.payment.method %}checked{% endif %}>
-                                        <label class="form-check-label d-flex align-items-center w-100" for="mpesa">
-                                            <i class="bi bi-phone fs-2 text-success me-3"></i>
-                                            <div>
-                                                <h6 class="mb-1">M-Pesa</h6>
-                                                <small class="text-muted">Pay with your M-Pesa account</small>
-                                            </div>
-                                        </label>
+                        <!-- M-Pesa Option -->
+                        <div class="payment-method-card" data-method="mpesa">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="mpesa" value="mpesa" checked>
+                                <label class="form-check-label w-100" for="mpesa">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-phone fs-1 text-success me-3"></i>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">M-Pesa</h6>
+                                            <p class="mb-0 text-muted">Pay instantly via M-Pesa. You'll receive a prompt on your phone.</p>
+                                        </div>
                                     </div>
-                                </div>
+                                </label>
                             </div>
-                            
-                            <!-- Card Option -->
-                            <div class="col-md-6">
-                                <div class="payment-method-card p-3 {% if order.payment.method == 'card' %}selected{% endif %}" 
-                                     data-method="card">
-                                    <div class="form-check mb-0">
-                                        <input class="form-check-input" type="radio" name="paymentMethod" 
-                                               id="card" value="card"
-                                               {% if order.payment.method == 'card' %}checked{% endif %}>
-                                        <label class="form-check-label d-flex align-items-center w-100" for="card">
-                                            <i class="bi bi-credit-card fs-2 text-primary me-3"></i>
-                                            <div>
-                                                <h6 class="mb-1">Credit/Debit Card</h6>
-                                                <small class="text-muted">Pay with card</small>
-                                            </div>
-                                        </label>
+                        </div>
+                        
+                        <!-- Card Option -->
+                        <div class="payment-method-card" data-method="card">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="card" value="card">
+                                <label class="form-check-label w-100" for="card">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-credit-card fs-1 text-primary me-3"></i>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Credit/Debit Card</h6>
+                                            <p class="mb-0 text-muted">Pay securely with your credit or debit card.</p>
+                                        </div>
                                     </div>
-                                </div>
+                                </label>
                             </div>
-                            
-                            <!-- Cash on Delivery Option -->
-                            <div class="col-md-6">
-                                <div class="payment-method-card p-3 {% if order.payment.method == 'cash' %}selected{% endif %}" 
-                                     data-method="cash">
-                                    <div class="form-check mb-0">
-                                        <input class="form-check-input" type="radio" name="paymentMethod" 
-                                               id="cash" value="cash"
-                                               {% if order.payment.method == 'cash' %}checked{% endif %}>
-                                        <label class="form-check-label d-flex align-items-center w-100" for="cash">
-                                            <i class="bi bi-cash-coin fs-2 text-warning me-3"></i>
-                                            <div>
-                                                <h6 class="mb-1">Cash on Delivery</h6>
-                                                <small class="text-muted">Pay when you receive your order</small>
-                                            </div>
-                                        </label>
+                        </div>
+                        
+                        <!-- Cash on Delivery Option -->
+                        <div class="payment-method-card" data-method="cash">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="cash" value="cash">
+                                <label class="form-check-label w-100" for="cash">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-cash-coin fs-1 text-warning me-3"></i>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Cash on Delivery</h6>
+                                            <p class="mb-0 text-muted">Pay with cash when your order is delivered.</p>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Bank Transfer Option -->
-                            <div class="col-md-6">
-                                <div class="payment-method-card p-3 {% if order.payment.method == 'bank_transfer' %}selected{% endif %}" 
-                                     data-method="bank_transfer">
-                                    <div class="form-check mb-0">
-                                        <input class="form-check-input" type="radio" name="paymentMethod" 
-                                               id="bank_transfer" value="bank_transfer"
-                                               {% if order.payment.method == 'bank_transfer' %}checked{% endif %}>
-                                        <label class="form-check-label d-flex align-items-center w-100" for="bank_transfer">
-                                            <i class="bi bi-bank fs-2 text-info me-3"></i>
-                                            <div>
-                                                <h6 class="mb-1">Bank Transfer</h6>
-                                                <small class="text-muted">Transfer directly to our bank</small>
-                                            </div>
-                                        </label>
-                                    </div>
-                                </div>
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -279,11 +222,10 @@
                     <!-- Payment Form (Dynamic based on selection) -->
                     <div id="paymentFormContainer">
                         <!-- M-Pesa Payment Form -->
-                        <div class="payment-method-form" id="mpesaForm" 
-                             {% if order.payment.method != 'mpesa' and order.payment.method %}style="display: none;"{% endif %}>
+                        <div class="payment-method-form" id="mpesaForm">
                             <div class="mpesa-simulation mb-4">
-                                <div class="text-center">
-                                    <i class="bi bi-phone display-4 mb-3"></i>
+                                <div class="text-center mb-3">
+                                    <i class="bi bi-phone display-4 mb-2"></i>
                                     <h4>M-Pesa Payment</h4>
                                     <p>You will receive a prompt on your phone to complete payment</p>
                                 </div>
@@ -293,8 +235,8 @@
                                     <div class="input-group">
                                         <span class="input-group-text">+254</span>
                                         <input type="tel" class="form-control" id="mpesaNumber" 
-                                               placeholder="7XX XXX XXX" pattern="[0-9]{9}" 
-                                               value="{% if request.user.phone_number %}{{ request.user.phone_number }}{% endif %}">
+                                               placeholder="7XX XXX XXX" 
+                                               value="{% if order.phone_number %}{{ order.phone_number|slice:'3:' }}{% endif %}">
                                     </div>
                                     <small class="text-white-50">Enter your M-Pesa registered phone number</small>
                                 </div>
@@ -303,48 +245,56 @@
                         
                         <!-- Card Payment Form -->
                         <div class="payment-method-form" id="cardForm" style="display: none;">
-                            <h6 class="mb-3">Card Details</h6>
-                            <div class="row g-3">
-                                <div class="col-12">
-                                    <label for="cardNumber" class="form-label">Card Number</label>
-                                    <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="expiryDate" class="form-label">Expiry Date</label>
-                                    <input type="text" class="form-control" id="expiryDate" placeholder="MM/YY">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="cvv" class="form-label">CVV</label>
-                                    <input type="text" class="form-control" id="cvv" placeholder="123">
-                                </div>
-                                <div class="col-12">
-                                    <label for="cardholderName" class="form-label">Cardholder Name</label>
-                                    <input type="text" class="form-control" id="cardholderName" placeholder="John Doe">
-                                </div>
+                            <div class="alert alert-info">
+                                <h6><i class="bi bi-credit-card me-2"></i>Card Payment</h6>
+                                <p class="mb-0">Your card payment will be processed securely. Click "Complete Payment" to proceed.</p>
                             </div>
                         </div>
                         
                         <!-- Cash on Delivery Info -->
                         <div class="payment-method-form" id="cashForm" style="display: none;">
-                            <div class="alert alert-info">
-                                <h6><i class="bi bi-info-circle me-2"></i>Cash on Delivery</h6>
+                            <div class="alert alert-warning">
+                                <h6><i class="bi bi-cash-coin me-2"></i>Cash on Delivery</h6>
                                 <p class="mb-0">You will pay with cash when your order is delivered. Our delivery agent will contact you to arrange the delivery time.</p>
                             </div>
                         </div>
-                        
-                        <!-- Bank Transfer Info -->
-                        <div class="payment-method-form" id="bankTransferForm" style="display: none;">
-                            <div class="alert alert-warning">
-                                <h6><i class="bi bi-bank me-2"></i>Bank Transfer Details</h6>
-                                <p>Please transfer the amount to the following account:</p>
-                                <ul class="mb-2">
-                                    <li><strong>Bank:</strong> Equity Bank Kenya</li>
-                                    <li><strong>Account Name:</strong> HomaBay Souq Ltd</li>
-                                    <li><strong>Account Number:</strong> 012345678901</li>
-                                    <li><strong>Branch:</strong> Homabay Town</li>
-                                </ul>
-                                <p class="mb-0">Use your order number <strong>#{{ order.id }}</strong> as the reference. Your order will be processed once payment is confirmed.</p>
+                    </div>
+                    
+                    <!-- Payment Action Button -->
+                    <button type="button" class="btn btn-primary w-100 py-3" id="processPaymentBtn">
+                        <i class="bi bi-lock-fill me-2"></i>Complete Payment - KSh {{ order.total_price }}
+                    </button>
+                    {% endif %}
+                    
+                    <!-- Payment Processing Section -->
+                    <div id="paymentProcessingSection" {% if order.payment.status != 'initiated' %}style="display: none;"{% endif %}>
+                        <div class="alert alert-info text-center">
+                            <i class="bi bi-phone display-4 text-info mb-3"></i>
+                            <h5>Check Your Phone</h5>
+                            <p class="mb-2">Enter your M-Pesa PIN to complete payment of</p>
+                            <h4 class="text-info mb-3">KSh {{ order.total_price }}</h4>
+                            <div class="spinner-border text-info mb-3" role="status">
+                                <span class="visually-hidden">Processing...</span>
                             </div>
+                            <p class="small text-muted mb-2">Waiting for payment confirmation...</p>
+                            <button type="button" class="btn btn-outline-info btn-sm" id="checkStatusBtn">
+                                <i class="bi bi-arrow-clockwise me-1"></i> Check Status
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Success Section -->
+                    <div id="paymentSuccessSection" {% if order.payment.status != 'completed' %}style="display: none;"{% endif %}>
+                        <div class="alert alert-success text-center">
+                            <i class="bi bi-check-circle display-4 text-success mb-3"></i>
+                            <h5>Payment Successful!</h5>
+                            <p class="mb-2">Your payment has been processed successfully.</p>
+                            {% if order.payment.transaction_id %}
+                            <p class="mb-2"><strong>Transaction ID:</strong> {{ order.payment.transaction_id }}</p>
+                            {% endif %}
+                            <a href="{% url 'order_detail' order.id %}" class="btn btn-success mt-2">
+                                <i class="bi bi-eye me-2"></i> View Order Details
+                            </a>
                         </div>
                     </div>
                     
@@ -354,26 +304,9 @@
                             <i class="bi bi-shield-check text-success fs-4 me-3"></i>
                             <div>
                                 <h6 class="mb-1">Secure Payment</h6>
-                                <p class="mb-0 small">Your payment information is encrypted and secure. We do not store your card details.</p>
+                                <p class="mb-0 small">Your payment information is encrypted and secure. We do not store your M-Pesa PIN or card details.</p>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Payment Action Buttons -->
-                    <div class="d-flex gap-3 mt-4">
-                        <a href="{% url 'order_detail' order.id %}" class="btn btn-outline-secondary flex-fill">
-                            <i class="bi bi-arrow-left me-2"></i>Back to Order
-                        </a>
-                        
-                        {% if order.status == 'pending' %}
-                        <button type="button" class="btn btn-primary flex-fill" id="processPaymentBtn">
-                            <i class="bi bi-lock-fill me-2"></i>Complete Payment - KSh {{ order.total_price }}
-                        </button>
-                        {% else %}
-                        <button type="button" class="btn btn-success flex-fill" disabled>
-                            <i class="bi bi-check-circle me-2"></i>Payment Completed
-                        </button>
-                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -454,53 +387,19 @@
         </div>
     </div>
 </div>
-
-<!-- Payment Processing Modal -->
-<div class="modal fade" id="paymentProcessingModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="paymentProcessingModalLabel">Processing Payment</h5>
-            </div>
-            <div class="modal-body text-center py-4">
-                <div id="mpesaProcessing" class="payment-processing">
-                    <i class="bi bi-phone text-success display-4 mb-3"></i>
-                    <h5>Check Your Phone</h5>
-                    <p class="text-muted">Enter your M-Pesa PIN to complete payment of</p>
-                    <h4 class="text-success mb-3">KSh {{ order.total_price }}</h4>
-                    <div class="spinner-border text-success mb-3" role="status">
-                        <span class="visually-hidden">Processing...</span>
-                    </div>
-                    <p class="small text-muted">Waiting for payment confirmation...</p>
-                </div>
-                
-                <div id="cardProcessing" class="payment-processing" style="display: none;">
-                    <i class="bi bi-credit-card text-primary display-4 mb-3"></i>
-                    <h5>Processing Card Payment</h5>
-                    <p class="text-muted">Your card payment is being processed securely</p>
-                    <div class="spinner-border text-primary mb-3" role="status">
-                        <span class="visually-hidden">Processing...</span>
-                    </div>
-                    <p class="small text-muted">This may take a few moments...</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Payment method selection
+    const processPaymentBtn = document.getElementById('processPaymentBtn');
+    const checkStatusBtn = document.getElementById('checkStatusBtn');
     const paymentMethodCards = document.querySelectorAll('.payment-method-card');
-    const paymentMethodRadios = document.querySelectorAll('input[name="paymentMethod"]');
     const paymentForms = document.querySelectorAll('.payment-method-form');
     
-    // Initialize based on current selection
-    updatePaymentFormDisplay();
+    let statusCheckInterval;
     
-    // Add event listeners to payment method cards
+    // Payment method selection
     paymentMethodCards.forEach(card => {
         card.addEventListener('click', function() {
             const radio = this.querySelector('input[type="radio"]');
@@ -514,19 +413,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Also listen to radio changes directly
-    paymentMethodRadios.forEach(radio => {
-        radio.addEventListener('change', function() {
-            paymentMethodCards.forEach(c => c.classList.remove('selected'));
-            const card = this.closest('.payment-method-card');
-            if (card) card.classList.add('selected');
-            
-            updatePaymentFormDisplay();
-        });
-    });
-    
     function updatePaymentFormDisplay() {
-        const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+        const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
         
         // Hide all forms
         paymentForms.forEach(form => {
@@ -540,104 +428,181 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Process payment
-    const processPaymentBtn = document.getElementById('processPaymentBtn');
-    if (processPaymentBtn) {
-        processPaymentBtn.addEventListener('click', function() {
-            const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+    // Initialize form display
+    updatePaymentFormDisplay();
+    
+    // Format phone number input
+    const phoneInput = document.getElementById('mpesaNumber');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+            let value = this.value.replace(/\D/g, '');
+            if (value.length > 9) value = value.substring(0, 9);
             
-            // Validate form based on method
-            if (selectedMethod === 'mpesa') {
-                const mpesaNumber = document.getElementById('mpesaNumber').value;
-                if (!mpesaNumber || mpesaNumber.replace(/\D/g, '').length !== 9) {
-                    showToast('Please enter a valid M-Pesa phone number (10 digits without country code)', 'error');
-                    return;
-                }
-            } else if (selectedMethod === 'card') {
-                // Basic card validation
-                const cardNumber = document.getElementById('cardNumber').value;
-                const expiryDate = document.getElementById('expiryDate').value;
-                const cvv = document.getElementById('cvv').value;
-                const cardholderName = document.getElementById('cardholderName').value;
-                
-                if (!cardNumber || !expiryDate || !cvv || !cardholderName) {
-                    showToast('Please fill in all card details', 'error');
-                    return;
-                }
+            // Format as 7XX XXX XXX
+            if (value.length > 3) {
+                value = value.substring(0, 3) + ' ' + value.substring(3);
+            }
+            if (value.length > 7) {
+                value = value.substring(0, 7) + ' ' + value.substring(7);
             }
             
-            // Show processing modal
-            const modal = new bootstrap.Modal(document.getElementById('paymentProcessingModal'));
-            
-            // Show appropriate processing message
-            document.getElementById('mpesaProcessing').style.display = 
-                (selectedMethod === 'mpesa') ? 'block' : 'none';
-            document.getElementById('cardProcessing').style.display = 
-                (selectedMethod === 'card') ? 'block' : 'none';
-            
-            modal.show();
-            
-            // Disable button and show loading state
-            processPaymentBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Processing...';
-            processPaymentBtn.disabled = true;
-            
-            // Simulate payment processing
-            setTimeout(() => {
-                // Submit the form
-                processPayment(selectedMethod);
-            }, 3000);
+            this.value = value;
         });
     }
     
-    function processPayment(method) {
-        // Create form data
-        const formData = new FormData();
-        formData.append('payment_method', method);
-        formData.append('csrfmiddlewaretoken', getCSRFToken());
+    // Process payment
+    if (processPaymentBtn) {
+        processPaymentBtn.addEventListener('click', function() {
+            const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
+            
+            // Validate form based on method
+            if (selectedMethod === 'mpesa') {
+                const mpesaNumber = document.getElementById('mpesaNumber').value.replace(/\s/g, '');
+                if (!mpesaNumber || mpesaNumber.length !== 9) {
+                    showToast('Please enter a valid M-Pesa phone number (9 digits without country code)', 'error');
+                    return;
+                }
+                
+                // Initiate M-Pesa payment via AJAX
+                initiateMpesaPayment(mpesaNumber);
+            } else {
+                // For card and cash, submit the form directly
+                processOtherPayment(selectedMethod);
+            }
+        });
+    }
+    
+    function initiateMpesaPayment(phoneNumber) {
+        // Disable button and show loading
+        processPaymentBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Initiating Payment...';
+        processPaymentBtn.disabled = true;
         
-        // Add method-specific data
-        if (method === 'mpesa') {
-            formData.append('phone_number', document.getElementById('mpesaNumber').value);
-        } else if (method === 'card') {
-            formData.append('card_number', document.getElementById('cardNumber').value);
-            // In a real app, you would tokenize this instead of sending raw data
-        }
-        
-        fetch(window.location.href, {
+        // Send AJAX request to initiate payment
+        fetch(`/orders/{{ order.id }}/initiate-mpesa/`, {
             method: 'POST',
-            body: formData,
             headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCSRFToken(),
                 'X-Requested-With': 'XMLHttpRequest'
-            }
+            },
+            body: `phone_number=${encodeURIComponent(phoneNumber)}`
         })
-        .then(response => {
-            if (response.redirected) {
-                window.location.href = response.url;
-            } else {
-                return response.json();
-            }
-        })
+        .then(response => response.json())
         .then(data => {
-            if (data && data.success) {
-                showToast('Payment completed successfully!', 'success');
-                setTimeout(() => {
-                    window.location.href = "{% url 'order_detail' order.id %}";
-                }, 1500);
+            if (data.success) {
+                showToast(data.message, 'success');
+                
+                // Switch to processing view
+                document.getElementById('paymentFormContainer').style.display = 'none';
+                document.getElementById('paymentProcessingSection').style.display = 'block';
+                processPaymentBtn.style.display = 'none';
+                
+                // Start checking payment status
+                startStatusChecking();
             } else {
-                throw new Error('Payment failed');
+                showToast(data.error, 'error');
+                
+                // Re-enable button
+                processPaymentBtn.innerHTML = '<i class="bi bi-lock-fill me-2"></i> Complete Payment - KSh {{ order.total_price }}';
+                processPaymentBtn.disabled = false;
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showToast('Payment failed. Please try again.', 'error');
+            showToast('An error occurred while initiating payment. Please try again.', 'error');
             
-            // Reset button
+            // Re-enable button
             processPaymentBtn.innerHTML = '<i class="bi bi-lock-fill me-2"></i> Complete Payment - KSh {{ order.total_price }}';
             processPaymentBtn.disabled = false;
-            
-            // Hide modal
-            bootstrap.Modal.getInstance(document.getElementById('paymentProcessingModal')).hide();
         });
+    }
+    
+    function processOtherPayment(method) {
+        // Create form and submit
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = window.location.href;
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = getCSRFToken();
+        form.appendChild(csrfInput);
+        
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = 'payment_method';
+        methodInput.value = method;
+        form.appendChild(methodInput);
+        
+        // For card, we might need additional data, but for now just submit
+        document.body.appendChild(form);
+        form.submit();
+    }
+    
+    // Handle manual status check
+    if (checkStatusBtn) {
+        checkStatusBtn.addEventListener('click', function() {
+            checkPaymentStatus();
+        });
+    }
+    
+    function startStatusChecking() {
+        // Check immediately
+        checkPaymentStatus();
+        
+        // Then check every 5 seconds
+        statusCheckInterval = setInterval(checkPaymentStatus, 5000);
+    }
+    
+    function checkPaymentStatus() {
+        fetch(`/orders/{{ order.id }}/check-payment-status/`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.payment_status === 'completed') {
+                    // Payment completed successfully
+                    clearInterval(statusCheckInterval);
+                    showPaymentSuccess();
+                } else if (data.payment_status === 'failed') {
+                    // Payment failed
+                    clearInterval(statusCheckInterval);
+                    showPaymentFailed(data.result_desc || 'Payment failed');
+                }
+                // If still initiated, continue checking
+            } else {
+                console.error('Status check failed:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Status check error:', error);
+        });
+    }
+    
+    function showPaymentSuccess() {
+        document.getElementById('paymentProcessingSection').style.display = 'none';
+        document.getElementById('paymentSuccessSection').style.display = 'block';
+        
+        showToast('Payment completed successfully!', 'success');
+        
+        // Redirect to order details after a delay
+        setTimeout(() => {
+            window.location.href = "{% url 'order_detail' order.id %}";
+        }, 3000);
+    }
+    
+    function showPaymentFailed(reason) {
+        document.getElementById('paymentProcessingSection').style.display = 'none';
+        document.getElementById('paymentFormContainer').style.display = 'block';
+        processPaymentBtn.style.display = 'block';
+        processPaymentBtn.innerHTML = '<i class="bi bi-lock-fill me-2"></i> Complete Payment - KSh {{ order.total_price }}';
+        processPaymentBtn.disabled = false;
+        
+        showToast('Payment failed: ' + reason, 'error');
     }
     
     // CSRF token function
@@ -690,36 +655,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Format card number input
-    const cardNumberInput = document.getElementById('cardNumber');
-    if (cardNumberInput) {
-        cardNumberInput.addEventListener('input', function() {
-            let value = this.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-            let matches = value.match(/\d{4,16}/g);
-            let match = matches && matches[0] || '';
-            let parts = [];
-            
-            for (let i = 0; i < match.length; i += 4) {
-                parts.push(match.substring(i, i + 4));
-            }
-            
-            if (parts.length) {
-                this.value = parts.join(' ');
-            } else {
-                this.value = value;
-            }
-        });
-    }
-    
-    // Format expiry date input
-    const expiryDateInput = document.getElementById('expiryDate');
-    if (expiryDateInput) {
-        expiryDateInput.addEventListener('input', function() {
-            let value = this.value.replace(/\D/g, '');
-            if (value.length >= 2) {
-                this.value = value.substring(0, 2) + '/' + value.substring(2, 4);
-            }
-        });
+    // Initial setup based on current payment status
+    const currentStatus = '{{ order.payment.status }}';
+    if (currentStatus === 'initiated') {
+        document.getElementById('paymentFormContainer').style.display = 'none';
+        document.getElementById('paymentProcessingSection').style.display = 'block';
+        processPaymentBtn.style.display = 'none';
+        startStatusChecking();
+    } else if (currentStatus === 'completed') {
+        document.getElementById('paymentFormContainer').style.display = 'none';
+        document.getElementById('paymentSuccessSection').style.display = 'block';
+        processPaymentBtn.style.display = 'none';
     }
 });
 </script>

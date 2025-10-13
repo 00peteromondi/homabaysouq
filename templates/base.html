@@ -562,10 +562,10 @@
                     </a>
                     
                     <!-- Notifications - hidden on small screens -->
-                    <a href="#" class="nav-link icon-link position-relative me-3 d-none d-md-block">
+                    <a href="{% url 'notification-list' %}" class="nav-link icon-link position-relative me-3 d-none d-md-block">
                         <i class="bi bi-bell"></i>
-                        {% if notifications_count and notifications_count > 0 %}
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ notifications_count }}</span>
+                        {% if unread_notifications_count and unread_notifications_count > 0 %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ unread_notifications_count }}</span>
                         {% endif %}
                     </a>
                     

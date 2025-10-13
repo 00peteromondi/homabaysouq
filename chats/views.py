@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from .models import Conversation, Message
 from .forms import MessageForm
-from notifications.utils import notify_new_message
+
 
 @login_required
 def inbox(request):
@@ -63,10 +63,7 @@ def conversation_detail(request, pk):
             message.sender = request.user
             message.save()
             
-            # Notify other participants
-            other_participants = conversation.participants.exclude(id=request.user.id)
-            for participant in other_participants:
-                notify_new_message(participant, request.user, message.content, conversation.id)
+                
             
             # Return JSON for AJAX requests
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -181,7 +178,7 @@ def send_message_api(request):
         )
         
         # Notify recipient
-        notify_new_message(recipient, request.user, message_content, conversation.id)
+        
         
         return JsonResponse({
             'success': True,

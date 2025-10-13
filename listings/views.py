@@ -17,7 +17,8 @@ from blog.models import BlogPost
 
 from notifications.utils import (
     notify_new_order, notify_order_shipped, notify_order_delivered,
-    notify_payment_received, notify_listing_favorited, notify_new_review
+    notify_payment_received, notify_listing_favorited, notify_new_review,
+    notify_delivery_assigned, notify_delivery_confirmed
 )
 
 
@@ -471,8 +472,22 @@ def favorite_listings(request):
 @login_required
 def my_listings(request):
     listings = Listing.objects.filter(seller=request.user).order_by('-date_created')
-    return render(request, 'listings/my_listings.html', {'listings': listings})
-
+    
+    # Calculate statistics
+    total_listings = listings.count()
+    active_listings = listings.filter(is_active=True, is_sold=False).count()
+    sold_listings = listings.filter(is_sold=True).count()
+    featured_listings = listings.filter(is_featured=True, is_active=True).count()
+    
+    context = {
+        'listings': listings,
+        'total_listings': total_listings,
+        'active_listings': active_listings,
+        'sold_listings': sold_listings,
+        'featured_listings': featured_listings,
+    }
+    
+    return render(request, 'listings/my_listings.html', context)
 # In your listings/views.py
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
@@ -638,11 +653,11 @@ def add_to_cart(request, listing_id):
 def checkout(request):
     cart = get_object_or_404(Cart, user=request.user)
     
+    # Validate stock before checkout
     for cart_item in cart.items.all():
         if cart_item.quantity > cart_item.listing.stock:
             messages.error(request, f"Sorry, only {cart_item.listing.stock} units of '{cart_item.listing.title}' are available.")
             return redirect('view_cart')
-    
     
     if request.method == 'POST':
         form = CheckoutForm(request.POST)
@@ -653,7 +668,6 @@ def checkout(request):
                     order = Order.objects.create(
                         user=request.user,
                         total_price=cart.get_total_price(),
-                        # Add form data to order
                         first_name=form.cleaned_data['first_name'],
                         last_name=form.cleaned_data['last_name'],
                         email=form.cleaned_data['email'],
@@ -692,27 +706,32 @@ def checkout(request):
                     
             except Exception as e:
                 messages.error(request, f"An error occurred during checkout: {str(e)}")
-                # Return the form with errors instead of falling through
                 return render(request, 'listings/checkout.html', {
                     'cart': cart,
                     'form': form
                 })
         else:
-            # Form is invalid, return with errors
             return render(request, 'listings/checkout.html', {
                 'cart': cart,
                 'form': form
             })
     else:
-        # GET request - show empty form
         form = CheckoutForm()
     
-    # Ensure we always return an HttpResponse
     return render(request, 'listings/checkout.html', {
         'cart': cart,
         'form': form
     })
 
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
+import json
+from .mpesa_utils import mpesa_gateway
+
+import logging
+logger = logging.getLogger(__name__)
+
+# Replace the existing process_payment function with this:
 @login_required
 def process_payment(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
@@ -722,31 +741,238 @@ def process_payment(request, order_id):
         return redirect('order_detail', order_id=order.id)
     
     if request.method == 'POST':
-        try:
-            # Simulate successful payment
-            transaction_id = f"TXN{order.id}{int(timezone.now().timestamp())}"
-            order.payment.mark_as_completed(transaction_id)
-
-            for order_item in order.order_items.all():
-                notify_payment_received(order_item.listing.seller, request.user, order)
-
-
-
-
-            # Create activity log
-            Activity.objects.create(
-                user=request.user,
-                action=f"Payment completed for Order #{order.id}"
-            )
+        payment_method = request.POST.get('payment_method')
+        
+        if payment_method == 'mpesa':
+            phone_number = request.POST.get('phone_number')
             
-            messages.success(request, "Payment completed successfully! The seller will now prepare your order.")
+            if not phone_number:
+                messages.error(request, "Please provide your M-Pesa phone number.")
+                return render(request, 'listings/payment.html', {'order': order})
+            
+            # Initiate M-Pesa payment
+            success, message = order.payment.initiate_mpesa_payment(phone_number)
+            
+            if success:
+                messages.success(request, f"M-Pesa payment initiated: {message}")
+                return render(request, 'listings/payment.html', {'order': order})
+            else:
+                messages.error(request, f"Failed to initiate M-Pesa payment: {message}")
+                return render(request, 'listings/payment.html', {'order': order})
+                
+        elif payment_method == 'cash':
+            # For cash on delivery, mark as paid immediately
+            order.payment.method = 'cash'
+            order.payment.status = 'completed'
+            order.payment.transaction_id = f"CASH{order.id}{int(timezone.now().timestamp())}"
+            order.payment.completed_at = timezone.now()
+            order.payment.save()
+            
+            # Mark order as paid and notify sellers
+            order.mark_as_paid()
+            _notify_sellers_after_payment(order)
+            
+            messages.success(request, "Order confirmed! You will pay with cash on delivery.")
             return redirect('order_detail', order_id=order.id)
             
-        except Exception as e:
-            messages.error(request, f"Payment failed: {str(e)}")
+        elif payment_method == 'card':
+            # For card payments (simulated for now)
+            order.payment.method = 'card'
+            order.payment.status = 'completed'
+            order.payment.transaction_id = f"CARD{order.id}{int(timezone.now().timestamp())}"
+            order.payment.completed_at = timezone.now()
+            order.payment.save()
+            
+            # Mark order as paid and notify sellers
+            order.mark_as_paid()
+            _notify_sellers_after_payment(order)
+            
+            messages.success(request, "Card payment processed successfully!")
+            return redirect('order_detail', order_id=order.id)
     
     return render(request, 'listings/payment.html', {'order': order})
 
+def _notify_sellers_after_payment(order):
+    """Notify all sellers in an order after successful payment"""
+    # Group order items by seller
+    from collections import defaultdict
+    seller_items = defaultdict(list)
+    
+    for order_item in order.order_items.all():
+        seller_items[order_item.listing.seller].append(order_item)
+    
+    # Notify each seller
+    for seller, items in seller_items.items():
+        notify_payment_received(seller, order.user, order)
+        
+        # Create activity log
+        Activity.objects.create(
+            user=seller,
+            action=f"Payment received for order #{order.id}"
+        )
+
+@login_required
+def initiate_mpesa_payment(request, order_id):
+    """AJAX endpoint to initiate M-Pesa payment"""
+    if request.method == 'POST':
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+        
+        if order.status != 'pending':
+            return JsonResponse({
+                'success': False,
+                'error': 'This order has already been processed.'
+            })
+        
+        phone_number = request.POST.get('phone_number')
+        
+        if not phone_number:
+            return JsonResponse({
+                'success': False,
+                'error': 'Phone number is required.'
+            })
+        
+        # Format phone number (remove spaces and ensure it starts with 254)
+        formatted_phone = phone_number.replace(' ', '')
+        if formatted_phone.startswith('0'):
+            formatted_phone = '254' + formatted_phone[1:]
+        elif not formatted_phone.startswith('254'):
+            formatted_phone = '254' + formatted_phone
+        
+        # Initiate payment
+        success, message = order.payment.initiate_mpesa_payment(formatted_phone)
+        
+        if success:
+            return JsonResponse({
+                'success': True,
+                'message': message,
+                'checkout_request_id': order.payment.mpesa_checkout_request_id
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': message
+            })
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+@login_required
+def check_payment_status(request, order_id):
+    """AJAX endpoint to check M-Pesa payment status"""
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    # Check if payment status has changed
+    payment = order.payment
+    
+    if payment.status == 'completed':
+        return JsonResponse({
+            'success': True,
+            'payment_status': 'completed',
+            'message': 'Payment completed successfully'
+        })
+    elif payment.status == 'failed':
+        return JsonResponse({
+            'success': True,
+            'payment_status': 'failed',
+            'message': payment.mpesa_result_desc or 'Payment failed'
+        })
+    else:
+        # Payment still processing
+        return JsonResponse({
+            'success': True,
+            'payment_status': 'processing',
+            'message': 'Payment still processing...'
+        })
+    
+@csrf_exempt
+@require_POST
+def mpesa_callback(request):
+    """
+    Handle M-Pesa callback with payment result and trigger notifications
+    """
+    try:
+        callback_data = json.loads(request.body)
+        
+        # Log the callback for debugging
+        logger.info(f"M-Pesa Callback Received: {callback_data}")
+        
+        # Extract the main body
+        stk_callback = callback_data.get('Body', {}).get('stkCallback', {})
+        checkout_request_id = stk_callback.get('CheckoutRequestID')
+        result_code = stk_callback.get('ResultCode')
+        result_desc = stk_callback.get('ResultDesc')
+        
+        if not checkout_request_id:
+            return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Invalid callback data'})
+        
+        # Find the payment with this checkout request ID
+        try:
+            payment = Payment.objects.get(mpesa_checkout_request_id=checkout_request_id)
+            payment.mpesa_result_code = result_code
+            payment.mpesa_result_desc = result_desc
+            payment.mpesa_callback_data = callback_data
+            
+            if result_code == 0:
+                # Payment was successful
+                callback_metadata = stk_callback.get('CallbackMetadata', {}).get('Item', [])
+                
+                # Extract transaction details
+                transaction_data = {}
+                for item in callback_metadata:
+                    transaction_data[item.get('Name')] = item.get('Value')
+                
+                mpesa_receipt_number = transaction_data.get('MpesaReceiptNumber')
+                
+                if mpesa_receipt_number:
+                    payment.mark_as_completed(mpesa_receipt_number)
+                    
+                    # Notify all sellers in the order
+                    _notify_sellers_after_payment(payment.order)
+                    
+                    # Create activity log
+                    Activity.objects.create(
+                        user=payment.order.user,
+                        action=f"M-Pesa payment completed for Order #{payment.order.id}. Receipt: {mpesa_receipt_number}"
+                    )
+                    
+                    logger.info(f"M-Pesa payment successful for order #{payment.order.id}. Receipt: {mpesa_receipt_number}")
+                
+            else:
+                # Payment failed
+                payment.status = 'failed'
+                payment.save()
+                
+                logger.warning(f"M-Pesa payment failed for order #{payment.order.id}. Reason: {result_desc}")
+            
+            return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Callback processed successfully'})
+            
+        except Payment.DoesNotExist:
+            logger.error(f"Payment not found for checkout request ID: {checkout_request_id}")
+            return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Payment not found'})
+            
+    except Exception as e:
+        logger.error(f"Error processing M-Pesa callback: {str(e)}")
+        return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Error processing callback'})
+
+@login_required
+def mpesa_debug_info(request):
+    """Debug endpoint to check M-Pesa configuration"""
+    from .mpesa_utils import mpesa_gateway
+    
+    debug_info = {
+        'has_credentials': mpesa_gateway.has_valid_credentials,
+        'environment': mpesa_gateway.environment,
+        'business_shortcode': mpesa_gateway.business_shortcode,
+        'callback_url': mpesa_gateway.callback_url,
+    }
+    
+    # Test access token (without exposing secrets)
+    if mpesa_gateway.has_valid_credentials:
+        access_token = mpesa_gateway.get_access_token()
+        debug_info['access_token_obtained'] = bool(access_token)
+        debug_info['access_token_length'] = len(access_token) if access_token else 0
+    
+    return JsonResponse(debug_info)
 
 @login_required
 def order_list(request):
@@ -810,26 +1036,29 @@ def order_detail(request, order_id):
     is_buyer = order.user == request.user
     is_seller = order.order_items.filter(listing__seller=request.user).exists()
     
-    # Get items relevant to the user
-    if is_seller:
+    # Get items relevant to the user - FIXED FOR MULTI-SELLER
+    if is_seller and not is_buyer:
         # Show only items that belong to this seller
         order_items = order.order_items.filter(listing__seller=request.user)
+        seller_specific_total = sum(float(item.get_total_price()) for item in order_items)
     else:
-        # Show all items for buyer
+        # Show all items for buyer or user who is both buyer and seller
         order_items = order.order_items.all()
+        seller_specific_total = order.total_price
     
     context = {
         'order': order,
         'order_items': order_items,
         'is_buyer': is_buyer,
         'is_seller': is_seller,
+        'seller_specific_total': seller_specific_total,  # Add this for seller view
         'can_ship': is_seller and order.status == 'paid',
         'can_confirm': is_buyer and order.status == 'shipped',
         'can_dispute': is_buyer and order.status in ['shipped', 'delivered'],
     }
     
-    return render(request, 'listings/order_detail.html', context)
-# Seller views
+    return render(request, 'listings/order_detail.html', context) # Seller views
+
 @login_required
 def seller_orders(request):
     # Get all orders that contain listings from this seller
@@ -852,11 +1081,41 @@ def mark_order_shipped(request, order_id):
         messages.warning(request, "Only paid orders can be marked as shipped.")
         return redirect('seller_orders')
     
+    # Update order status
     order.status = 'shipped'
     order.save()
     
-    # Notify buyer
-    notify_order_shipped(order.user, request.user, order)
+    # Integrate with Delivery System
+    delivery_response = _create_delivery_request(order)
+    
+    if delivery_response and delivery_response.get('success'):
+        tracking_number = delivery_response.get('tracking_number')
+        driver_info = delivery_response.get('driver', {})
+        
+        # Store tracking information
+        order.tracking_number = tracking_number
+        order.save()
+        
+        # Notify buyer with tracking information
+        notify_order_shipped(
+            order.user, 
+            request.user, 
+            order, 
+            tracking_number
+        )
+        
+        # Notify buyer about delivery assignment
+        if driver_info:
+            notify_delivery_assigned(
+                order,
+                driver_info.get('name', 'Delivery Partner'),
+                driver_info.get('estimated_delivery', 'Soon')
+            )
+        
+        messages.success(request, f"Order #{order.id} marked as shipped. Tracking: {tracking_number}")
+    else:
+        # If delivery system fails, still mark as shipped but warn seller
+        messages.warning(request, f"Order marked as shipped but delivery system integration failed. Please contact support.")
     
     # Create activity log
     Activity.objects.create(
@@ -864,28 +1123,44 @@ def mark_order_shipped(request, order_id):
         action=f"Order #{order.id} marked as shipped"
     )
     
-    messages.success(request, f"Order #{order.id} marked as shipped.")
     return redirect('seller_orders')
+
+def _create_delivery_request(order):
+    """Create delivery request in the delivery system"""
+    try:
+        try:
+            from integrations.delivery import DeliverySystemIntegration
+        except ImportError:
+            logger.error("DeliverySystemIntegration could not be imported. Delivery integration is unavailable.")
+            return None
+
+        delivery_integration = DeliverySystemIntegration()
+        return delivery_integration.create_delivery_from_order(order)
+        
+    except Exception as e:
+        logger.error(f"Delivery system integration failed: {str(e)}")
+        return None
 
 # Update confirm_delivery to notify seller
 @login_required
 def confirm_delivery(request, order_id):
+    """Buyer confirms delivery - MANDATORY for fund release"""
     order = get_object_or_404(Order, id=order_id, user=request.user)
     
     if order.status != 'shipped':
-        messages.warning(request, "This order has not been shipped yet.")
+        messages.warning(request, "This order has not been shipped yet or has already been delivered.")
         return redirect('order_detail', order_id=order.id)
     
+    # Update order status
     order.status = 'delivered'
     order.delivered_at = timezone.now()
     order.save()
     
-    # Notify sellers
-    for order_item in order.order_items.all():
-        notify_order_delivered(order_item.listing.seller, request.user, order)
+    # Release escrow funds to all sellers
+    _release_escrow_to_sellers(order)
     
-    # Release escrow funds to seller
-    order.escrow.release_funds()
+    # Notify sellers about delivery confirmation and fund release
+    _notify_sellers_delivery_confirmed(order)
     
     # Create activity log
     Activity.objects.create(
@@ -893,9 +1168,42 @@ def confirm_delivery(request, order_id):
         action=f"Order #{order.id} delivered and confirmed"
     )
     
-    messages.success(request, "Thank you for confirming delivery! Funds have been released to the seller.")
+    messages.success(request, "Thank you for confirming delivery! Funds have been released to the seller(s).")
     return redirect('order_detail', order_id=order.id)
 
+def _release_escrow_to_sellers(order):
+    """Release escrow funds to all sellers in the order"""
+    # Group order items by seller to handle multiple sellers
+    from collections import defaultdict
+    seller_amounts = defaultdict(float)
+    
+    for order_item in order.order_items.all():
+        seller = order_item.listing.seller
+        seller_amounts[seller] += float(order_item.get_total_price())
+    
+    # Release funds to each seller
+    for seller, amount in seller_amounts.items():
+        # In a real system, you'd actually transfer funds here
+        # For now, we'll just mark the escrow as released
+        logger.info(f"Releasing KSh {amount} to seller {seller.username} for order #{order.id}")
+    
+    # Update escrow status
+    order.escrow.status = 'released'
+    order.escrow.released_at = timezone.now()
+    order.escrow.save()
+
+def _notify_sellers_delivery_confirmed(order):
+    """Notify all sellers that delivery was confirmed and funds released"""
+    sellers = set(item.listing.seller for item in order.order_items.all())
+    
+    for seller in sellers:
+        notify_delivery_confirmed(seller, order.user, order)
+        
+        # Create activity log for seller
+        Activity.objects.create(
+            user=seller,
+            action=f"Delivery confirmed and funds released for Order #{order.id}"
+        )
 @login_required
 def create_dispute(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
