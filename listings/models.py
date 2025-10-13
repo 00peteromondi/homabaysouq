@@ -119,6 +119,7 @@ class Listing(models.Model):
     is_sold = models.BooleanField(default=False)
     is_featured = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    favorited_by = models.ManyToManyField(User, related_name='favorited_listings', blank=True)
     
     # Product specifications
     brand = models.CharField(max_length=100, blank=True)
