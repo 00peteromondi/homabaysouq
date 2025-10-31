@@ -3,17 +3,6 @@
 from django.conf import settings
 from django.db import migrations, models
 
-def skip_if_exists(apps, schema_editor):
-    # Get the database being used
-    db = schema_editor.connection.alias
-    table_name = 'listings_listing_favorited_by'
-    
-    # Check if the table already exists
-    with schema_editor.connection.cursor() as cursor:
-        tables = schema_editor.connection.introspection.table_names(cursor)
-        if table_name in tables:
-            # If table exists, we need to skip this migration
-            raise migrations.exceptions.MigrationSchemaMissing("Table already exists, skipping creation")
 
 class Migration(migrations.Migration):
 
@@ -23,9 +12,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(skip_if_exists, reverse_code=migrations.RunPython.noop),
         migrations.SeparateDatabaseAndState(
+            # Skip database operations entirely - assume table exists
             database_operations=[],
+            # Update Django's state to know about the field
             state_operations=[
                 migrations.AddField(
                     model_name='listing',
