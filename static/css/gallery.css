@@ -1,3 +1,93 @@
+/* Lightweight gallery styles for storefront/listing pages */
+.gallery {
+  display: block;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.gallery-main {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.gallery-slide {
+  display: none;
+  width: 100%;
+  height: 520px;
+  object-fit: cover;
+}
+
+.gallery-slide.active {
+  display: block;
+}
+
+.gallery-controls {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.gallery-controls button {
+  pointer-events: auto;
+  background: rgba(0,0,0,0.45);
+  border: none;
+  color: white;
+  padding: 0.6rem 0.9rem;
+  margin: 0 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.gallery-thumbs {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+}
+
+.gallery-thumb {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  border: 2px solid transparent;
+}
+
+.gallery-thumb:hover { opacity: 1; transform: translateY(-2px); }
+.gallery-thumb.selected { opacity: 1; border-color: var(--primary-gemini); }
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .gallery-slide { height: 320px; }
+  .gallery-thumb { height: 64px; }
+}
+
+@media (max-width: 480px) {
+  .gallery-slide { height: 220px; }
+  .gallery-thumbs { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+}
+
+/* Minimal placeholder behavior */
+.gallery-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  background: linear-gradient(180deg, #f4f6f9, #eceff4);
+  height: 320px;
+  border-radius: 12px;
+}
 /* Gallery and Image Styles */
 .listing-card__image {
     position: relative;

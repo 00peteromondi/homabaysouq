@@ -9,8 +9,14 @@ class Store(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True)
     # Optional logo and cover image for storefronts
-    logo = models.ImageField(upload_to='store_logos/', null=True, blank=True)
-    cover_image = models.ImageField(upload_to='store_covers/', null=True, blank=True)
+    # Use CloudinaryField when Cloudinary is configured (keeps behavior consistent with ListingImage)
+    if 'cloudinary' in __import__('django.conf').conf.settings.INSTALLED_APPS and hasattr(__import__('django.conf').conf.settings, 'CLOUDINARY_CLOUD_NAME') and __import__('django.conf').conf.settings.CLOUDINARY_CLOUD_NAME:
+        from cloudinary.models import CloudinaryField
+        logo = CloudinaryField('logo', folder='homabay_souq/stores/logos/', null=True, blank=True)
+        cover_image = CloudinaryField('cover_image', folder='homabay_souq/stores/covers/', null=True, blank=True)
+    else:
+        logo = models.ImageField(upload_to='store_logos/', null=True, blank=True)
+        cover_image = models.ImageField(upload_to='store_covers/', null=True, blank=True)
     description = models.TextField(blank=True)
     is_premium = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
