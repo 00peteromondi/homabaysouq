@@ -9,8 +9,9 @@
 /* Modern Listings Styles */
 .listing-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
+    /* smaller min width so more listings fit per row */
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
     margin-top: 1rem;
 }
 
@@ -32,7 +33,8 @@
 
 .listing-card__image {
     position: relative;
-    height: 220px;
+    /* smaller image height for denser layout */
+    height: 160px;
     overflow: hidden;
 }
 
@@ -111,10 +113,10 @@
 }
 
 .listing-card__title {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
-    margin-bottom: 0.75rem;
-    line-height: 1.4;
+    margin-bottom: 0.6rem;
+    line-height: 1.3;
     color: var(--text-color);
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -987,6 +989,12 @@
                     
                     <div class="listing-card__content">
                         <h3 class="listing-card__title">{{ listing.title }}</h3>
+                        {% if listing.store %}
+                        <div class="mb-1 text-muted" style="font-size:0.9rem;">
+                            <i class="bi bi-shop"></i>
+                            <a href="{% url 'storefront:store_detail' listing.store.slug %}" class="text-muted text-decoration-none">{{ listing.store.name }}</a>
+                        </div>
+                        {% endif %}
                         
                         <div class="listing-card__meta">
                             <span class="listing-card__price">KSh {{ listing.price }}</span>
@@ -1100,8 +1108,18 @@
 <!-- Swiper JS -->
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
+<!-- Server data rendered as JSON -->
+{{ user_favorites|json_script:"userFavorites" }}
+{{ categories|json_script:"categoriesData" }}
+{{ locations|json_script:"locationsData" }}
+
 <!-- Consolidated Script -->
 <script>
+// Get data safely from Django rendered script tags
+const userFavorites = JSON.parse(document.getElementById('userFavorites').textContent);
+const categoriesData = JSON.parse(document.getElementById('categoriesData').textContent);
+const locationsData = JSON.parse(document.getElementById('locationsData').textContent);
+
 // Debounce function to limit API calls
 function debounce(func, wait) {
     let timeout;
@@ -1147,17 +1165,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let isLoading = false;
     
     // Create mappings for categories and locations
-    const categoryMap = {
-        {% for category in categories %}
-        "{{ category.id }}": "{{ category.name }}",
-        {% endfor %}
-    };
-    
-    const locationMap = {
-        {% for value, name in locations %}
-        "{{ value }}": "{{ name }}",
-        {% endfor %}
-    };
+    const categoryMap = new Map(categoriesData.map(cat => [cat.id.toString(), cat.name]));
+    const locationMap = new Map(locationsData.map(loc => [loc.code, loc.name]));
     
     // Function to get all filter values
     function getFilterValues() {
@@ -1273,11 +1282,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         let html = '';
+        // userFavorites is passed from server as a JSON array
+        const userFavorites = JSON.parse(document.getElementById('userFavorites').textContent);
         
         listings.forEach(listing => {
             const stockClass = listing.stock > 0 ? 'in-stock' : 'out-of-stock';
             const stockText = listing.stock > 0 ? `${listing.stock} available` : 'Out of stock';
-            const isFavorited = {% if user_favorites %} {{ listing.id }} in {{ user_favorites|safe }} {% else %} false {% endif %};
+            const isFavorited = Array.isArray(userFavorites) && userFavorites.includes(listing.id);
             
             html += `
                 <div class="listing-card">
@@ -1299,7 +1310,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     <div class="listing-card__content">
                         <h3 class="listing-card__title">${listing.title}</h3>
-                        
+                        ${listing.store ? `<div class="mb-1 text-muted" style="font-size:0.9rem;"><i class="bi bi-shop"></i> <a href="${listing.store_url}" class="text-muted text-decoration-none">${listing.store}</a></div>` : ''}
                         <div class="listing-card__meta">
                             <span class="listing-card__price">KSh ${listing.price}</span>
                             <span class="listing-card__location">

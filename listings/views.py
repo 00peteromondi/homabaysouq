@@ -1,11 +1,14 @@
 # listings/views.py
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.db.models import Q, Count, Avg
+from django.db.models import Q, Count, Avg, F
 from .models import Listing, Category, Favorite, Activity, RecentlyViewed, Review, Order, OrderItem, Cart, CartItem, Payment, Escrow, ListingImage
 from .forms import ListingForm
+from storefront.models import Store
 from django.contrib.auth import get_user_model
+from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.core.paginator import Paginator
@@ -65,11 +68,22 @@ class ListingListView(ListView):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.filter(is_active=True)
         context['locations'] = Listing.HOMABAY_LOCATIONS
-        context['total_listings_count'] = Listing.objects.filter(is_active=True).count()
-        context['total_users_count'] = User.objects.count()
+        # Core summary stats used by `templates/listings/home.html`
+        context['total_listings'] = Listing.objects.filter(is_active=True).count()
+        context['total_users'] = User.objects.count()
         context['total_categories_count'] = Category.objects.filter(is_active=True).count()
+        # Orders completed (delivered) used as 'Orders Completed' metric
+        try:
+            context['total_orders'] = Order.objects.filter(status='delivered').count()
+        except Exception:
+            context['total_orders'] = 0
+        # Active stores count
+        try:
+            context['total_stores'] = Store.objects.filter().count()
+        except Exception:
+            context['total_stores'] = 0
         
-        # Add this: Create listings_count dictionary for category counts
+    # Add this: Create listings_count dictionary for category counts
         listings_count = {}
         for category in context['categories']:
             listings_count[category.id] = Listing.objects.filter(
@@ -237,21 +251,82 @@ class ListingCreateView(LoginRequiredMixin, CreateView):
     model = Listing
     form_class = ListingForm
 
+    def dispatch(self, request, *args, **kwargs):
+        # Check if user has any stores before allowing listing creation
+        if not Store.objects.filter(owner=request.user).exists():
+            messages.info(request, "You need to create a store first before you can list items for sale.")
+            return redirect(reverse('storefront:store_create') + '?from=listing')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Add categories to context for the form
         context['categories'] = Category.objects.filter(is_active=True)
+        # Get user's stores for the store selector
+        if self.request.user.is_authenticated:
+            context['stores'] = Store.objects.filter(owner=self.request.user)
+        else:
+            context['stores'] = Store.objects.none()
         return context
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def form_valid(self, form):
+        from django.conf import settings
+        from django.shortcuts import render, redirect
+
+        # Enforce per-user free listing limit (global across all listing creation entrypoints)
+        FREE_LISTING_LIMIT = getattr(settings, 'STORE_FREE_LISTING_LIMIT', 5)
+        user_listing_count = Listing.objects.filter(seller=self.request.user).count()
+
+        # Get or create the user's single storefront
+        user_store = Store.objects.filter(owner=self.request.user).first()
+
+        # If the form included an explicit store choice, prefer that (but ensure ownership)
+        selected_store = None
+        try:
+            selected_store = form.cleaned_data.get('store')
+        except Exception:
+            selected_store = None
+
+        if selected_store:
+            # Ensure the selected store belongs to the current user
+            if selected_store.owner != self.request.user:
+                messages.error(self.request, "Invalid store selection.")
+                return render(self.request, 'listings/listing_form.html', {'form': form, 'categories': Category.objects.filter(is_active=True), 'stores': Store.objects.filter(owner=self.request.user)})
+            user_store = selected_store
+
+        # If user reached limit and is not premium, show upgrade prompt
+        is_premium = user_store.is_premium if user_store else False
+        if not is_premium and user_listing_count >= FREE_LISTING_LIMIT:
+            store_for_template = user_store or Store(owner=self.request.user, name=f"{self.request.user.username}'s Store", slug=self.request.user.username)
+            messages.warning(self.request, f"You've reached the free listing limit ({FREE_LISTING_LIMIT}). Upgrade to premium to add more listings.")
+            return render(self.request, 'storefront/confirm_upgrade.html', {
+                'store': store_for_template,
+                'limit_reached': True,
+                'current_count': user_listing_count,
+                'free_limit': FREE_LISTING_LIMIT,
+            })
+
+        # If there's still no user_store (and no explicit selection), require the user to create or select a storefront.
+        # We intentionally DO NOT auto-create a store here so that the user explicitly chooses where the listing should appear.
+        if not user_store:
+            messages.info(self.request, "You need to create a storefront before you can list items. Please create a store first.")
+            return redirect(reverse('storefront:store_create') + '?from=listing')
+
+        # Attach store to the listing instance
         form.instance.seller = self.request.user
+        form.instance.store = user_store
         response = super().form_valid(form)
-        
+
         # Handle main image
         if 'image' in self.request.FILES:
             form.instance.image = self.request.FILES['image']
             form.instance.save()
-        
+
         # Handle multiple image uploads for gallery
         images = self.request.FILES.getlist('images')
         for image in images:
@@ -261,13 +336,13 @@ class ListingCreateView(LoginRequiredMixin, CreateView):
                     listing=form.instance,
                     image=image
                 )
-        
+
         # Create activity log
         Activity.objects.create(
             user=self.request.user,
             action=f"Created listing: {form.instance.title}"
         )
-        
+
         messages.success(self.request, "Listing created successfully!")
         return response
 
@@ -280,12 +355,28 @@ class ListingUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         context['categories'] = Category.objects.filter(is_active=True)
         return context
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def test_func(self):
         listing = self.get_object()
         return self.request.user == listing.seller
 
     def form_valid(self, form):
         form.instance.seller = self.request.user
+        # If the user selected a store, ensure ownership
+        try:
+            selected_store = form.cleaned_data.get('store')
+        except Exception:
+            selected_store = None
+
+        if selected_store:
+            if selected_store.owner != self.request.user:
+                messages.error(self.request, "Invalid store selection.")
+                return render(self.request, 'listings/listing_form.html', {'form': form, 'categories': Category.objects.filter(is_active=True), 'stores': Store.objects.filter(owner=self.request.user)})
+            form.instance.store = selected_store
         
         # Handle main image update
         if 'image' in self.request.FILES:
@@ -332,6 +423,12 @@ def all_listings(request):
     search_query = request.GET.get('q')
     sort_by = request.GET.get('sort_by', 'newest')
     
+    # Convert categories to JSON-serializable format
+    categories_data = [{"id": cat.id, "name": cat.name} for cat in Category.objects.filter(is_active=True)]
+    
+    # Convert locations to JSON-serializable format 
+    locations_data = [{"code": code, "name": name} for code, name in Listing.HOMABAY_LOCATIONS]
+    
     # Apply filters
     if category_id and category_id != 'all':
         listings = listings.filter(category__id=category_id)
@@ -372,33 +469,41 @@ def all_listings(request):
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         listings_data = []
         for listing in page_obj:
-            listings_data.append({
+                listings_data.append({
                 'id': listing.id,
                 'title': listing.title,
                 'price': str(listing.price),
                 'image_url': listing.get_image_url(),
                 'category': listing.category.name,
+                'store': listing.store.name if listing.store else '',
+                'store_url': listing.store.get_absolute_url() if listing.store else '',
                 'location': listing.get_location_display(),
                 'date_created': listing.date_created.strftime('%b %d, %Y'),
                 'url': listing.get_absolute_url(),
                 'stock': listing.stock,
                 'is_sold': listing.is_sold,
             })
-        
+
         return JsonResponse({
             'listings': listings_data,
             'has_next': page_obj.has_next(),
             'has_previous': page_obj.has_previous(),
             'current_page': page_obj.number,
             'num_pages': paginator.num_pages,
-            'total_count': paginator.count,
+            'total_count': paginator.count(),
         })
     
     # For regular requests, return the full page
+    # Convert categories to a list of dicts for JSON serialization
+    categories_data = [{'id': cat.id, 'name': cat.name} for cat in Category.objects.filter(is_active=True)]
+    
+    # Convert locations to a list of tuples for JSON serialization
+    locations_data = [{'code': code, 'name': name} for code, name in Listing.HOMABAY_LOCATIONS]
+    
     context = {
         'listings': page_obj,
-        'categories': Category.objects.filter(is_active=True),
-        'locations': Listing.HOMABAY_LOCATIONS,
+        'categories': categories_data,
+        'locations': locations_data,
         'selected_category': category_id,
         'selected_location': location,
         'min_price': min_price,
@@ -490,7 +595,6 @@ def my_listings(request):
     return render(request, 'listings/my_listings.html', context)
 # In your listings/views.py
 from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.db import transaction
@@ -660,7 +764,36 @@ def checkout(request):
             return redirect('view_cart')
     
     if request.method == 'POST':
-        form = CheckoutForm(request.POST)
+        # Initialize form with user's existing info
+        initial_data = {
+            'first_name': request.user.first_name,
+            'last_name': request.user.last_name,
+            'email': request.user.email,
+            'phone_number': getattr(request.user, 'phone_number', ''),
+        }
+        
+        # Get latest successful order for shipping info
+        latest_order = Order.objects.filter(
+            user=request.user,
+            status__in=['delivered', 'shipped']
+        ).order_by('-created_at').first()
+        
+        if latest_order:
+            initial_data.update({
+                'shipping_address': latest_order.shipping_address,
+                'city': latest_order.city,
+                'postal_code': latest_order.postal_code,
+            })
+        
+        form = CheckoutForm(request.POST, initial=initial_data)
+        
+        # Check if using alternate shipping
+        use_alternate = request.POST.get('use_alternate_shipping') == 'on'
+        if not use_alternate:
+            # If not using alternate shipping, copy user's info
+            form.data = form.data.copy()  # Make mutable
+            form.data.update(initial_data)
+        
         if form.is_valid():
             try:
                 with transaction.atomic():
@@ -708,19 +841,44 @@ def checkout(request):
                 messages.error(request, f"An error occurred during checkout: {str(e)}")
                 return render(request, 'listings/checkout.html', {
                     'cart': cart,
-                    'form': form
+                    'form': form,
+                    'use_alternate_shipping': use_alternate
                 })
         else:
             return render(request, 'listings/checkout.html', {
                 'cart': cart,
-                'form': form
+                'form': form,
+                'use_alternate_shipping': use_alternate
             })
     else:
-        form = CheckoutForm()
+        # Pre-fill form with user's info
+        initial_data = {
+            'first_name': request.user.first_name,
+            'last_name': request.user.last_name,
+            'email': request.user.email,
+            'phone_number': getattr(request.user, 'phone_number', ''),
+        }
+        
+        # Get latest successful order for shipping info
+        latest_order = Order.objects.filter(
+            user=request.user,
+            status__in=['delivered', 'shipped']
+        ).order_by('-created_at').first()
+        
+        if latest_order:
+            initial_data.update({
+                'shipping_address': latest_order.shipping_address,
+                'city': latest_order.city,
+                'postal_code': latest_order.postal_code,
+            })
+            
+        form = CheckoutForm(initial=initial_data)
     
     return render(request, 'listings/checkout.html', {
         'cart': cart,
-        'form': form
+        'form': form,
+        'use_alternate_shipping': False,
+        'has_previous_orders': latest_order is not None
     })
 
 from django.views.decorators.csrf import csrf_exempt
@@ -858,31 +1016,109 @@ def initiate_mpesa_payment(request, order_id):
 
 @login_required
 def check_payment_status(request, order_id):
-    """AJAX endpoint to check M-Pesa payment status"""
+    """AJAX endpoint to check M-Pesa payment status with active MPESA status check"""
     order = get_object_or_404(Order, id=order_id, user=request.user)
-    
-    # Check if payment status has changed
     payment = order.payment
-    
+
+    # First check the current payment state in our DB
     if payment.status == 'completed':
         return JsonResponse({
             'success': True,
             'payment_status': 'completed',
-            'message': 'Payment completed successfully'
+            'message': 'Payment completed successfully',
+            'redirect_url': reverse('order_detail', args=[order.id])
         })
     elif payment.status == 'failed':
         return JsonResponse({
-            'success': True,
+            'success': True, 
             'payment_status': 'failed',
-            'message': payment.mpesa_result_desc or 'Payment failed'
+            'message': payment.mpesa_result_desc or 'Payment failed',
+            'redirect_url': reverse('process_payment', args=[order.id])
         })
-    else:
-        # Payment still processing
-        return JsonResponse({
-            'success': True,
-            'payment_status': 'processing',
-            'message': 'Payment still processing...'
-        })
+        
+    # If payment was initiated via MPESA, check status with MPESA API
+    if (payment.status == 'initiated' and 
+        payment.method == 'mpesa' and 
+        payment.mpesa_checkout_request_id):
+            
+        from .mpesa_utils import mpesa_gateway
+        status_response = mpesa_gateway.check_transaction_status(
+            payment.mpesa_checkout_request_id
+        )
+        
+        if status_response['success']:
+            result_code = status_response.get('result_code')
+            
+            # Update payment record based on MPESA response
+            if result_code == '0':  # Success
+                payment.mark_as_completed(
+                    status_response.get('response_data', {}).get('MpesaReceiptNumber')
+                )
+                return JsonResponse({
+                    'success': True,
+                    'payment_status': 'completed',
+                    'message': 'Payment completed successfully',
+                    'redirect_url': reverse('order_detail', args=[order.id])
+                })
+                
+            elif result_code == '1037':  # Timeout waiting for user input
+                payment.status = 'failed'
+                payment.mpesa_result_code = result_code
+                payment.mpesa_result_desc = 'Transaction timed out waiting for user input'
+                payment.save()
+                return JsonResponse({
+                    'success': True,
+                    'payment_status': 'failed',
+                    'message': 'Transaction timed out. Please try again.',
+                    'redirect_url': reverse('process_payment', args=[order.id])
+                })
+                
+            elif result_code == '1032':  # Cancelled by user
+                payment.status = 'failed'
+                payment.mpesa_result_code = result_code
+                payment.mpesa_result_desc = 'Transaction cancelled by user'
+                payment.save()
+                return JsonResponse({
+                    'success': True,
+                    'payment_status': 'failed',
+                    'message': 'Transaction was cancelled. Please try again if you want to complete the payment.',
+                    'redirect_url': reverse('process_payment', args=[order.id])
+                })
+                
+            elif result_code == '1':  # Still processing
+                return JsonResponse({
+                    'success': True,
+                    'payment_status': 'processing',
+                    'message': 'Please complete the payment on your phone...'
+                })
+            else:
+                # Any other failure case
+                payment.status = 'failed'
+                payment.mpesa_result_code = result_code
+                payment.mpesa_result_desc = status_response.get('result_desc', 'Payment failed')
+                payment.save()
+                return JsonResponse({
+                    'success': True,
+                    'payment_status': 'failed',
+                    'message': status_response.get('result_desc', 'Payment failed. Please try again.'),
+                    'redirect_url': reverse('process_payment', args=[order.id])
+                })
+                
+        else:
+            # Error checking status - tell frontend to keep trying
+            logger.error(f"Error checking MPESA status: {status_response.get('error')}")
+            return JsonResponse({
+                'success': True,
+                'payment_status': 'processing',
+                'message': 'Checking payment status...'
+            })
+    
+    # For non-MPESA or non-initiated payments, just return current status
+    return JsonResponse({
+        'success': True,
+        'payment_status': 'processing',
+        'message': 'Payment is being processed...'
+    })
     
 @csrf_exempt
 @require_POST
@@ -1061,11 +1297,13 @@ def order_detail(request, order_id):
 
 @login_required
 def seller_orders(request):
-    # Get all orders that contain listings from this seller
-    orders = Order.objects.filter(
-        order_items__listing__seller=request.user
-    ).distinct().order_by('-created_at')
-    
+    # By request: show only orders that contain items exclusively from this seller
+    # i.e. total order_items == order_items belonging to this seller
+    orders = Order.objects.annotate(
+        total_items=Count('order_items'),
+        seller_items=Count('order_items', filter=Q(order_items__listing__seller=request.user))
+    ).filter(total_items=F('seller_items')).order_by('-created_at')
+
     return render(request, 'listings/seller_orders.html', {'orders': orders})
 
 @login_required
@@ -1077,52 +1315,119 @@ def mark_order_shipped(request, order_id):
         messages.error(request, "You don't have permission to modify this order.")
         return redirect('seller_orders')
     
-    if order.status != 'paid':
+    # Allow marking shipments when order is paid or already partially shipped
+    if order.status not in ['paid', 'partially_shipped']:
         messages.warning(request, "Only paid orders can be marked as shipped.")
         return redirect('seller_orders')
-    
-    # Update order status
+
+    # Mark only the items that belong to this seller as shipped
+    seller_items = order.order_items.filter(listing__seller=request.user, shipped=False)
+    if not seller_items.exists():
+        messages.info(request, "There are no unshipped items for this order belonging to you.")
+        return redirect('seller_orders')
+
+    from django.utils import timezone
+    now = timezone.now()
+
+    for item in seller_items:
+        item.shipped = True
+        item.shipped_at = now
+        # Allow seller to provide a tracking number via POST (optional)
+        tracking_number = request.POST.get('tracking_number') or ''
+        if tracking_number:
+            item.tracking_number = tracking_number
+        item.save()
+
+    # If any items remain unshipped by other sellers, mark order as partially_shipped
+    remaining = order.order_items.filter(shipped=False)
+    if remaining.exists():
+        order.status = 'partially_shipped'
+        order.save()
+
+        # Notify buyer about the partial shipment by this seller
+        # Use the first tracking number if provided
+        first_tracking = seller_items.filter(tracking_number__isnull=False).first()
+        notify_order_shipped(order.user, request.user, order, first_tracking.tracking_number if first_tracking else None)
+
+        messages.success(request, f"Your items for Order #{order.id} have been marked as shipped. Waiting on other sellers to complete their shipments.")
+
+        # Remind remaining sellers when only a few are left
+        try:
+            from notifications.utils import NotificationService, create_notification
+            from django.conf import settings
+        except Exception:
+            NotificationService = None
+
+        remaining_sellers = set(item.listing.seller for item in remaining)
+        REMINDER_THRESHOLD = getattr(settings, 'SELLER_SHIPMENT_REMINDER_THRESHOLD', 2)
+
+        if NotificationService and 0 < len(remaining_sellers) <= REMINDER_THRESHOLD:
+            ns = NotificationService()
+            for seller in remaining_sellers:
+                # SMS reminder if configured
+                try:
+                    sms_msg = f"Order #{order.id} has most sellers shipped. Please mark your items as shipped so the buyer can receive their order."
+                    ns.send_sms(getattr(seller, 'phone_number', ''), sms_msg)
+                except Exception:
+                    logger.exception("Failed to send shipment reminder SMS")
+
+                # In-app/system notification
+                try:
+                    create_notification(
+                        recipient=seller,
+                        notification_type='system',
+                        title='Action required: Ship items',
+                        message=f'Order #{order.id} still has unshipped items assigned to you. Please mark them as shipped.',
+                        sender=request.user,
+                        related_object_id=order.id,
+                        related_content_type='order',
+                        action_url=reverse('order_detail', args=[order.id]),
+                        action_text='View Order'
+                    )
+                except Exception:
+                    logger.exception("Failed to create in-app shipment reminder")
+
+        # Activity log
+        Activity.objects.create(
+            user=request.user,
+            action=f"Order #{order.id} items marked as shipped (seller: {request.user.username})"
+        )
+
+        return redirect('seller_orders')
+
+    # If no remaining items, finalize order as shipped
     order.status = 'shipped'
+    order.shipped_at = now
     order.save()
-    
-    # Integrate with Delivery System
+
+    # Consolidated delivery request for whole order (for single-seller orders this behaves as before)
     delivery_response = _create_delivery_request(order)
-    
+
+    tracking_number = None
     if delivery_response and delivery_response.get('success'):
         tracking_number = delivery_response.get('tracking_number')
         driver_info = delivery_response.get('driver', {})
-        
-        # Store tracking information
-        order.tracking_number = tracking_number
+
+        order.tracking_number = tracking_number or order.tracking_number
         order.save()
-        
-        # Notify buyer with tracking information
-        notify_order_shipped(
-            order.user, 
-            request.user, 
-            order, 
-            tracking_number
-        )
-        
-        # Notify buyer about delivery assignment
+
+        # Notify buyer
+        notify_order_shipped(order.user, request.user, order, tracking_number)
+
         if driver_info:
-            notify_delivery_assigned(
-                order,
-                driver_info.get('name', 'Delivery Partner'),
-                driver_info.get('estimated_delivery', 'Soon')
-            )
-        
+            notify_delivery_assigned(order, driver_info.get('name', 'Delivery Partner'), driver_info.get('estimated_delivery', 'Soon'))
+
         messages.success(request, f"Order #{order.id} marked as shipped. Tracking: {tracking_number}")
     else:
-        # If delivery system fails, still mark as shipped but warn seller
-        messages.warning(request, f"Order marked as shipped but delivery system integration failed. Please contact support.")
-    
-    # Create activity log
+        # Notify buyer that order is shipped but delivery integration lacked tracking
+        notify_order_shipped(order.user, request.user, order, None)
+        messages.success(request, f"Order #{order.id} marked as shipped. Delivery system may not have provided tracking.")
+
     Activity.objects.create(
         user=request.user,
-        action=f"Order #{order.id} marked as shipped"
+        action=f"Order #{order.id} marked as shipped by {request.user.username}"
     )
-    
+
     return redirect('seller_orders')
 
 def _create_delivery_request(order):
@@ -1229,7 +1534,6 @@ def create_dispute(request, order_id):
 
 
 from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Review, Order
 from .forms import ReviewForm

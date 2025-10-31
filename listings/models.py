@@ -132,6 +132,8 @@ class Listing(models.Model):
     # SEO and sharing
     meta_description = models.TextField(blank=True)
     slug = models.SlugField(unique=True, blank=True)
+    # Optional explicit link to a Store (storefront.Store). Nullable to remain backward compatible.
+    store = models.ForeignKey('storefront.Store', on_delete=models.SET_NULL, null=True, blank=True, related_name='listings')
     
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
@@ -309,6 +311,7 @@ class Order(models.Model):
     ORDER_STATUS = [
         ('pending', 'Pending Payment'),
         ('paid', 'Paid'),
+        ('partially_shipped', 'Partially Shipped'),
         ('confirmed', 'Confirmed'),
         ('shipped', 'Shipped'),
         ('delivered', 'Delivered'),
@@ -389,6 +392,10 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     added_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    # Per-item shipment state (important for multi-seller orders)
+    shipped = models.BooleanField(default=False)
+    shipped_at = models.DateTimeField(null=True, blank=True)
+    tracking_number = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
         return f"{self.quantity} x {self.listing.title}"

@@ -29,33 +29,100 @@
                             </div>
                         {% endif %}
                         
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form.first_name|as_crispy_field }}
+                        <!-- Quick Actions -->
+                        {% if has_previous_orders %}
+                        <div class="alert alert-info mb-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-clock-history fs-4 me-2"></i>
+                                <div>
+                                    <h6 class="mb-0">Use Previous Shipping Address?</h6>
+                                    <p class="small mb-0">We've found your last delivery details</p>
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                {{ form.last_name|as_crispy_field }}
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-outline-primary btn-sm me-2" id="useLastAddress">
+                                    <i class="bi bi-check-circle me-1"></i> Use Last Address
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="enterNewAddress">
+                                    <i class="bi bi-pencil me-1"></i> Enter New Address
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Shipping Options -->
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="useAlternateShipping" name="use_alternate_shipping" {% if use_alternate_shipping %}checked{% endif %}>
+                                <label class="form-check-label" for="useAlternateShipping">
+                                    Ship to a different address?
+                                </label>
                             </div>
                         </div>
                         
-                        <div class="mb-3">
-                            {{ form.email|as_crispy_field }}
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form.phone_number|as_crispy_field }}
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form.shipping_address|as_crispy_field }}
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form.city|as_crispy_field }}
+                        <!-- Personal Info Section -->
+                        <div id="personalInfoSection" {% if use_alternate_shipping %}style="display: none;"{% endif %}>
+                            <div class="alert alert-success mb-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-person-circle fs-4 me-2"></i>
+                                    <div>
+                                        <h6 class="mb-1">Your Account Details</h6>
+                                        <p class="mb-0 small">We'll use your account information for shipping</p>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <strong>{{ request.user.get_full_name }}</strong>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>{{ request.user.email }}</strong>
+                                    </div>
+                                    <div class="col-12">
+                                        <strong>{{ request.user.phone_number|default:"No phone number" }}</strong>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                {{ form.postal_code|as_crispy_field }}
+                        </div>
+                        
+                        <!-- Shipping Form (Hidden by default unless alternate shipping) -->
+                        <div id="shippingFormSection" {% if not use_alternate_shipping %}style="display: none;"{% endif %}>
+                            <h6 class="mb-3">Shipping Details</h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.first_name|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.last_name|as_crispy_field }}
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.email|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.phone_number|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Address Section (Always visible) -->
+                        <div id="addressSection" class="mt-4">
+                            <h6 class="mb-3">Delivery Address</h6>
+                            
+                            <div class="mb-3">
+                                {{ form.shipping_address|as_crispy_field }}
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.city|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.postal_code|as_crispy_field }}
+                                </div>
                             </div>
                         </div>
                         
@@ -164,20 +231,90 @@
 document.addEventListener('DOMContentLoaded', function() {
     const checkoutForm = document.getElementById('checkoutForm');
     const placeOrderBtn = document.getElementById('placeOrderBtn');
+    const useAlternateShipping = document.getElementById('useAlternateShipping');
+    const personalInfoSection = document.getElementById('personalInfoSection');
+    const shippingFormSection = document.getElementById('shippingFormSection');
+    const useLastAddress = document.getElementById('useLastAddress');
+    const enterNewAddress = document.getElementById('enterNewAddress');
+    
+    // Handle shipping toggle
+    if (useAlternateShipping) {
+        useAlternateShipping.addEventListener('change', function() {
+            personalInfoSection.style.display = this.checked ? 'none' : 'block';
+            shippingFormSection.style.display = this.checked ? 'block' : 'none';
+            
+            if (!this.checked) {
+                // Reset shipping form to account info
+                const userInfo = {
+                    'id_first_name': '{{ request.user.first_name }}',
+                    'id_last_name': '{{ request.user.last_name }}',
+                    'id_email': '{{ request.user.email }}',
+                    'id_phone_number': '{{ request.user.phone_number|default:"" }}'
+                };
+                
+                Object.keys(userInfo).forEach(id => {
+                    const field = document.getElementById(id);
+                    if (field) field.value = userInfo[id];
+                });
+            }
+        });
+    }
+    
+    // Handle quick actions
+    if (useLastAddress) {
+        useLastAddress.addEventListener('click', function() {
+            // Fill in saved address
+            const savedAddress = {
+                'id_shipping_address': '{{ form.initial.shipping_address|escapejs }}',
+                'id_city': '{{ form.initial.city|escapejs }}',
+                'id_postal_code': '{{ form.initial.postal_code|escapejs }}'
+            };
+            
+            Object.keys(savedAddress).forEach(id => {
+                const field = document.getElementById(id);
+                if (field) {
+                    field.value = savedAddress[id];
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            showToast('Previous shipping address loaded', 'success');
+        });
+    }
+    
+    if (enterNewAddress) {
+        enterNewAddress.addEventListener('click', function() {
+            // Clear address fields
+            ['id_shipping_address', 'id_city', 'id_postal_code'].forEach(id => {
+                const field = document.getElementById(id);
+                if (field) field.value = '';
+            });
+            
+            // Focus on address field
+            document.getElementById('id_shipping_address').focus();
+            showToast('Enter your new shipping address', 'info');
+        });
+    }
     
     checkoutForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
         if (!document.getElementById('terms').checked) {
-            alert('Please agree to the Terms of Service and Privacy Policy');
+            showToast('Please agree to the Terms of Service and Privacy Policy', 'error');
             return;
         }
         
-        // Validate required fields
-        const requiredFields = checkoutForm.querySelectorAll('[required]');
-        let isValid = true;
+        // Validate required fields based on shipping mode
+        let fieldsToValidate;
+        if (useAlternateShipping && useAlternateShipping.checked) {
+            fieldsToValidate = checkoutForm.querySelectorAll('[required]');
+        } else {
+            // Only validate address fields if using account info
+            fieldsToValidate = checkoutForm.querySelectorAll('#addressSection [required]');
+        }
         
-        requiredFields.forEach(field => {
+        let isValid = true;
+        fieldsToValidate.forEach(field => {
             if (!field.value.trim()) {
                 field.classList.add('is-invalid');
                 isValid = false;

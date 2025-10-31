@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,63 +9,91 @@
     <!-- Updated Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Custom CSS -->
+    <!-- Apply theme early to avoid FOUC: set effective theme on <html> before styles render -->
+    <script>
+        (function() {
+            try {
+                var storedPref = localStorage.getItem('theme-preference');
+                var effective;
+                if (!storedPref || storedPref === 'system') {
+                    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    effective = prefersDark ? 'dark' : 'light';
+                } else {
+                    effective = storedPref === 'dark' ? 'dark' : 'light';
+                }
+                document.documentElement.setAttribute('data-theme', effective);
+            } catch (e) {
+                // ignore
+            }
+        })();
+    </script>
     <style>
         :root {
             --sidebar-width: 280px;
-            --primary-color: #1a73e8;
-            --accent-blue: #4285f4;
-            --accent-red: #ea4335;
-            --accent-yellow: #fbbc04;
-            --accent-green: #34a853;
-            --accent-goldenrod: #daa520;
-            --accent-orange: #ff6b35;
-            --accent-teal: #008080;
-            --accent-navy: #001f3f;
-            --accent-purple: #8a2be2;
-            --accent-maroon: #8b0000;
-            --light-goldenrod: #faf3e0;
-            --light-bg: #f8f9fa;
+            --primary-color: #2563eb;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+            --facebook-blue: #1877F2;
+            --accent-yellow: #f59e0b;
+            --accent-green: #10b981;
+            --accent-goldenrod: #d97706;
+            --accent-orange: #f97316;
+            --accent-teal: #14b8a6;
+            --accent-navy: #1e3a8a;
+            --accent-purple: #8b5cf6;
+            --accent-maroon: #991b1b;
+            --light-goldenrod: #fef7cd;
+            --light-bg: #f8fafc;
             --light-navbar-bg: #ffffff;
-            --light-text: #1f1f1f;
+            --light-text: #1e293b;
             --light-sidebar-bg: #ffffff;
-            --light-sidebar-link-hover: #faf3e0;
-            --light-sidebar-search-bg: #f5f5f5;
-            --light-input-placeholder: #6c757d;
-            --dark-bg: #121212;
-            --dark-navbar-bg: #1e1e1e;
-            --dark-text: #f0f4f9;
-            --dark-sidebar-bg: #1e1e1e;
-            --dark-sidebar-link-hover: #2a2a2a;
-            --dark-sidebar-search-bg: #2a2a2a;
-            --dark-input-placeholder: #a0a0a0;
-            --footer-bg: #111111;
+            --light-sidebar-link-hover: #f1f5f9;
+            --light-sidebar-search-bg: #f1f5f9;
+            --light-input-placeholder: #64748b;
+            --dark-bg: #0f172a;
+            --dark-navbar-bg: #1e293b;
+            --dark-text: #f1f5f9;
+            --dark-sidebar-bg: #1e293b;
+            --dark-sidebar-link-hover: #334155;
+            --dark-sidebar-search-bg: #334155;
+            --dark-input-placeholder: #94a3b8;
+            --footer-bg: #0f172a;
             
             /* Logo gradient colors - not affected by theme */
-            --logo-gradient-start: #ff6b35;
-            --logo-gradient-mid: #daa520;
-            --logo-gradient-end: #001f3f;
+            --logo-gradient-start: #f97316;
+            --logo-gradient-mid: #d97706;
+            --logo-gradient-end: #1e3a8a;
 
             /* Fixed CSS variables for cards and components */
             --card-bg: var(--navbar-bg);
-            --card-bg-hover: rgba(66, 133, 244, 0.05);
+            --card-bg-hover: rgba(59, 130, 246, 0.05);
             --border-color: rgba(255, 255, 255, 0.18);
             --shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
             --shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.15);
-            --primary-gemini: #4285f4;
-            --primary-gemini-25: rgba(66, 133, 244, 0.25);
+            --primary-gemini: #2563eb;
+            --primary-gemini-hover: #1d4ed8;
+            --twitter-blue: #1DA1F2;
+            --whatsapp-green: #25D366;
+            --muted-border: #e2e8f0;
+            --surface-100: #f8fafc;
+            --muted-700: #64748b;
+            --brand-dark-700: #1e3a8a;
+            --mpesa-green: #10b981;
+            --mpesa-green-dark: #059669;
+            --primary-gemini-25: rgba(37, 99, 235, 0.25);
             --input-bg: var(--sidebar-search-bg);
             --loading-bg: rgba(0, 0, 0, 0.7);
-            --tag-bg: rgba(66, 133, 244, 0.1);
+            --tag-bg: rgba(59, 130, 246, 0.1);
             --tag-text: var(--text-color);
-            --danger-color: #ea4335; /* Renamed from --danger to avoid conflicts */
-            --text-muted: #6c757d;
+            --danger-color: #ef4444;
+            --text-muted: #64748b;
         }
 
         [data-theme="light"] {
@@ -76,10 +104,10 @@
             --sidebar-link-hover-bg: var(--light-sidebar-link-hover);
             --sidebar-search-bg: var(--light-sidebar-search-bg);
             --input-placeholder-color: var(--light-input-placeholder);
-            --footer-bg-color: #343a40;
+            --footer-bg-color: #1e293b;
             --border-color: rgba(0, 0, 0, 0.08);
             --card-bg: #ffffff;
-            --card-bg-hover: #f8f9fa;
+            --card-bg-hover: #f8fafc;
         }
 
         [data-theme="dark"] {
@@ -90,14 +118,14 @@
             --sidebar-link-hover-bg: var(--dark-sidebar-link-hover);
             --sidebar-search-bg: var(--dark-sidebar-search-bg);
             --input-placeholder-color: var(--dark-input-placeholder);
-            --footer-bg-color: #111111;
+            --footer-bg-color: #0f172a;
             --border-color: rgba(255, 255, 255, 0.18);
-            --card-bg: #1e1e1e;
-            --card-bg-hover: #2a2a2a;
+            --card-bg: #1e293b;
+            --card-bg-hover: #334155;
         }
 
         body {
-            font-family: 'Figtree', sans-serif;
+            font-family: 'Inter', sans-serif;
             background: var(--body-bg);
             color: var(--text-color);
             transition: background-color 0.3s ease;
@@ -105,31 +133,32 @@
         }
 
         h1, h2, h3, h4, h5, h6, .navbar-brand {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
         }
 
-        /* Fixed Top Navbar */
+        /* Modern Top Navbar */
         .navbar {
             background-color: var(--navbar-bg);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid var(--border-color);
             z-index: 1000;
             width: 100%;
             left: 0;
             top: 0;
-            padding: 0.7rem 1rem;
+            padding: 0.8rem 1rem;
             transition: all 0.3s ease-in-out;
+            backdrop-filter: blur(10px);
         }
         
         /* Mobile Navbar */
         @media (max-width: 768px) {
             .navbar {
-                padding: 0.6rem 0.8rem;
+                padding: 0.7rem 0.8rem;
             }
             
             .navbar-brand.logo {
-                font-size: 1.1rem;
+                font-size: 1.2rem;
             }
             
             /* Hide cart, notifications, and messages icons on small screens */
@@ -159,15 +188,17 @@
 
         .dropdown-menu {
             border: none;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
             border-radius: 12px;
             overflow: hidden;
             background: var(--navbar-bg);
+            border: 1px solid var(--border-color);
         }
 
         .dropdown-item {
             transition: all 0.3s ease;
             padding: 0.75rem 1.25rem;
+            font-weight: 500;
         }
 
         .dropdown-item:hover {
@@ -177,11 +208,11 @@
 
         /* Main Content Container */
         .content-wrapper {
-            padding-top: 70px;
+            padding-top: 80px;
             transition: margin-left 0.3s ease-in-out;
         }
         
-        /* Fixed Sidebar */
+        /* Modern Sidebar */
         .sidebar {
             position: fixed;
             top: 0;
@@ -195,6 +226,7 @@
             transform: translateX(-100%);
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 999;
+            border-right: 1px solid var(--border-color);
         }
         
         body.sidebar-open .sidebar {
@@ -224,7 +256,7 @@
             border-radius: 10px;
         }
 
-        /* Sidebar Links and Search */
+        /* Modern Sidebar Links and Search */
         .sidebar-link {
             color: var(--text-color);
             padding: 0.75rem 1rem;
@@ -243,9 +275,9 @@
         }
 
         .sidebar-search .form-control {
-            border-radius: 50px;
+            border-radius: 12px;
             background-color: var(--sidebar-search-bg);
-            border: none;
+            border: 1px solid var(--border-color);
             color: var(--text-color);
             padding: 0.75rem 1.25rem;
             transition: all 0.3s ease;
@@ -253,22 +285,23 @@
 
         .sidebar-search .form-control:focus {
             box-shadow: 0 0 0 2px var(--accent-blue);
+            border-color: var(--accent-blue);
         }
         
         .sidebar-search .form-control::placeholder {
             color: var(--input-placeholder-color);
         }
 
-        /* Search bar with icon inside */
+        /* Modern Search bar with icon inside */
         .search-container-gemini {
             position: relative;
         }
 
         .search-container-gemini .form-control {
             padding-right: 2.5rem;
-            border-radius: 50px;
+            border-radius: 12px;
             background-color: var(--sidebar-search-bg);
-            border: none;
+            border: 1px solid var(--border-color);
             color: var(--text-color);
             padding: 0.75rem 1.25rem;
             transition: all 0.3s ease;
@@ -276,6 +309,7 @@
 
         .search-container-gemini .form-control:focus {
             box-shadow: 0 0 0 2px var(--accent-blue);
+            border-color: var(--accent-blue);
         }
 
         .search-container-gemini .form-control::placeholder {
@@ -291,10 +325,10 @@
             padding: 0 0.75rem;
         }
 
-        /* Footer */
+        /* Modern Footer */
         footer {
             background-color: var(--footer-bg-color);
-            color: #999;
+            color: #94a3b8;
             position: relative;
             overflow: hidden;
         }
@@ -306,22 +340,22 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: var(--accent-goldenrod);
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
         }
         
-        /* Logo with gradient that doesn't change with theme */
+        /* Modern Logo with gradient */
         .navbar-brand.logo {
             background: linear-gradient(135deg, var(--logo-gradient-start), var(--logo-gradient-mid), var(--logo-gradient-end));
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-weight: 900;
+            font-weight: 800;
             font-size: 1.5rem;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Inter', sans-serif;
             letter-spacing: -0.5px;
         }
         
-        /* Toast container styling */
+        /* Modern Toast container styling */
         #toast-container {
             position: fixed;
             top: 90px;
@@ -332,8 +366,8 @@
         
         .toast {
             background-color: var(--navbar-bg);
-            border: none;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
             border-radius: 12px;
             overflow: hidden;
             border-left: 4px solid;
@@ -345,7 +379,7 @@
         .toast.warning { border-left-color: var(--accent-orange); }
         .toast.info { border-left-color: var(--accent-blue); }
         
-        /* Cart badge styling */
+        /* Modern Cart badge styling */
         .cart-badge {
             position: absolute;
             top: -5px;
@@ -362,18 +396,20 @@
             font-weight: 700;
         }
 
-        /* Colorful accent buttons */
+        /* Modern accent buttons */
         .btn-accent-blue {
             background: var(--accent-blue);
             color: white;
             border: none;
             transition: all 0.3s ease;
             font-weight: 600;
+            border-radius: 10px;
         }
         
         .btn-accent-blue:hover {
-            background: #3367d6;
+            background: var(--primary-gemini-hover);
             color: white;
+            transform: translateY(-2px);
         }
         
         .btn-accent-red {
@@ -382,11 +418,13 @@
             border: none;
             transition: all 0.3s ease;
             font-weight: 600;
+            border-radius: 10px;
         }
         
         .btn-accent-red:hover {
-            background: #d23c30;
+            background: #dc2626;
             color: white;
+            transform: translateY(-2px);
         }
         
         .btn-accent-teal {
@@ -395,11 +433,13 @@
             border: none;
             transition: all 0.3s ease;
             font-weight: 600;
+            border-radius: 10px;
         }
         
         .btn-accent-teal:hover {
-            background: #006666;
+            background: #0d9488;
             color: white;
+            transform: translateY(-2px);
         }
 
         .btn-accent-orange {
@@ -408,14 +448,16 @@
             border: none;
             transition: all 0.3s ease;
             font-weight: 600;
+            border-radius: 10px;
         }
         
         .btn-accent-orange:hover {
-            background: #e55a2b;
+            background: #ea580c;
             color: white;
+            transform: translateY(-2px);
         }
         
-        /* Mobile bottom navigation for small screens */
+        /* Modern Mobile bottom navigation */
         @media (max-width: 576px) {
             .mobile-bottom-nav {
                 position: fixed;
@@ -428,8 +470,9 @@
                 padding: 0.5rem;
                 z-index: 1000;
                 box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-                border-top: 1px solid rgba(0, 0, 0, 0.05);
+                border-top: 1px solid var(--border-color);
                 transition: transform 0.3s ease;
+                backdrop-filter: blur(10px);
             }
             
             .mobile-nav-item {
@@ -456,7 +499,7 @@
             }
             
             [data-theme="dark"] .mobile-nav-item.active {
-                background: rgba(218, 165, 32, 0.2);
+                background: rgba(217, 119, 6, 0.2);
             }
             
             .mobile-nav-item i {
@@ -486,7 +529,7 @@
             }
         }
 
-        /* Loading animation */
+        /* Modern loading animation */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -500,6 +543,34 @@
 
         .fade-in-up {
             animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Modern form controls */
+        .form-control {
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Modern cards */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
         }
     </style>
     
@@ -533,8 +604,8 @@
             {% endif %}
         </div>
 
-        <!-- Floating Navigation Bar -->
-        <nav class="navbar navbar-expand-lg navbar-light fixed-top shadow-lg">
+        <!-- Modern Navigation Bar -->
+        <nav class="navbar navbar-expand-lg navbar-light fixed-top">
             <div class="container-fluid">
                 <button class="btn btn-link me-2 p-0" id="sidebar-toggle">
                     <i class="bi bi-list fs-4"></i>
@@ -611,7 +682,7 @@
             </div>
         </nav>
         
-        <!-- Permanent Sidebar -->
+        <!-- Modern Sidebar -->
         <aside id="sidebar" class="sidebar">
             <div class="d-flex align-items-center justify-content-between mb-4 mt-2">
                 <a class="navbar-brand logo d-flex align-items-center fw-bold" href="{% url 'home' %}">
@@ -635,7 +706,14 @@
                     <a class="nav-link sidebar-link" href="{% url 'all-listings' %}"><i class="bi bi-grid-fill me-2"></i> Browse Listings</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="{% url 'storefront:store_list' %}"><i class="bi bi-shop me-2"></i> Stores</a>
+                </li>
+                <li class="nav-item">
+                    {% if user.is_authenticated %}
                     <a class="nav-link sidebar-link" href="{% url 'listing-create' %}"><i class="bi bi-plus-circle me-2"></i> Sell Item</a>
+                    {% else %}
+                    <a class="nav-link sidebar-link" href="{% url 'login' %}?next={% url 'listing-create' %}"><i class="bi bi-plus-circle me-2"></i> Sell Item</a>
+                    {% endif %}
                 </li>
                 <li class="nav-item">
                     <a class="nav-link sidebar-link" href="{% url 'blog:post-list' %}"><i class="bi bi-newspaper me-2"></i> Blog</a>
@@ -653,6 +731,9 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link sidebar-link" href="{% url 'profile' user.pk %}"><i class="bi bi-person me-2"></i> Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="{% url 'storefront:seller_dashboard' %}"><i class="bi bi-speedometer2 me-2"></i> Seller Dashboard</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link sidebar-link" href="{% url 'inbox' %}"><i class="bi bi-chat-dots me-2"></i> Messages
@@ -687,7 +768,7 @@
                 {% block content %}{% endblock %}
             </main>
             
-            <!-- Footer -->
+            <!-- Modern Footer -->
             <footer class="bg-dark text-white-50 py-4 mt-auto">
                 <div class="container">
                     <div class="row">
@@ -706,7 +787,14 @@
                             <ul class="list-unstyled">
                                 <li><a href="{% url 'home' %}" class="text-white-50 text-decoration-none">Home</a></li>
                                 <li><a href="{% url 'all-listings' %}" class="text-white-50 text-decoration-none">Browse Listings</a></li>
-                                <li><a href="{% url 'listing-create' %}" class="text-white-50 text-decoration-none">Sell Item</a></li>
+                                <li><a href="{% url 'storefront:store_list' %}" class="text-white-50 text-decoration-none">Stores</a></li>
+                                <li>
+                                    {% if user.is_authenticated %}
+                                    <a href="{% url 'listing-create' %}" class="text-white-50 text-decoration-none">Sell Item</a>
+                                    {% else %}
+                                    <a href="{% url 'login' %}?next={% url 'listing-create' %}" class="text-white-50 text-decoration-none">Sell Item</a>
+                                    {% endif %}
+                                </li>
                                 <li><a href="{% url 'blog:post-list' %}" class="text-white-50 text-decoration-none">Blog</a></li>
                                 <li><a href="#" class="text-white-50 text-decoration-none">How It Works</a></li>
                                 <li><a href="#" class="text-white-50 text-decoration-none">Popular Items</a></li>
@@ -720,7 +808,13 @@
                                 <li><a href="{% url 'view_cart' %}" class="text-white-50 text-decoration-none">Shopping Cart</a></li>
                                 <li><a href="{% url 'order_list' %}" class="text-white-50 text-decoration-none">My Orders</a></li>
                                 <li><a href="{% url 'inbox' %}" class="text-white-50 text-decoration-none">Messages</a></li>
-                                <li><a href="{% url 'listing-create' %}" class="text-white-50 text-decoration-none">Sell Item</a></li>
+                                <li>
+                                    {% if user.is_authenticated %}
+                                    <a href="{% url 'listing-create' %}" class="text-white-50 text-decoration-none">Sell Item</a>
+                                    {% else %}
+                                    <a href="{% url 'login' %}?next={% url 'listing-create' %}" class="text-white-50 text-decoration-none">Sell Item</a>
+                                    {% endif %}
+                                </li>
                                 <li>
                                     <form method="post" action="{% url 'logout' %}">
                                         {% csrf_token %}
@@ -808,12 +902,39 @@
             const themeIcon = document.getElementById('theme-icon');
             const body = document.body;
 
-            // Load theme from localStorage or default to light
-            const storedTheme = localStorage.getItem('theme') || 'light';
-            body.setAttribute('data-theme', storedTheme);
-            if (storedTheme === 'dark') {
-                themeIcon.classList.replace('bi-sun-fill', 'bi-moon-fill');
-            }
+            // Theme preference handling: support 'light', 'dark', and 'system'
+            const prefKey = 'theme-preference';
+            const storedPref = localStorage.getItem(prefKey) || 'system';
+
+            const applyEffectiveTheme = (pref) => {
+                let effective;
+                if (!pref || pref === 'system') {
+                    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    effective = prefersDark ? 'dark' : 'light';
+                } else {
+                    effective = pref === 'dark' ? 'dark' : 'light';
+                }
+                document.documentElement.setAttribute('data-theme', effective);
+                return effective;
+            };
+
+            const setIconForPref = (pref) => {
+                if (!themeIcon) return;
+                if (pref === 'dark') {
+                    themeIcon.classList.remove('bi-sun-fill', 'bi-circle-half');
+                    themeIcon.classList.add('bi-moon-fill');
+                } else if (pref === 'system') {
+                    themeIcon.classList.remove('bi-sun-fill', 'bi-moon-fill');
+                    themeIcon.classList.add('bi-circle-half');
+                } else {
+                    themeIcon.classList.remove('bi-moon-fill', 'bi-circle-half');
+                    themeIcon.classList.add('bi-sun-fill');
+                }
+            };
+
+            // Apply stored preference on load
+            const effective = applyEffectiveTheme(storedPref);
+            setIconForPref(storedPref === 'system' ? 'system' : (storedPref || effective));
 
             // Sidebar toggle logic
             const toggleSidebar = () => {
@@ -828,19 +949,18 @@
                 sidebarClose.addEventListener('click', toggleSidebar);
             }
 
-            // Theme switching logic
+            // Theme switching logic - cycles: light -> dark -> system -> light
             if (themeToggle) {
                 themeToggle.addEventListener('click', () => {
-                    let currentTheme = body.getAttribute('data-theme');
-                    let newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                    body.setAttribute('data-theme', newTheme);
-                    localStorage.setItem('theme', newTheme);
+                    const currentPref = localStorage.getItem(prefKey) || 'system';
+                    let nextPref;
+                    if (currentPref === 'light') nextPref = 'dark';
+                    else if (currentPref === 'dark') nextPref = 'system';
+                    else nextPref = 'light';
 
-                    if (newTheme === 'dark') {
-                        themeIcon.classList.replace('bi-sun-fill', 'bi-moon-fill');
-                    } else {
-                        themeIcon.classList.replace('bi-moon-fill', 'bi-sun-fill');
-                    }
+                    localStorage.setItem(prefKey, nextPref);
+                    const eff = applyEffectiveTheme(nextPref);
+                    setIconForPref(nextPref === 'system' ? 'system' : nextPref);
                 });
             }
             

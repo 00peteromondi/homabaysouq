@@ -15,13 +15,13 @@
     }
     
     .payment-header {
-        background: linear-gradient(135deg, var(--primary-gemini) 0%, #0d47a1 100%);
+        background: linear-gradient(135deg, var(--primary-gemini) 0%, var(--brand-dark-700) 100%);
         color: white;
         padding: 2rem;
     }
     
     .payment-method-card {
-        border: 2px solid #e9ecef;
+    border: 2px solid var(--muted-border);
         border-radius: 12px;
         transition: all 0.3s ease;
         cursor: pointer;
@@ -46,27 +46,27 @@
     }
     
     .status-pending {
-        background-color: #fff3cd;
-        color: #856404;
+        background-color: var(--status-pending-bg, #fff3cd);
+        color: var(--status-pending-text, #856404);
     }
-    
+
     .status-initiated {
-        background-color: #d1edff;
-        color: #0c5460;
+        background-color: var(--status-initiated-bg, #d1edff);
+        color: var(--status-initiated-text, #0c5460);
     }
-    
+
     .status-completed {
-        background-color: #d4edda;
-        color: #155724;
+        background-color: var(--status-completed-bg, #d4edda);
+        color: var(--status-completed-text, #155724);
     }
-    
+
     .status-failed {
-        background-color: #f8d7da;
-        color: #721c24;
+        background-color: var(--status-failed-bg, #f8d7da);
+        color: var(--status-failed-text, #721c24);
     }
     
     .mpesa-simulation {
-        background: linear-gradient(135deg, #0d8e3a 0%, #0a6b2c 100%);
+        background: linear-gradient(135deg, var(--mpesa-green) 0%, var(--mpesa-green-dark) 100%);
         color: white;
         border-radius: 12px;
         padding: 1.5rem;
@@ -84,7 +84,7 @@
         top: 0;
         bottom: 0;
         width: 2px;
-        background: #e9ecef;
+        background: var(--muted-border);
     }
     
     .timeline-step {
@@ -100,7 +100,7 @@
         width: 12px;
         height: 12px;
         border-radius: 50%;
-        background: #6c757d;
+        background: var(--muted-700);
         margin-left: -5px;
     }
     
@@ -110,12 +110,12 @@
     }
     
     .timeline-step.completed::before {
-        background: #28a745;
+        background: var(--status-completed-text, #28a745);
     }
     
     .security-badge {
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
+        background: var(--surface-100);
+        border: 1px solid var(--muted-border);
         border-radius: 8px;
         padding: 1rem;
     }
@@ -556,7 +556,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function checkPaymentStatus() {
-        fetch(`/orders/{{ order.id }}/check-payment-status/`, {
+        fetch(`/order/{{ order.id }}/check-payment-status/`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }

@@ -154,6 +154,7 @@
     color: var(--text-muted);
     font-size: 0.95rem;
     margin-top: 0.25rem;
+    line-height: 1.4;
 }
 
 /* Form Grid Layout */
@@ -686,6 +687,37 @@
                             </div>
                         {% endif %}
                     </div>
+                    <!-- Store Selector (when user has multiple stores) -->
+                    {% if stores %}
+                    <div class="form-group">
+                        <label for="id_store" class="form-label">Store</label>
+                        {% if stores|length == 1 %}
+                        <input type="hidden" name="store" value="{{ stores.0.id }}">
+                        <div class="form-control">{{ stores.0.name }}</div>
+                        {% else %}
+                        <select name="store" id="id_store" class="form-select {% if form.store.errors %}error{% endif %}">
+                            <option value="">Select store (optional)</option>
+                            {% for store in stores %}
+                                <option value="{{ store.id }}" {% if form.store.value == store.id %}selected{% endif %}>{{ store.name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.store.errors %}
+                            <div class="error-message">
+                                <i class="bi bi-exclamation-circle"></i>
+                                {{ form.store.errors.0 }}
+                            </div>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Informational note about stores / Pro requirement -->
+                    <div class="form-group">
+                        <p class="text-muted small mb-0">
+                            Note: Creating more than one storefront requires a Pro subscription. 
+                            If you need to create additional stores, please <a href="{% url 'storefront:seller_dashboard' %}">upgrade from your dashboard</a>.
+                        </p>
+                    </div>
                     
                     <!-- Condition Field -->
                     <div class="form-group">
@@ -964,6 +996,8 @@
 
 {% block extra_js %}
 <script>
+// Use a JS boolean for edit mode (rendered by Django)
+const isEditMode = {% if form.instance.pk %}true{% else %}false{% endif %};
 document.addEventListener('DOMContentLoaded', function() {
     // Form elements
     const form = document.getElementById('listing-form');
@@ -1181,13 +1215,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (form) {
             form.addEventListener('submit', function(e) {
                 // Basic validation
-                if (!mainImageFile && !{{ form.instance.pk|yesno:"true,false" }}) {
+                if (!mainImageFile && !isEditMode) {
                     e.preventDefault();
                     showError('Please upload a main image for your listing.');
                     mainImageUploadArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     return;
                 }
-
                 // Show loading overlay
                 loadingOverlay.classList.add('show');
                 submitBtn.disabled = true;

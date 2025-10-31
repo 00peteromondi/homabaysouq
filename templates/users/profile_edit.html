@@ -233,7 +233,8 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: #ccc;
+        /* Use input background variable instead of hard-coded gray */
+        background-color: var(--input-bg);
         transition: all 0.3s ease;
         border-radius: 34px;
     }
@@ -507,11 +508,11 @@
             <!-- Profile Picture Section -->
             <div class="profile-pic-section-modern">
                 <div class="profile-pic-wrapper-modern">
-                    <img id="profile-pic-preview" 
-                         src="{% if form.instance.profile_picture %}{{ form.instance.get_profile_picture_url }}{% else %}{% static 'images/default_profile_pic.jpg' %}{% endif %}" 
-                         class="profile-pic-modern" 
-                         alt="Profile Picture"
-                         onerror="this.src='{% static 'images/default_profile_pic.jpg' %}'">
+              <img id="profile-pic-preview" 
+                    src="{% if form.instance.profile_picture %}{{ form.instance.get_profile_picture_url }}{% else %}{% static 'images/default_profile_pic.svg' %}{% endif %}" 
+                class="profile-pic-modern" 
+                alt="Profile Picture"
+                                onerror="this.onerror=null;this.src='{% static 'images/default_profile_pic.svg' %}';">
                     <label for="id_profile_picture" class="upload-btn-modern" title="Change Profile Picture">
                         <i class="bi bi-camera"></i>
                     </label>

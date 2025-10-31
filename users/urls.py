@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from .views import register, ProfileDetailView, ProfileUpdateView, CustomPasswordChangeView
+from .views import oauth_diagnostics
 
 urlpatterns = [
     path('register/', register, name='register'),
@@ -50,5 +51,6 @@ urlpatterns = [
 
     path('profile/<int:pk>/', ProfileDetailView.as_view(), name='profile'),
     path('profile/<int:pk>/edit/', ProfileUpdateView.as_view(), name='profile-edit'),
+    path('oauth-diagnostics/', oauth_diagnostics, name='oauth-diagnostics'),
     
 ]

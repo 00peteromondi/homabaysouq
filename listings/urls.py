@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import ListingListView, ListingDetailView, ListingCreateView, ListingUpdateView, ListingDeleteView
 from . import views
+from . import order_views
 
 
 urlpatterns = [
@@ -27,9 +28,12 @@ urlpatterns = [
     path('order/<int:order_id>/', views.order_detail, name='order_detail'),
     path('orders/', views.order_list, name='order_list'),
     path('seller/orders/', views.seller_orders, name='seller_orders'),
-    path('order/<int:order_id>/ship/', views.mark_order_shipped, name='mark_order_shipped'),
-    path('order/<int:order_id>/deliver/', views.confirm_delivery, name='confirm_delivery'),
-    path('order/<int:order_id>/dispute/', views.create_dispute, name='create_dispute'),
+    path('order/<int:order_id>/ship/', order_views.mark_order_shipped, name='mark_order_shipped'),
+    path('order/<int:order_id>/deliver/', order_views.confirm_delivery, name='confirm_delivery'),
+    path('order/<int:order_id>/dispute/', order_views.create_dispute, name='create_dispute'),
+    path('order/<int:order_id>/update-status/', order_views.update_order_status, name='update_order_status'),
+    path('order/<int:order_id>/resolve-dispute/', order_views.resolve_dispute, name='resolve_dispute'),
+    path('order/<int:order_id>/mediate-dispute/', order_views.mediate_dispute, name='mediate_dispute'),
     path('listing/<int:listing_id>/review/', views.leave_review, name='leave_listing_review'),
     path('seller/<int:seller_id>/review/', views.leave_review, name='leave_seller_review'),
     

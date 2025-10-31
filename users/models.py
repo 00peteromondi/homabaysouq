@@ -16,6 +16,7 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=30)
     phone_number = models.CharField(max_length=15, blank=True, null=True, unique=True)
     location = models.CharField(max_length=100, help_text="Your specific area in Homabay, e.g., Ndhiwa, Rodi Kopany")
+    date_of_birth = models.DateField(verbose_name='Date of Birth', null=True, blank=True)
     bio = models.TextField(max_length=500, blank=True)
     
     # Cloudinary field with proper configuration

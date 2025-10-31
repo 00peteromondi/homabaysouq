@@ -7,7 +7,7 @@ class ListingForm(forms.ModelForm):
     # We'll handle multiple images in the view
     class Meta:
         model = Listing
-        fields = ['title', 'description', 'price', 'category', 'location', 'image', 'condition', 'delivery_option', 'stock']
+        fields = ['title', 'description', 'price', 'category', 'store', 'location', 'image', 'condition', 'delivery_option', 'stock']
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': 'Enter a catchy title for your item'}),
             'price': forms.NumberInput(attrs={'min': '0', 'step': '0.01', 'placeholder': '0.00'}),
@@ -26,6 +26,31 @@ class ListingForm(forms.ModelForm):
             if hasattr(image, 'size') and image.size > 10 * 1024 * 1024:  # 10MB limit
                 raise forms.ValidationError("Image file too large ( > 10MB )")
         return image
+
+    def __init__(self, *args, **kwargs):
+        # Accept an optional 'user' kwarg to limit the store choices
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        # Lazy-import Store to avoid circular imports
+        try:
+            from storefront.models import Store
+        except Exception:
+            Store = None
+
+        # Add a store field as a ModelChoice limited to the current user's stores
+        if Store:
+            # Make the store field required when the user has at least one store.
+            user_stores_qs = Store.objects.none()
+            if user and user.is_authenticated:
+                user_stores_qs = Store.objects.filter(owner=user)
+
+            self.fields['store'] = forms.ModelChoiceField(
+                queryset=user_stores_qs,
+                required=(user_stores_qs.exists()),
+                label='Store',
+                help_text='Select which store/business this listing belongs to'
+            )
 
 class CheckoutForm(forms.Form):
     shipping_address = forms.CharField(

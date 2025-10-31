@@ -25,13 +25,20 @@
                 <ul class="list-group">
                     {% for item in order_items %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <img src="{{ item.listing.image.url }}" alt="{{ item.listing.title }}" width="50" height="50">
-                            {{ item.quantity }} x {{ item.listing.title }}
+                        <div class="d-flex align-items-center">
+                            <img src="{{ item.listing.get_image_url }}" alt="{{ item.listing.title }}" width="50" height="50" class="me-3">
+                            <div>
+                                <div>{{ item.quantity }} x {{ item.listing.title }}</div>
+                                {% if item.shipped %}
+                                    <small class="text-success">Shipped{% if item.tracking_number %} — Tracking: {{ item.tracking_number }}{% endif %}{% if item.shipped_at %} on {{ item.shipped_at|date:"M d, Y" }}{% endif %}</small>
+                                {% else %}
+                                    <small class="text-muted">Not shipped yet</small>
+                                {% endif %}
+                            </div>
                         </div>
                         <!-- Add this near the total amount display -->
                         {% if is_seller and not is_buyer %}
-                        <div class="alert alert-info">
+                        <div class="alert alert-info mb-0">
                             <strong>Your Items Total:</strong> KSh {{ seller_specific_total }}
                         </div>
                         {% endif %}
@@ -145,6 +152,25 @@
                             </small>
                         </div>
                         {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if is_seller and not is_buyer and order.status == 'paid' or order.status == 'partially_shipped' %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6>Ship Your Items</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted">Mark the items you are responsible for as shipped. You may provide a tracking number.</p>
+                        <form method="post" action="{% url 'mark_order_shipped' order.id %}">
+                            {% csrf_token %}
+                            <div class="mb-2">
+                                <label class="form-label small">Tracking number (optional)</label>
+                                <input type="text" name="tracking_number" class="form-control form-control-sm" placeholder="Enter tracking number">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Mark My Items as Shipped</button>
+                        </form>
                     </div>
                 </div>
                 {% endif %}

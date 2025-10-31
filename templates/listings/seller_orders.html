@@ -189,14 +189,21 @@
                             </div>
                         </td>
                         <td>
-                            {% for item in order.order_items.all %}
-                                {% if item.listing.seller == user %}
-                                <div class="d-flex align-items-center mb-2">
-                                    <img src="{{ item.listing.get_image_url }}" class="item-image me-2" alt="{{ item.listing.title }}">
-                                    <div>{{ item.listing.title|truncatewords:4 }} (Qty: {{ item.quantity }})</div>
-                                </div>
-                                {% endif %}
-                            {% endfor %}
+                                {% for item in order.order_items.all %}
+                                    {% if item.listing.seller == user %}
+                                    <div class="d-flex align-items-center mb-2">
+                                        <img src="{{ item.listing.get_image_url }}" class="item-image me-2" alt="{{ item.listing.title }}">
+                                        <div>
+                                            <div>{{ item.listing.title|truncatewords:4 }} (Qty: {{ item.quantity }})</div>
+                                            {% if item.shipped %}
+                                                <small class="text-success">Shipped{% if item.tracking_number %} — Tracking: {{ item.tracking_number }}{% endif %}{% if item.shipped_at %} on {{ item.shipped_at|date:"M d, Y" }}{% endif %}</small>
+                                            {% else %}
+                                                <small class="text-muted">Not shipped yet</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
                         </td>
                         <td class="fw-bold">KSh {{ order.total_price|intcomma }}</td>
                         <td>
@@ -208,9 +215,10 @@
                         </td>
                         <td>
                             <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-primary">View</a>
-                            {% if order.status == 'paid' %}
+                            {% if order.status == 'paid' or order.status == 'partially_shipped' %}
                             <form method="post" action="{% url 'mark_order_shipped' order.id %}" class="d-inline-block ms-1">
                                 {% csrf_token %}
+                                <input type="text" name="tracking_number" placeholder="Optional tracking number" class="form-control form-control-sm d-inline-block me-2" style="width: 180px;">
                                 <button type="submit" class="btn btn-sm btn-accent-blue">Ship</button>
                             </form>
                             {% endif %}

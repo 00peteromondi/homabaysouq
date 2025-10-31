@@ -318,9 +318,15 @@
                     </a>
                     {% endif %}
                     {% if role_filter != 'buyer' %}
-                    <a href="{% url 'listing-create' %}" class="btn btn-outline-primary rounded-pill px-4">
-                        <i class="bi bi-plus-circle me-2"></i> Start Selling
-                    </a>
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'listing-create' %}" class="btn btn-outline-primary rounded-pill px-4">
+                            <i class="bi bi-plus-circle me-2"></i> Start Selling
+                        </a>
+                        {% else %}
+                        <a href="{% url 'login' %}?next={% url 'listing-create' %}" class="btn btn-outline-primary rounded-pill px-4">
+                            <i class="bi bi-plus-circle me-2"></i> Start Selling
+                        </a>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>

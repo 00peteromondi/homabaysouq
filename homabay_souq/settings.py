@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import sys
 from decouple import config, Csv
 import cloudinary
 import cloudinary.uploader
@@ -65,6 +66,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'cloudinary',
     'cloudinary_storage',
+    'django_extensions',
     
     # Allauth apps
     'allauth',
@@ -82,6 +84,7 @@ INSTALLED_APPS = [
     'reviews.apps.ReviewsConfig',
     'blog.apps.BlogConfig',
     'notifications.apps.NotificationsConfig',
+    'storefront.apps.StorefrontConfig',
 ]
 
 # Custom user model
@@ -206,6 +209,21 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
 
+# When running tests, avoid enforcing HTTPS redirects which cause 301 responses
+RUNNING_TESTS = len(sys.argv) > 1 and sys.argv[1] == 'test'
+if RUNNING_TESTS:
+    SECURE_SSL_REDIRECT = False
+    # Ensure the Django test client host is allowed
+    try:
+        # ALLOWED_HOSTS may be a list from decouple Csv
+        if isinstance(ALLOWED_HOSTS, (list, tuple)):
+            if 'testserver' not in ALLOWED_HOSTS:
+                ALLOWED_HOSTS.append('testserver')
+        else:
+            ALLOWED_HOSTS = list(ALLOWED_HOSTS) + ['testserver']
+    except Exception:
+        ALLOWED_HOSTS = ['testserver']
+
 # Site ID
 SITE_ID = 1
 
@@ -215,12 +233,16 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-# Allauth settings
-ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = True
+# Allauth settings (updated to new configuration keys to avoid deprecation warnings)
+# Use ACCOUNT_LOGIN_METHODS to specify allowed login methods (order-independent)
+ACCOUNT_LOGIN_METHODS = {'email', 'username'}
+
+# Configure required signup fields using the new ACCOUNT_SIGNUP_FIELDS pattern.
+# Use '*' suffix to indicate a required field in the new configuration.
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+
+# Keep email verification and uniqueness as configured
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
-ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
 ACCOUNT_UNIQUE_EMAIL = True
 
 # Social account settings
@@ -317,39 +339,12 @@ else:
     # Password reset timeout in seconds (24 hours)
     PASSWORD_RESET_TIMEOUT = 86400
 
-# Logging configuration
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
-        },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'WARNING',
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-    },
-}
+# Import logging settings
+from .logging_settings import LOGGING
+
+# Ensure logs directory exists
+import os
+os.makedirs('logs', exist_ok=True)
 
 # Additional security settings
 X_FRAME_OPTIONS = 'DENY'
@@ -361,11 +356,26 @@ HOMABAY_SOUQ = {
     'SITE_DESCRIPTION': 'Buy and sell with people in your Homabay community',
 }
 
+# Storefront configuration
+STORE_FREE_LISTING_LIMIT = int(os.environ.get('STORE_FREE_LISTING_LIMIT', '5'))
+# Maximum image upload size in megabytes
+MAX_IMAGE_UPLOAD_SIZE_MB = int(os.environ.get('MAX_IMAGE_UPLOAD_SIZE_MB', '10'))
+MAX_IMAGE_UPLOAD_SIZE = MAX_IMAGE_UPLOAD_SIZE_MB * 1024 * 1024
+
+
+
 # Add to settings.py
-MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY', '')
-MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET', '')
-MPESA_BUSINESS_SHORTCODE = os.environ.get('MPESA_BUSINESS_SHORTCODE', '')
-MPESA_PASSKEY = os.environ.get('MPESA_PASSKEY', '')
-MPESA_CALLBACK_URL = os.environ.get('MPESA_CALLBACK_URL', '')
+MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY', 'wkjlKm4YLVZIgLHGaglsPGIYApWIv9rJ4Ar8GyCtJGDsGCTA')
+MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET', 'dBDyvbZ4PntIVFxBDqGxpHbVkNvQaLfbXYIwDMJGUrxD29L9YQBhz1Pbofk1ZgZR')
+MPESA_BUSINESS_SHORTCODE = os.environ.get('MPESA_BUSINESS_SHORTCODE', '174379')
+MPESA_PASSKEY = os.environ.get('MPESA_PASSKEY', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919')
+# Use localhost for development, production URL for production
+MPESA_CALLBACK_URL = os.environ.get('MPESA_CALLBACK_URL', 
+    'http://127.0.0.1:8443/storefront/mpesa/callback/' if DEBUG 
+    else 'https://homabaysouq.onrender.com/storefront/mpesa/callback/'
+)
 MPESA_ENVIRONMENT = os.environ.get('MPESA_ENVIRONMENT', 'sandbox')  # or 'production'
+
+# How many remaining sellers (with unshipped items) should trigger reminder notifications
+SELLER_SHIPMENT_REMINDER_THRESHOLD = int(os.environ.get('SELLER_SHIPMENT_REMINDER_THRESHOLD', '2'))
 

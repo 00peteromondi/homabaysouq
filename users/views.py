@@ -13,6 +13,11 @@ from listings.models import Listing
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 from django.db import models
+from django.contrib.admin.views.decorators import staff_member_required
+from django.conf import settings
+from allauth.socialaccount.models import SocialApp
+from django.contrib.sites.models import Site
+import os
 
 def register(request):
     if request.method == 'POST':
@@ -51,12 +56,16 @@ class ProfileDetailView(DetailView):
         profile_user = self.object
         user = self.request.user
 
-        # Listings by this user (paginated)
-        listings_qs = Listing.objects.filter(seller=profile_user, is_sold=False).order_by('-date_created')
+        # Get user's stores
+        stores = profile_user.stores.all()
+        
+        # Listings by store (paginated)
+        listings_qs = Listing.objects.filter(store__in=stores, is_sold=False).order_by('-date_created')
         paginator = Paginator(listings_qs, 8)
         page_number = self.request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         context['page_obj'] = page_obj
+        context['stores'] = stores
 
         # Saved listings (only for profile owner)
         saved_listings = None
@@ -128,3 +137,27 @@ class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
     def form_valid(self, form):
         messages.success(self.request, 'Your password has been changed successfully!')
         return super().form_valid(form)
+
+
+@staff_member_required
+def oauth_diagnostics(request):
+    """Staff-only view that shows SocialApp entries, Site info and env var status to help debug OAuth issues."""
+    site = Site.objects.get_current()
+    apps = SocialApp.objects.all()
+
+    env_vars = {
+        'GOOGLE_OAUTH_CLIENT_ID': os.environ.get('GOOGLE_OAUTH_CLIENT_ID'),
+        'GOOGLE_OAUTH_CLIENT_SECRET': os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET'),
+        'FACEBOOK_OAUTH_CLIENT_ID': os.environ.get('FACEBOOK_OAUTH_CLIENT_ID'),
+        'FACEBOOK_OAUTH_CLIENT_SECRET': os.environ.get('FACEBOOK_OAUTH_CLIENT_SECRET'),
+        'SITE_DOMAIN': os.environ.get('SITE_DOMAIN') or os.environ.get('RENDER_EXTERNAL_HOSTNAME'),
+    }
+
+    provider_apps = {app.provider: app for app in apps}
+
+    return render(request, 'users/oauth_diagnostics.html', {
+        'site': site,
+        'provider_apps': provider_apps,
+        'env_vars': env_vars,
+        'social_providers': settings.SOCIALACCOUNT_PROVIDERS if hasattr(settings, 'SOCIALACCOUNT_PROVIDERS') else {},
+    })
