@@ -18,6 +18,8 @@ python reset_google_oauth.py
 
 # Create static directories
 mkdir -p media/listing_images
+mkdir -p media/store_logos
+mkdir -p media/store_covers
 mkdir -p media/profile_pics
 mkdir -p media/blog_images
 
