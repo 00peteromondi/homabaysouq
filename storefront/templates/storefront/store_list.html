@@ -55,15 +55,17 @@
             <div class="card store-card border-0 shadow-sm h-100">
                 <div class="position-relative">
                     <!-- Store Cover Image -->
-                    <div class="store-cover" style="height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0;">
+                    <div class="store-cover" {% if store.cover_image %} style="height:120px; background-image: linear-gradient(rgba(0,0,0,0.22), rgba(0,0,0,0.06)), url('{{ store.cover_image.url }}'); background-size: cover; background-position: center; border-radius: 12px 12px 0 0;" {% else %} style="height:120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0;" {% endif %}>
                     </div>
                     
                     <!-- Store Logo -->
                     <div class="position-absolute top-100 start-50 translate-middle">
-                        <img src="{{ store.get_logo_url|default:'https://placehold.co/80x80/c2c2c2/1f1f1f?text=Store' }}" 
-                             alt="{{ store.name }}"
-                             class="rounded-circle border-4 border-white shadow-sm"
-                             style="width: 80px; height: 80px; object-fit: cover;">
+                    <img src="{{ store.get_logo_url|default:'https://placehold.co/80x80/c2c2c2/1f1f1f?text=Store' }}"
+                        data-default="https://placehold.co/80x80/c2c2c2/1f1f1f?text=Store"
+                        alt="{{ store.name }}"
+                        class="rounded-circle border-4 border-white shadow-sm"
+                        style="width: 80px; height: 80px; object-fit: cover;"
+                        onerror="this.onerror=null;this.src=this.getAttribute('data-default');">
                     </div>
                     
                     <!-- Premium Badge -->

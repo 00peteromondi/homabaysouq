@@ -63,7 +63,7 @@
                 <div class="post-preview">
                     <h3 class="mb-3">{{ object.title }}</h3>
                     {% if object.image %}
-                    <img src="{{ object.image.url }}" alt="{{ object.title }}" class="rounded mb-3" style="max-width: 200px;">
+                    <img src="{{ object.get_image_url }}" alt="{{ object.title }}" class="rounded mb-3" style="max-width: 200px;">
                     {% endif %}
                     <p class="text-muted mb-0">{{ object.excerpt }}</p>
                 </div>

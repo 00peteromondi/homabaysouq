@@ -65,8 +65,8 @@ class ListingImage(models.Model):
             except Exception as e:
                 if hasattr(self.image, 'url'):
                     return self.image.url
-                return '/static/images/default.png'
-        return '/static/images/default.png'
+        return '/static/images/listing_placeholder.svg'
+    
     
 class Listing(models.Model):
     HOMABAY_LOCATIONS = [
@@ -168,8 +168,8 @@ class Listing(models.Model):
             except Exception as e:
                 if hasattr(self.image, 'url'):
                     return self.image.url
-                return '/static/images/default.png'
-        return '/static/images/default.png'
+        return '/static/images/listing_placeholder.svg'
+    
     
     @property
     def price_trend(self):

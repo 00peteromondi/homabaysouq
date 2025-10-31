@@ -1,12 +1,14 @@
 <!-- templates/listings/all_listings.html -->
 {% extends 'base.html' %}
 {% load static %}
+{% load listing_tags %}
 
 {% block title %}All Listings - HomaBay Souq{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/gallery.css' %}">
 <style>
-/* Modern Listings Styles */
+/* Additional Listing Grid Styles */
 .listing-grid {
     display: grid;
     /* smaller min width so more listings fit per row */
@@ -38,14 +40,19 @@
     overflow: hidden;
 }
 
-.listing-card__image img {
+    .listing-card__image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
+    background: var(--card-bg);
 }
 
-.listing-card:hover .listing-card__image img {
+    .listing-card__image img.placeholder-img {
+        object-fit: contain;
+        padding: 1rem;
+        background: var(--card-bg-hover);
+    }.listing-card:hover .listing-card__image img {
     transform: scale(1.05);
 }
 
@@ -188,6 +195,19 @@
 
 .listing-card__button--primary:hover {
     background: #3367d6;
+    transform: translateY(-2px);
+}
+
+.listing-card__button--secondary {
+    background: var(--input-bg);
+    color: var(--text-color);
+    border: 2px solid var(--border-color);
+}
+
+.listing-card__button--secondary:hover {
+    background: var(--card-bg-hover);
+    border-color: var(--primary-gemini);
+    color: var(--primary-gemini);
     transform: translateY(-2px);
 }
 
@@ -451,7 +471,7 @@
 .category-card {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    background: linear-gradient(135deg, var(--primary-gemini), var(--accent-blue));
     padding: 1rem;
     background: var(--card-bg);
     border-radius: 12px;
@@ -459,9 +479,56 @@
     color: var(--text-color);
     transition: all 0.3s ease;
     border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
     height: 100%;
 }
+.category-icon i {
+    color: white;
+}
 
+.category-card:hover .category-icon {
+    transform: scale(1.1);
+    background: linear-gradient(135deg, var(--accent-blue), var(--primary-gemini));
+}
+
+.listing-card__button {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.listing-card__button--primary {
+    background: var(--primary-gemini);
+    color: white;
+}
+
+.listing-card__button--primary:hover {
+    background: var(--primary-gemini-hover);
+    transform: translateY(-2px);
+    color: white;
+}
+
+.listing-card__button--secondary {
+    background: var(--input-bg);
+    color: var(--text-color);
+    border: 2px solid var(--border-color);
+}
+
+.listing-card__button--secondary:hover {
+    background: var(--card-bg-hover);
+    border-color: var(--primary-gemini);
+    color: var(--primary-gemini);
+    transform: translateY(-2px);
+}
 .category-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
@@ -473,7 +540,7 @@
 .category-icon {
     width: 48px;
     height: 48px;
-    background: var(--primary-gemini);
+    background: linear-gradient(135deg, var(--primary-gemini), var(--accent-blue));
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -481,6 +548,16 @@
     margin-bottom: 0.5rem;
     color: white;
     font-size: 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.category-icon i {
+    color: white;
+}
+
+.category-card:hover .category-icon {
+    transform: scale(1.1);
+    background: linear-gradient(135deg, var(--accent-blue), var(--primary-gemini));
 }
 
 .category-name {
@@ -522,6 +599,22 @@
     color: white;
     text-decoration: none;
     border-color: var(--primary-gemini);
+}
+
+.location-chip.active {
+    background: var(--primary-gemini);
+    color: white;
+    border-color: var(--primary-gemini);
+    font-weight: 600;
+}
+
+.location-chip .location-count {
+    margin-left: 0.5rem;
+    font-size: 0.75rem;
+    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.1rem 0.4rem;
+    border-radius: 10px;
 }
 
 /* Recently Viewed */
@@ -749,19 +842,20 @@
     {% if featured_listings %}
     <section class="featured-listings">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="h4 mb-0">
-                <i class="bi bi-star-fill text-warning me-2"></i>
-                Featured Listings
-            </h3>
-            <a href="{% url 'all-listings' %}?sort_by=featured" class="btn btn-sm btn-outline-primary">View All</a>
+            <h3 class="h4 mb-0">Featured Listings</h3>
         </div>
-        <div class="featured-carousel">
-            <div class="swiper featuredSwiper">
-                <div class="swiper-wrapper">
-                    {% for featured_listing in featured_listings %}
-                    <div class="swiper-slide">
-                        <div class="featured-card">
-                            <img src="{{ featured_listing.get_image_url }}" alt="{{ featured_listing.title }}">
+        <div class="swiper featuredSwiper">
+            <div class="swiper-wrapper">
+                {% for featured_listing in featured_listings %}
+
+        .category-icon i {
+            color: white;
+        }
+
+        .category-card:hover .category-icon {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, var(--accent-blue), var(--primary-gemini));
+        }
                             <div class="featured-badge">Featured</div>
                             <div class="featured-content">
                                 <h5>{{ featured_listing.title|truncatewords:6 }}</h5>
@@ -787,7 +881,7 @@
             <div class="col-6 col-md-4 col-lg-2">
                 <a href="{% url 'all-listings' %}?category={{ category.id }}" class="category-card">
                     <div class="category-icon">
-                        <i class="bi {{ category.icon }}"></i>
+                            <i class="bi {{ category.icon|default:'bi-grid' }}"></i>
                     </div>
                     <span class="category-name">{{ category.name }}</span>
                     <span class="category-count">{{ category.listing_count }} items</span>
@@ -834,9 +928,9 @@
                             <label class="filter-group__label">Location</label>
                             <select class="filter-input filter-select" id="location" name="location">
                                 <option value="all" {% if not selected_location %}selected{% endif %}>All Locations</option>
-                                {% for value, name in locations %}
-                                <option value="{{ value }}" {% if selected_location == value %}selected{% endif %}>
-                                    {{ name }}
+                                {% for location in locations %}
+                                <option value="{{ location.code }}" {% if selected_location == location.code %}selected{% endif %}>
+                                    {{ location.name }}
                                 </option>
                                 {% endfor %}
                             </select>
@@ -902,9 +996,12 @@
             <section class="location-filters">
                 <h6 class="mb-3">Popular Locations</h6>
                 <div class="d-flex flex-wrap gap-2">
-                    {% for value, name in locations %}
-                    <a href="{% url 'all-listings' %}?location={{ value }}" class="location-chip">
-                        <i class="bi bi-geo-alt me-1"></i>{{ name }}
+                    {% for location in locations %}
+                    <a href="{% url 'all-listings' %}?location={{ location.code }}" class="location-chip {% if location.code == selected_location %}active{% endif %}">
+                        <i class="bi bi-geo-alt me-1"></i>{{ location.name }}
+                        <span class="location-count">
+                            {{ location.count }}
+                        </span>
                     </a>
                     {% endfor %}
                 </div>
@@ -937,8 +1034,8 @@
                 {% if selected_location and selected_location != 'all' %}
                 <div class="filter-tag">
                     Location: 
-                    {% for value, name in locations %}
-                        {% if value == selected_location %}{{ name }}{% endif %}
+                    {% for location in locations %}
+                        {% if location.code == selected_location %}{{ location.name }}{% endif %}
                     {% endfor %}
                     <button type="button" class="filter-tag__remove remove-filter" data-filter="location">
                         <i class="bi bi-x"></i>
@@ -970,9 +1067,16 @@
                 {% for listing in listings %}
                 <div class="listing-card">
                     <div class="listing-card__image">
-                        <img src="{{ listing.get_image_url }}" alt="{{ listing.title }}">
+                        <img src="{{ listing.get_image_url }}" 
+                             alt="{{ listing.title }}"
+                             data-placeholder="{% static 'images/placeholder.jpg' %}"
+                             onerror="this.onerror=null; this.src=this.getAttribute('data-placeholder'); this.classList.add('placeholder-img');"
+                             loading="lazy">
                         <div class="listing-card__badges">
-                            <span class="listing-card__category">{{ listing.category.name }}</span>
+                            <span class="listing-card__category">
+                                <i class="bi {% if listing.category.icon %}{{ listing.category.icon }}{% else %}bi-grid{% endif %} me-1"></i>
+                                {{ listing.category.name }}
+                            </span>
                             <div class="listing-card__status">
                                 {% if listing.is_sold %}
                                 <span class="listing-card__sold">Sold</span>
@@ -1000,7 +1104,7 @@
                             <span class="listing-card__price">KSh {{ listing.price }}</span>
                             <span class="listing-card__location">
                                 <i class="bi bi-geo-alt"></i>
-                                {{ listing.get_location_display }}
+                                {% if listing.location %}{{ listing.get_location_display }}{% else %}Location not specified{% endif %}
                             </span>
                         </div>
                         
@@ -1014,9 +1118,21 @@
                     </div>
                     
                     <div class="listing-card__footer">
-                        <a href="{% url 'listing-detail' listing.pk %}" class="listing-card__button listing-card__button--primary">
-                            View Details
-                        </a>
+                        <div class="d-grid gap-2">
+                            {% if user.is_authenticated and not listing.is_sold and listing.stock > 0 %}
+                            <form action="{% url 'add_to_cart' listing.id %}" method="post" class="add-to-cart-form">
+                                {% csrf_token %}
+                                <button type="submit" class="listing-card__button listing-card__button--secondary">
+                                    <i class="bi bi-cart-plus"></i>
+                                    Add to Cart
+                                </button>
+                            </form>
+                            {% endif %}
+                            <a href="{% url 'listing-detail' listing.pk %}" class="listing-card__button listing-card__button--primary">
+                                <i class="bi bi-eye"></i>
+                                View Details
+                            </a>
+                        </div>
                     </div>
                 </div>
                 {% empty %}
@@ -1113,7 +1229,9 @@
 {{ categories|json_script:"categoriesData" }}
 {{ locations|json_script:"locationsData" }}
 
-<!-- Consolidated Script -->
+<!-- Gallery and utilities -->
+<script type="module" src="{% static 'js/gallery-init.js' %}"></script>
+<script type="module" src="{% static 'js/listings-utils.js' %}"></script>
 <script>
 // Get data safely from Django rendered script tags
 const userFavorites = JSON.parse(document.getElementById('userFavorites').textContent);
@@ -1284,6 +1402,8 @@ document.addEventListener('DOMContentLoaded', function() {
         let html = '';
         // userFavorites is passed from server as a JSON array
         const userFavorites = JSON.parse(document.getElementById('userFavorites').textContent);
+        const isAuthenticated = document.querySelector('meta[name="is-authenticated"]')?.content === 'true';
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
         
         listings.forEach(listing => {
             const stockClass = listing.stock > 0 ? 'in-stock' : 'out-of-stock';
@@ -1293,9 +1413,12 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `
                 <div class="listing-card">
                     <div class="listing-card__image">
-                        <img src="${listing.image_url}" alt="${listing.title}">
+                        <img src="${listing.image_url}" alt="${listing.title}" onerror="this.onerror=null; this.src='/static/images/placeholder.jpg'; this.classList.add('placeholder-img');">
                         <div class="listing-card__badges">
-                            <span class="listing-card__category">${listing.category}</span>
+                            <span class="listing-card__category">
+                                <i class="bi bi-${listing.category_icon || 'grid'} me-1"></i>
+                                ${listing.category}
+                            </span>
                             <div class="listing-card__status">
                                 ${listing.is_sold ? '<span class="listing-card__sold">Sold</span>' : ''}
                                 <form action="{% url 'toggle_favorite' 0 %}".replace('0', listing.id) method="post" class="favorite-form">
@@ -1325,8 +1448,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     
                     <div class="listing-card__footer">
+                        ${listing.stock > 0 && !listing.is_sold && listing.user_authenticated ? `
+                            <form action="/cart/add/${listing.id}/" method="post" class="add-to-cart-form mb-2">
+                                <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]').value}">
+                                <button type="submit" class="listing-card__button listing-card__button--secondary">
+                                    <i class="bi bi-cart-plus me-2"></i>Add to Cart
+                                </button>
+                            </form>
+                        ` : ''}
                         <a href="${listing.url}" class="listing-card__button listing-card__button--primary">
-                            View Details
+                            <i class="bi bi-eye me-2"></i>View Details
                         </a>
                     </div>
                 </div>

@@ -286,8 +286,8 @@
                 <div class="col-md-6 mb-4">
                     <div class="blog-card">
                         <div class="position-relative">
-                            <img src="{{ post.image.url|default:'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1952&q=80' }}" 
-                                 class="blog-img" alt="{{ post.title }}">
+                       <img src="{{ post.get_image_url }}" 
+                           class="blog-img" alt="{{ post.title }}">
                             {% if post.featured %}
                             <span class="featured-badge">Featured</span>
                             {% endif %}
@@ -305,8 +305,8 @@
                             
                             <div class="blog-meta">
                                 <div class="blog-author">
-                                    <img src="{{ post.author.profile.profile_picture.url|default:'https://placehold.co/35x35/c2c2c2/1f1f1f?text=HS' }}" 
-                                         alt="{{ post.author.username }}" class="blog-author-img">
+                             <img src="{{ post.author.get_profile_picture_url }}" 
+                                 alt="{{ post.author.username }}" class="blog-author-img">
                                     <div class="blog-author-info">
                                         <small class="d-block">{{ post.author.username }}</small>
                                         <small class="blog-date">{{ post.published_at|date:"M d, Y" }}</small>
@@ -429,8 +429,8 @@
                     <div class="featured-posts">
                         {% for post in featured_posts %}
                         <div class="d-flex mb-3 pb-3 border-bottom" style="border-color: rgba(255,255,255,0.1) !important;">
-                            <img src="{{ post.image.url|default:'https://placehold.co/60x60/c2c2c2/1f1f1f?text=HS' }}" 
-                                 alt="{{ post.title }}" class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                       <img src="{{ post.get_image_url }}" 
+                           alt="{{ post.title }}" class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
                             <div>
                                 <h6 class="mb-1">
                                     <a href="{{ post.get_absolute_url }}" class="text-decoration-none text-reset">

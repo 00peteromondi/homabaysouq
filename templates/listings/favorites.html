@@ -280,7 +280,7 @@
         {% for favorite in favorites %}
         <div class="favorite-card" data-price="{{ favorite.listing.price }}" data-date="{{ favorite.date_added|date:'Y-m-d' }}" data-name="{{ favorite.listing.title }}">
             <div class="favorite-image">
-                <img src="{{ favorite.listing.image.url }}" alt="{{ favorite.listing.title }}">
+                <img src="{{ favorite.listing.get_image_url }}" alt="{{ favorite.listing.title }}">
                 <div class="favorite-badges">
                     {% if favorite.listing.is_sold %}
                     <span class="favorite-badge bg-danger">Sold</span>

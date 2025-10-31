@@ -605,6 +605,18 @@
             </p>
         </div>
 
+        <!-- Inline messages (visible immediately on this page) -->
+        {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         <!-- Progress Steps -->
         <div class="form-progress">
             <div class="progress-step active">
@@ -925,7 +937,26 @@
                     </div>
                     
                     <div class="image-previews-container">
-                        <div id="main-image-preview" class="preview-grid"></div>
+                        <div id="main-image-preview" class="preview-grid">
+                            {% if form.instance.pk and form.instance.image %}
+                            <div class="preview-item main-image">
+                                <img src="{{ form.instance.get_image_url }}" class="preview-img" alt="Main image">
+                                <div class="preview-overlay">
+                                    <div class="preview-actions">
+                                        <!-- Button to remove main image: posts back to this edit view -->
+                                        <form method="post" action="{% url 'storefront:product_edit' form.instance.pk %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="remove_main_image" value="1">
+                                            <button type="submit" title="Remove main image" class="preview-action-btn">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class="preview-badge">Main</div>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
                     
                     {% if form.image.errors %}
@@ -965,7 +996,27 @@
                     </div>
                     
                     <div class="image-previews-container">
-                        <div id="additional-images-preview" class="preview-grid"></div>
+                        <div id="additional-images-preview" class="preview-grid">
+                            {% if form.instance.pk %}
+                                {% for img in form.instance.images.all %}
+                                <div class="preview-item">
+                                    <img src="{{ img.get_image_url }}" class="preview-img" alt="{{ img.caption|default:'Image' }}">
+                                    <div class="preview-overlay">
+                                        <div class="preview-actions">
+                                            <!-- Delete gallery image -->
+                                            <form method="post" action="{% url 'storefront:image_delete' img.pk %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{% url 'storefront:product_edit' form.instance.pk %}">
+                                                <button type="submit" title="Delete image" class="preview-action-btn">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>

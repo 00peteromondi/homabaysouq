@@ -41,12 +41,18 @@
     }
 
     .auth-header {
-        background: linear-gradient(135deg, var(--vibrant-blue), var(--vibrant-purple));
-        color: white;
+        background: linear-gradient(135deg, var(--accent-blue), var(--vibrant-purple));
+        color: var(--auth-header-text-dark);
         padding: 3rem 2rem 2rem;
         text-align: center;
         position: relative;
         overflow: hidden;
+        text-shadow: var(--auth-header-shadow);
+    }
+
+    /* Apply theme-aware text colors */
+    [data-theme="light"] .auth-header {
+        color: var(--auth-header-text-light);
     }
 
     .auth-header::before {
@@ -75,7 +81,7 @@
 
     .auth-logo i {
         font-size: 2.5rem;
-        color: white;
+        color: var(--auth-icon-color);
     }
 
     .auth-title {
@@ -86,9 +92,14 @@
     }
 
     .auth-subtitle {
-        opacity: 0.9;
         font-size: 1.1rem;
         font-weight: 500;
+        color: var(--auth-subtitle-dark);
+    }
+
+    /* Apply theme-aware subtitle color */
+    [data-theme="light"] .auth-subtitle {
+        color: var(--auth-subtitle-light);
     }
 
     .auth-body {

@@ -41,14 +41,26 @@
                     </h5>
                 </div>
                 <div class="card-body p-4">
-                    <form method="post" enctype="multipart/form-data">
+                                <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         
-                        {% if form.non_field_errors %}
-                        <div class="alert alert-danger">
-                            {{ form.non_field_errors }}
-                        </div>
-                        {% endif %}
+                                    {% if form.non_field_errors %}
+                                    <div class="alert alert-danger">
+                                        {{ form.non_field_errors }}
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Inline messages (also shown as toasts via base.html) -->
+                                    {% if messages %}
+                                    <div class="mb-3">
+                                        {% for message in messages %}
+                                        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                                            {{ message }}
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
                         
                         <!-- Store Basic Information -->
                         <div class="row">
@@ -68,9 +80,14 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Store Logo *</label>
-                                <input type="file" class="form-control" name="logo" accept="image/*">
+                                <input type="file" class="form-control" name="logo" accept="image/jpeg,image/png,image/gif">
                                 <div class="form-text">
-                                    Recommended: 200x200px PNG or JPG. This will represent your store.
+                                    <ul class="mb-0 ps-3 small">
+                                        <li>Allowed formats: JPG, PNG, GIF</li>
+                                        <li>Maximum size: 10MB</li>
+                                        <li>Recommended dimensions: 200x200px</li>
+                                        <li>Will be displayed as a square image</li>
+                                    </ul>
                                 </div>
                                 
                                 <!-- Current Logo Preview -->
@@ -95,9 +112,14 @@
                             
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Store Cover Image</label>
-                                <input type="file" class="form-control" name="cover_image" accept="image/*">
+                                <input type="file" class="form-control" name="cover_image" accept="image/jpeg,image/png,image/gif">
                                 <div class="form-text">
-                                    Optional: 1200x300px banner image for your store page.
+                                    <ul class="mb-0 ps-3 small">
+                                        <li>Allowed formats: JPG, PNG, GIF</li>
+                                        <li>Maximum size: 10MB</li>
+                                        <li>Recommended dimensions: 1200x300px</li>
+                                        <li>Will be displayed as a banner image</li>
+                                    </ul>
                                 </div>
                                 
                                 <!-- Current Cover Preview -->

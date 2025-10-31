@@ -26,7 +26,9 @@ def inbox(request):
                 'id': conversation.id,
                 'participants': [{
                     'username': user.username,
-                    'profile_picture': user.profile.profile_picture.url if user.profile.profile_picture else 'https://placehold.co/50x50/c2c2c2/1f1f1f?text=HS'
+                    'profile_picture': user.get_profile_picture_url() if hasattr(user, 'get_profile_picture_url') else (
+                        user.profile.profile_picture.url if getattr(user, 'profile', None) and getattr(user.profile, 'profile_picture', None) else 'https://placehold.co/50x50/c2c2c2/1f1f1f?text=HS'
+                    )
                 } for user in other_participants],
                 'last_message': {
                     'content': last_message.content if last_message else '',

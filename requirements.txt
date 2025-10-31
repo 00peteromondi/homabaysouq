@@ -14,4 +14,4 @@ PyJWT>=2.8.0
 cryptography>=41.0.4
 requests>=2.31.0
 africastalking>=2.0.0
-django-extensions==3.2
+django-extensions=>3.2.0

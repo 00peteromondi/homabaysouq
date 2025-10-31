@@ -60,57 +60,131 @@ def seller_dashboard(request):
 
 @login_required
 def store_create(request):
-    # Prevent manual creation of multiple storefronts for free users.
-    # If the user already has at least one store and none are premium, redirect them to edit and suggest upgrade.
+    """
+    Create a new store with enforced subscription-based limits.
+    Users can only create multiple stores if they have a premium store or active subscription.
+    """
+    # Check existing stores and subscription status
     existing_stores = Store.objects.filter(owner=request.user)
-    if existing_stores.exists():
-        # Allow additional stores only if the user already has a premium store or an active subscription
-        has_premium = existing_stores.filter(is_premium=True).exists()
-        has_active_subscription = Subscription.objects.filter(store__owner=request.user, status='active').exists()
-        if not (has_premium or has_active_subscription):
-            first_store = existing_stores.first()
-            messages.info(request, 'You already have a storefront. Upgrade to Pro (subscribe) to create additional stores.')
-            return redirect('storefront:store_edit', slug=first_store.slug)
-        # If the user has at least one premium store, allow creating additional stores.
+    has_premium = existing_stores.filter(is_premium=True).exists()
+    has_active_subscription = Subscription.objects.filter(store__owner=request.user, status='active').exists()
 
-    # Show the confirmation page if user was redirected from listing creation
+    # Enforce store limit for free users
+    if existing_stores.exists() and not (has_premium or has_active_subscription):
+        first_store = existing_stores.first()
+        messages.warning(request, 'You must upgrade to Pro (subscribe) to create additional storefronts.')
+        return redirect('storefront:store_edit', slug=first_store.slug)
+
+    # Show store creation confirmation for users coming from listing creation
     if request.GET.get('from') == 'listing':
         return render(request, 'storefront/confirm_store_create.html')
 
     if request.method == 'POST':
-        form = StoreForm(request.POST)
+        form = StoreForm(request.POST, request.FILES)
         if form.is_valid():
             store = form.save(commit=False)
             store.owner = request.user
+            
             try:
+                # This will trigger the clean() method which enforces store limits
+                store.full_clean()
                 store.save()
-            except ValidationError as e:
-                # Show validation errors to the user
-                message_text = '; '.join(e.messages) if hasattr(e, 'messages') else str(e)
-                form.add_error(None, message_text)
-                messages.error(request, message_text)
-                return render(request, 'storefront/store_form.html', {'form': form, 'creating_store': True})
 
-            messages.success(request, 'Store created successfully')
-            return redirect('storefront:seller_dashboard')
+                # Process logo and cover image
+                if 'logo' in request.FILES:
+                    store.logo = request.FILES['logo']
+                if 'cover_image' in request.FILES:
+                    store.cover_image = request.FILES['cover_image']
+                store.save()
+
+                messages.success(request, 'Store created successfully!')
+                return redirect('storefront:seller_dashboard')
+                
+            except ValidationError as e:
+                # Handle all validation errors
+                messages.error(request, str(e))
+                # Also add to form errors so they display in the template
+                for field, errors in e.message_dict.items():
+                    if field == '__all__':  # Non-field errors
+                        form.add_error(None, errors[0])
+                    else:
+                        form.add_error(field, errors[0])
+        
+        # If form is invalid, add all errors to messages
+        for field, errors in form.errors.items():
+            if field == '__all__':
+                messages.error(request, errors[0])
+            else:
+                messages.error(request, f"{field.title()}: {errors[0]}")
+
     else:
         form = StoreForm()
 
-    return render(request, 'storefront/store_form.html', {'form': form, 'creating_store': True})
+    context = {
+        'form': form,
+        'creating_store': True,
+        'has_existing_store': existing_stores.exists(),
+        'has_premium': has_premium,
+        'has_active_subscription': has_active_subscription,
+    }
+    return render(request, 'storefront/store_form.html', context)
 
 
 @login_required
 def store_edit(request, slug):
+    """
+    Edit an existing store with proper error handling and file uploads.
+    """
     store = get_object_or_404(Store, slug=slug, owner=request.user)
     if request.method == 'POST':
-        form = StoreForm(request.POST, instance=store)
+        form = StoreForm(request.POST, request.FILES, instance=store)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Store updated successfully')
-            return redirect('storefront:seller_dashboard')
+            try:
+                # Full validation including model clean()
+                store = form.save(commit=False)
+                store.full_clean()
+                store.save()
+
+                # Process logo and cover image
+                if 'logo' in request.FILES:
+                    store.logo = request.FILES['logo']
+                if 'cover_image' in request.FILES:
+                    store.cover_image = request.FILES['cover_image']
+                store.save()
+
+                messages.success(request, 'Store updated successfully!')
+                return redirect('storefront:seller_dashboard')
+
+            except ValidationError as e:
+                # Handle validation errors
+                messages.error(request, str(e))
+                # Add to form errors for template display
+                for field, errors in e.message_dict.items():
+                    if field == '__all__':
+                        form.add_error(None, errors[0])
+                    else:
+                        form.add_error(field, errors[0])
+        
+        # If form is invalid, add all errors to messages
+        for field, errors in form.errors.items():
+            if field == '__all__':
+                messages.error(request, errors[0])
+            else:
+                messages.error(request, f"{field.title()}: {errors[0]}")
     else:
         form = StoreForm(instance=store)
-    return render(request, 'storefront/store_form.html', {'form': form, 'store': store, 'creating_store': False})
+
+    context = {
+        'form': form,
+        'store': store,
+        'creating_store': False,
+        'has_premium': store.is_premium,
+        'has_active_subscription': Subscription.objects.filter(
+            store__owner=request.user,
+            status='active'
+        ).exists(),
+    }
+    return render(request, 'storefront/store_form.html', context)
 
 
 @login_required
@@ -197,9 +271,46 @@ def product_create(request, store_slug):
 def product_edit(request, pk):
     product = get_object_or_404(Listing, pk=pk, seller=request.user)
     if request.method == 'POST':
+        # Handle removal of the main listing image via a small separate POST
+        if request.POST.get('remove_main_image'):
+            # Ensure owner
+            if product.seller == request.user:
+                if product.image:
+                    try:
+                        product.image.delete(save=False)
+                    except Exception:
+                        pass
+                    product.image = None
+                    product.save()
+                    messages.success(request, 'Main image removed successfully.')
+                else:
+                    messages.info(request, 'No main image to remove.')
+            return redirect('storefront:product_edit', pk=product.pk)
+
         form = ListingForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
-            form.save()
+            listing = form.save(commit=False)
+            
+            # Ensure the listing has a store associated
+            if not listing.store:
+                # Try to get the seller's store
+                store = Store.objects.filter(owner=listing.seller).first()
+                if store:
+                    listing.store = store
+                else:
+                    # Create a new store for the seller if they don't have one
+                    store_name = f"{listing.seller.username}'s Store"
+                    store_slug = listing.seller.username.lower()
+                    store = Store.objects.create(
+                        owner=listing.seller,
+                        name=store_name,
+                        slug=store_slug
+                    )
+                    listing.store = store
+                    messages.info(request, "A new store was created for your listings.")
+            
+            listing.save()
+            
             # Handle additional uploaded images
             images = request.FILES.getlist('images')
             failed_images = []
@@ -212,18 +323,38 @@ def product_edit(request, pk):
                         raise ValueError('Invalid file type')
                     if size is not None and size > max_size:
                         raise ValueError('File too large')
-                    ListingImage.objects.create(listing=product, image=img)
+                    ListingImage.objects.create(listing=listing, image=img)
                 except Exception as e:
                     failed_images.append({'name': getattr(img, 'name', 'unknown'), 'error': str(e)})
 
             if failed_images:
                 err_msgs = '; '.join([f"{f['name']}: {f['error']}" for f in failed_images])
                 messages.warning(request, f"Some images failed to upload: {err_msgs}")
+            else:
+                messages.success(request, "Listing updated successfully!")
 
-            return redirect('storefront:store_detail', slug=product.seller.stores.first().slug if product.seller.stores.exists() else product.seller.username)
+            # Redirect to store detail if store exists, otherwise to dashboard
+            if listing.store:
+                return redirect('storefront:store_detail', slug=listing.store.slug)
+            return redirect('storefront:seller_dashboard')
+        else:
+            # Add form-level error if there are any
+            if form.non_field_errors():
+                messages.error(request, form.non_field_errors()[0])
+            # Add field-specific errors
+            for field, errors in form.errors.items():
+                messages.error(request, f"{field}: {errors[0]}")
     else:
         form = ListingForm(instance=product)
-    return render(request, 'storefront/product_form.html', {'form': form, 'product': product})
+    
+    # Add categories for form and editing flag
+    context = {
+        'form': form, 
+        'product': product,
+        'categories': Category.objects.filter(is_active=True),
+        'editing': True,
+    }
+    return render(request, 'listings/listing_form.html', context)
 
 
 @login_required
@@ -246,12 +377,47 @@ def image_delete(request, pk):
     if img.listing.seller != request.user:
         return redirect('storefront:seller_dashboard')
     if request.method == 'POST':
-        store_slug = img.listing.store.slug if img.listing.store else img.listing.seller.stores.first().slug if img.listing.seller.stores.exists() else ''
+        # Allow a "next" parameter to return to a specific URL (e.g., edit page)
+        next_url = request.POST.get('next') or request.GET.get('next')
         img.delete()
+        if next_url:
+            # Only allow relative URLs for safety
+            if next_url.startswith('/'):
+                return redirect(next_url)
+        # Fallback to store detail if available
+        store_slug = img.listing.store.slug if img.listing.store else (img.listing.seller.stores.first().slug if img.listing.seller.stores.exists() else '')
         if store_slug:
             return redirect('storefront:store_detail', slug=store_slug)
         return redirect('storefront:seller_dashboard')
     return render(request, 'storefront/image_confirm_delete.html', {'image': img})
+
+@login_required
+def delete_logo(request, slug):
+    """Delete a store's logo."""
+    store = get_object_or_404(Store, slug=slug, owner=request.user)
+    if request.method == 'POST':
+        # Delete the actual file
+        if store.logo:
+            store.logo.delete(save=False)
+        store.logo = None
+        store.save()
+        messages.success(request, 'Store logo removed successfully.')
+        return redirect('storefront:store_edit', slug=store.slug)
+    return redirect('storefront:store_edit', slug=store.slug)
+
+@login_required
+def delete_cover(request, slug):
+    """Delete a store's cover image."""
+    store = get_object_or_404(Store, slug=slug, owner=request.user)
+    if request.method == 'POST':
+        # Delete the actual file
+        if store.cover_image:
+            store.cover_image.delete(save=False)
+        store.cover_image = None
+        store.save()
+        messages.success(request, 'Store cover image removed successfully.')
+        return redirect('storefront:store_edit', slug=store.slug)
+    return redirect('storefront:store_edit', slug=store.slug)
 
 
 from django.utils import timezone

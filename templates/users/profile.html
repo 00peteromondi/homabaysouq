@@ -13,25 +13,32 @@
     }
 
     .profile-header {
-        background: linear-gradient(135deg, var(--vibrant-blue), var(--vibrant-purple));
+        /* A softer theme-aware header similar to profile_edit but reserved for profile view */
+        background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(124,58,237,0.08));
         color: white;
         border-radius: 2rem;
         padding: 3rem 2rem;
         margin-bottom: 2rem;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+        background-size: cover;
+        background-position: center;
     }
 
-    .profile-header::before {
+    /* Subtle overlay to keep text readable when a cover image is used */
+    .profile-header::after {
         content: '';
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" preserveAspectRatio="none"><path d="M0,0 L1000,0 L1000,1000 Z" fill="rgba(255,255,255,0.1)"/></svg>');
-        background-size: cover;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0,0,0,0.22), rgba(0,0,0,0.06));
+        pointer-events: none;
+    }
+
+    /* Dark theme tweak */
+    [data-theme="dark"] .profile-header {
+        background: linear-gradient(135deg, rgba(59,130,246,0.06), rgba(124,58,237,0.04));
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     }
 
     .profile-avatar {
@@ -529,10 +536,24 @@
     <!-- Profile Header -->
     <div class="profile-header text-center">
         <div class="profile-info">
-          <img src="{% if profile_user.get_profile_picture_url %}{{ profile_user.get_profile_picture_url }}{% else %}{% static 'images/default_profile_pic.svg' %}{% endif %}" 
-              class="profile-avatar" 
-              alt="{{ profile_user.username }}"
-              onerror="this.onerror=null;this.src='{% static 'images/default_profile_pic.svg' %}';">
+                    {% if user == profile_user %}
+                    <a href="{% url 'profile-edit' profile_user.pk %}" title="Edit profile picture">
+                        <img src="{% if profile_user.get_profile_picture_url %}{{ profile_user.get_profile_picture_url }}{% else %}{% static 'images/default_profile_pic.svg' %}{% endif %}"
+                                data-default="{% static 'images/default_profile_pic.svg' %}"
+                                class="profile-avatar"
+                                alt="{{ profile_user.username }}"
+                                onerror="this.onerror=null;this.src=this.getAttribute('data-default');">
+                    </a>
+                    {% else %}
+                        <img src="{% if profile_user.get_profile_picture_url %}{{ profile_user.get_profile_picture_url }}{% else %}{% static 'images/default_profile_pic.svg' %}{% endif %}"
+                                data-default="{% static 'images/default_profile_pic.svg' %}"
+                                class="profile-avatar"
+                                alt="{{ profile_user.username }}"
+                                onerror="this.onerror=null;this.src=this.getAttribute('data-default');">
+                    {% endif %}
+                    {% if user == profile_user %}
+                        <p class="text-muted small mt-2">Tap your photo to edit it (JPG/PNG, up to 5MB). Preview follows your selected theme.</p>
+                    {% endif %}
             
             <h1 class="profile-name">
                 {% if profile_user.first_name and profile_user.last_name %}

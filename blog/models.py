@@ -89,7 +89,7 @@ class BlogPost(models.Model):
     def get_image_url(self):
         """Safe method to get image URL that works with both Cloudinary and local storage"""
         if not self.image:
-            return '/static/images/default.png'
+            return '/static/images/image_placeholder.svg'
         
         try:
             # For Cloudinary
@@ -100,10 +100,10 @@ class BlogPost(models.Model):
                     return url
             
             # For regular ImageField with safe fallback
-            return '/static/images/default.png'
+            return '/static/images/image_placeholder.svg'
         except (ValueError, AttributeError) as e:
             print(f"Error getting image URL for blog post {self.id}: {e}")
-            return '/static/images/default.png'
+            return '/static/images/image_placeholder.svg'
     
     def increment_view_count(self):
         """Increment view count for the post"""

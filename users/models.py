@@ -59,8 +59,8 @@ class User(AbstractUser):
             except Exception as e:
                 print(f"Error getting profile picture URL: {e}")
                 # Fallback to default image
-                return '/static/images/default.png'
-        return '/static/images/default.png'
+                return '/static/images/default_profile_pic.svg'
+        return '/static/images/default_profile_pic.svg'
 
     def save(self, *args, **kwargs):
         # Ensure the directory exists before saving for local storage

@@ -5,8 +5,9 @@
 {% block title %}{{ listing.title }} - HomaBay Souq{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/gallery.css' %}">
 <style>
-/* Modern Listing Detail Styles */
+/* Additional Listing Detail Styles */
 .listing-hero {
     background: var(--card-bg);
     border-radius: 20px;
@@ -1099,8 +1100,8 @@
                                     </div>
                                     <!-- Additional images -->
                                     {% for image in listing.images.all %}
-                                    <div class="thumbnail" data-image="{{ image.image.url }}">
-                                        <img src="{{ image.image.url }}" alt="Image {{ forloop.counter }}">
+                                    <div class="thumbnail" data-image="{{ image.get_image_url }}">
+                                        <img src="{{ image.get_image_url }}" alt="Image {{ forloop.counter }}">
                                     </div>
                                     {% endfor %}
                                 </div>
@@ -1313,7 +1314,7 @@
                     <div class="review-item">
                         <div class="review-header">
                             <div class="reviewer-info">
-                          <img src="{% if review.user.profile_picture %}{{ review.user.profile_picture.url }}{% else %}{% static 'images/default_profile_pic.svg' %}{% endif %}" 
+                          <img src="{{ review.user.get_profile_picture_url }}" 
                                      alt="{{ review.user.username }}" class="reviewer-avatar">
                                 <div class="reviewer-details">
                                     <h4>{{ review.user.get_full_name|default:review.user.username }}</h4>
@@ -1410,7 +1411,7 @@
             <div class="seller-card">
                 <div class="row align-items-center">
                     <div class="col-12 col-sm-4 text-center text-sm-start">
-                    <img src="{% if listing.seller.profile.profile_picture %}{{ listing.seller.profile.profile_picture.url }}{% else %}{% static 'images/default_profile_pic.svg' %}{% endif %}" 
+                    <img src="{{ listing.seller.get_profile_picture_url }}" 
                              alt="{{ listing.seller.username }}" class="seller-avatar">
                     </div>
                     <div class="col-12 col-sm-8 text-center text-sm-start">
@@ -1587,9 +1588,10 @@
 {% endblock %}
 
 {% block extra_js %}
+<script type="module" src="{% static 'js/gallery-init.js' %}"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Enhanced Image Gallery Functionality
+    document.addEventListener('DOMContentLoaded', function() {
+    // Additional functionality not covered by gallery-utils
     const mainImage = document.getElementById('main-image');
     const thumbnails = document.querySelectorAll('.thumbnail');
     const currentImageSpan = document.getElementById('current-image');
@@ -1601,36 +1603,55 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let currentImageIndex = 0;
     const images = [];
-    
-    // Collect all images
-    if (mainImage) {
+
+    // Collect all images robustly: prefer data-image attributes on thumbnails,
+    // but always include mainImage.src as first fallback.
+    if (mainImage && mainImage.src) {
         images.push(mainImage.src);
     }
-    thumbnails.forEach((thumb, index) => {
-        if (index > 0) { // Skip first thumbnail (main image duplicate)
-            images.push(thumb.getAttribute('data-image'));
-        }
-    });
+    // If thumbnails exist, build images array from their data-image attributes
+    if (thumbnails && thumbnails.length > 0) {
+        thumbnails.forEach((thumb) => {
+            const data = thumb.getAttribute('data-image') || thumb.querySelector('img')?.src;
+            if (data) {
+                // Avoid duplicating the main image if it's already present
+                if (images.length === 0 || images[0] !== data) {
+                    images.push(data);
+                } else if (images[0] === data && images.length === 1) {
+                    // ensure thumbnails map to same indices as images
+                }
+            }
+        });
+    }
     
     // Update image counter
     if (totalImagesSpan) {
         totalImagesSpan.textContent = images.length;
     }
     
-    // Thumbnail click functionality
-    if (thumbnails.length > 0) {
+    // Thumbnail click functionality (if thumbnails exist)
+    if (thumbnails && thumbnails.length > 0) {
         thumbnails.forEach((thumbnail, index) => {
             thumbnail.addEventListener('click', function() {
-                const imageUrl = this.getAttribute('data-image');
+                const imageUrl = this.getAttribute('data-image') || this.querySelector('img')?.src;
+                if (!imageUrl) return;
+
+                // find index in images array
+                const imgIndex = images.indexOf(imageUrl);
+                if (imgIndex >= 0) currentImageIndex = imgIndex;
+                else {
+                    // fallback — show image directly
+                    currentImageIndex = 0;
+                    images[0] = imageUrl;
+                }
+
                 mainImage.src = imageUrl;
                 mainImage.setAttribute('data-zoom', imageUrl);
-                
+
                 // Update active state
                 thumbnails.forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
-                
-                // Update current image index
-                currentImageIndex = Array.from(thumbnails).indexOf(this);
+
                 if (currentImageSpan) {
                     currentImageSpan.textContent = currentImageIndex + 1;
                 }
@@ -1675,16 +1696,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     function openFullscreen() {
+        // guard: ensure we have at least one image
+        if (!images || images.length === 0) return;
+
         const fullscreenHTML = `
             <div class="image-fullscreen">
-                <button class="fullscreen-close">
+                <button class="fullscreen-close" aria-label="Close full screen">
                     <i class="bi bi-x-lg"></i>
                 </button>
                 <img src="${images[currentImageIndex]}" class="fullscreen-image" alt="Fullscreen view">
-                <button class="fullscreen-nav fullscreen-prev">
+                <button class="fullscreen-nav fullscreen-prev" aria-label="Previous image">
                     <i class="bi bi-chevron-left"></i>
                 </button>
-                <button class="fullscreen-nav fullscreen-next">
+                <button class="fullscreen-nav fullscreen-next" aria-label="Next image">
                     <i class="bi bi-chevron-right"></i>
                 </button>
                 <div class="fullscreen-counter">
@@ -1692,17 +1716,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
         `;
-        
+
         document.body.insertAdjacentHTML('beforeend', fullscreenHTML);
-        
-        // Add event listeners to fullscreen elements
-        const fullscreenClose = document.querySelector('.fullscreen-close');
-        const fullscreenPrev = document.querySelector('.fullscreen-prev');
-        const fullscreenNext = document.querySelector('.fullscreen-next');
-        
-        fullscreenClose.addEventListener('click', closeFullscreen);
-        fullscreenPrev.addEventListener('click', showPrevImage);
-        fullscreenNext.addEventListener('click', showNextImage);
+
+        // Use event delegation so handlers survive removing/adding DOM
+        // Avoid adding multiple global handlers by namespacing on window
+        if (!window.__hs_fullscreen_listeners_attached) {
+            window.__hs_fullscreen_listeners_attached = true;
+
+            document.addEventListener('click', function (e) {
+                const target = e.target.closest?.call(e.target, '.fullscreen-close, .fullscreen-prev, .fullscreen-next');
+                if (!target) return;
+
+                if (target.classList.contains('fullscreen-close')) {
+                    closeFullscreen();
+                } else if (target.classList.contains('fullscreen-prev')) {
+                    showPrevImage();
+                } else if (target.classList.contains('fullscreen-next')) {
+                    showNextImage();
+                }
+            });
+
+            // keyboard navigation while fullscreen is open
+            document.addEventListener('keydown', function (e) {
+                if (!document.querySelector('.image-fullscreen')) return;
+                if (e.key === 'Escape') return closeFullscreen();
+                if (e.key === 'ArrowLeft') return showPrevImage();
+                if (e.key === 'ArrowRight') return showNextImage();
+            });
+        }
     }
     
     function closeFullscreen() {

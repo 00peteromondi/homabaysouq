@@ -1,7 +1,7 @@
 <!-- blog/templates/blog/comment.html -->
 <div class="comment {% if comment.is_reply %}comment-reply{% endif %}" id="comment-{{ comment.id }}">
     <div class="comment-author">
-        <img src="{{ comment.user.profile.profile_picture.url|default:'https://placehold.co/40x40/c2c2c2/1f1f1f?text=HS' }}" 
+        <img src="{{ comment.user.get_profile_picture_url }}" 
              alt="{{ comment.user.username }}" class="comment-author-img">
         <div class="flex-grow-1">
             <h6 class="mb-0">{{ comment.user.username }}</h6>

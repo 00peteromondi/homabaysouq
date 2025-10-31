@@ -24,10 +24,13 @@ if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
     ALLOWED_HOSTS.append('homabaysouq.onrender.com')
 
-# Cloudinary configuration - Use environment variables directly
-CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME', '')
-CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY', '')
-CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET', '')
+# Cloudinary configuration - prefer python-decouple (reads .env) but allow CLOUDINARY_URL
+# Use config() so values from `.env` are picked up in development when not exported to the shell
+CLOUDINARY_CLOUD_NAME = config('CLOUDINARY_CLOUD_NAME', default='')
+CLOUDINARY_API_KEY = config('CLOUDINARY_API_KEY', default='')
+CLOUDINARY_API_SECRET = config('CLOUDINARY_API_SECRET', default='')
+# Optional: allow full CLOUDINARY_URL (cloudinary://key:secret@name)
+CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL', '')
 
 # Only configure Cloudinary if credentials are provided
 if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
@@ -36,6 +39,12 @@ if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
         'API_KEY': CLOUDINARY_API_KEY,
         'API_SECRET': CLOUDINARY_API_SECRET,
     }
+    # Also provide lowercase keys for compatibility with some versions/libraries
+    CLOUDINARY_STORAGE.update({
+        'cloud_name': CLOUDINARY_CLOUD_NAME,
+        'api_key': CLOUDINARY_API_KEY,
+        'api_secret': CLOUDINARY_API_SECRET,
+    })
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
     
     # Configure Cloudinary SDK
@@ -365,15 +374,12 @@ MAX_IMAGE_UPLOAD_SIZE = MAX_IMAGE_UPLOAD_SIZE_MB * 1024 * 1024
 
 
 # Add to settings.py
-MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY', 'wkjlKm4YLVZIgLHGaglsPGIYApWIv9rJ4Ar8GyCtJGDsGCTA')
-MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET', 'dBDyvbZ4PntIVFxBDqGxpHbVkNvQaLfbXYIwDMJGUrxD29L9YQBhz1Pbofk1ZgZR')
-MPESA_BUSINESS_SHORTCODE = os.environ.get('MPESA_BUSINESS_SHORTCODE', '174379')
-MPESA_PASSKEY = os.environ.get('MPESA_PASSKEY', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919')
+MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY', '')
+MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET', '')
+MPESA_BUSINESS_SHORTCODE = os.environ.get('MPESA_BUSINESS_SHORTCODE', '')
+MPESA_PASSKEY = os.environ.get('MPESA_PASSKEY', '')
 # Use localhost for development, production URL for production
-MPESA_CALLBACK_URL = os.environ.get('MPESA_CALLBACK_URL', 
-    'http://127.0.0.1:8443/storefront/mpesa/callback/' if DEBUG 
-    else 'https://homabaysouq.onrender.com/storefront/mpesa/callback/'
-)
+MPESA_CALLBACK_URL = os.environ.get('MPESA_CALLBACK_URL', '')
 MPESA_ENVIRONMENT = os.environ.get('MPESA_ENVIRONMENT', 'sandbox')  # or 'production'
 
 # How many remaining sellers (with unshipped items) should trigger reminder notifications

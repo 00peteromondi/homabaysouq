@@ -8,6 +8,9 @@ class Store(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='stores')
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True)
+    # Optional logo and cover image for storefronts
+    logo = models.ImageField(upload_to='store_logos/', null=True, blank=True)
+    cover_image = models.ImageField(upload_to='store_covers/', null=True, blank=True)
     description = models.TextField(blank=True)
     is_premium = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -17,6 +20,23 @@ class Store(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_logo_url(self):
+        """Return the logo URL or None; templates can fall back to placeholder."""
+        try:
+            if self.logo and hasattr(self.logo, 'url'):
+                return self.logo.url
+        except Exception:
+            pass
+        return None
+
+    def get_cover_image_url(self):
+        try:
+            if self.cover_image and hasattr(self.cover_image, 'url'):
+                return self.cover_image.url
+        except Exception:
+            pass
+        return None
 
     def get_absolute_url(self):
         return reverse('storefront:store_detail', kwargs={'slug': self.slug})

@@ -40,7 +40,7 @@
                         {% for participant in conversation.participants.all %}
                             {% if participant != user %}
                             <div class="position-relative me-3">
-                                <img src="{{ participant.profile.profile_picture.url|default:'https://placehold.co/50x50/c2c2c2/1f1f1f?text=HS' }}" 
+                              <img src="{{ participant.get_profile_picture_url }}" 
                                      alt="{{ participant.username }}" 
                                      class="rounded-circle"
                                      width="56" 

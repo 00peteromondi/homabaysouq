@@ -252,10 +252,16 @@ class ListingCreateView(LoginRequiredMixin, CreateView):
     form_class = ListingForm
 
     def dispatch(self, request, *args, **kwargs):
+        # If the user is not authenticated, defer to LoginRequiredMixin's handling
+        # (calling super() will let the mixin redirect to login).
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+
         # Check if user has any stores before allowing listing creation
         if not Store.objects.filter(owner=request.user).exists():
             messages.info(request, "You need to create a store first before you can list items for sale.")
             return redirect(reverse('storefront:store_create') + '?from=listing')
+
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -475,6 +481,7 @@ def all_listings(request):
                 'price': str(listing.price),
                 'image_url': listing.get_image_url(),
                 'category': listing.category.name,
+                'category_icon': listing.category.icon,
                 'store': listing.store.name if listing.store else '',
                 'store_url': listing.store.get_absolute_url() if listing.store else '',
                 'location': listing.get_location_display(),
@@ -490,15 +497,21 @@ def all_listings(request):
             'has_previous': page_obj.has_previous(),
             'current_page': page_obj.number,
             'num_pages': paginator.num_pages,
-            'total_count': paginator.count(),
+            'total_count': paginator.count,
         })
     
     # For regular requests, return the full page
     # Convert categories to a list of dicts for JSON serialization
     categories_data = [{'id': cat.id, 'name': cat.name} for cat in Category.objects.filter(is_active=True)]
     
+    # Get location counts and convert to JSON-serializable format
+    locations_count = {}
+    for code, name in Listing.HOMABAY_LOCATIONS:
+        locations_count[code] = Listing.objects.filter(location=code, is_active=True).count()
+    
     # Convert locations to a list of tuples for JSON serialization
-    locations_data = [{'code': code, 'name': name} for code, name in Listing.HOMABAY_LOCATIONS]
+    locations_data = [{'code': code, 'name': name, 'count': locations_count.get(code, 0)} 
+                     for code, name in Listing.HOMABAY_LOCATIONS]
     
     context = {
         'listings': page_obj,
@@ -511,6 +524,7 @@ def all_listings(request):
         'search_query': search_query,
         'sort_by': sort_by,
         'total_listings_count': listings.count(),
+        'locations_count': locations_count,
     }
     
     # Add featured listings for carousel
@@ -690,7 +704,8 @@ def view_cart(request):
                     'id': item.listing.id,
                     'title': item.listing.title,
                     'price': float(item.listing.price),
-                    'image_url': item.listing.image.url,
+                    # Use the model helper which safely returns Cloudinary or local URLs
+                    'image_url': item.listing.get_image_url(),
                     'category': item.listing.category.name
                 },
                 'quantity': item.quantity,

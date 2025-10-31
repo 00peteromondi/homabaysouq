@@ -24,3 +24,5 @@ handler500 = 'homabay_souq.views.custom_error_500'
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    # Serve media files during development (only when DEBUG=True)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

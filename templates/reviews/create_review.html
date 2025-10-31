@@ -20,7 +20,7 @@
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center mb-4">
                         {% if listing %}
-                            <img src="{{ listing.image.url }}" alt="{{ listing.title }}" class="rounded me-3" width="60" height="60">
+                            <img src="{{ listing.get_image_url }}" alt="{{ listing.title }}" class="rounded me-3" width="60" height="60">
                             <div>
                                 <h5 class="mb-0">Reviewing {{ listing.title }}</h5>
                                 <p class="text-muted mb-0">Share your experience with this product from {{ seller.username }}</p>

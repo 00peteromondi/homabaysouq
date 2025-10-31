@@ -20,6 +20,10 @@ urlpatterns = [
     path('dashboard/product/<int:pk>/delete/', views.product_delete, name='product_delete'),
     path('dashboard/image/<int:pk>/delete/', views.image_delete, name='image_delete'),
     
+    # Store image management
+    path('dashboard/store/<slug:slug>/logo/delete/', views.delete_logo, name='delete_logo'),
+    path('dashboard/store/<slug:slug>/cover/delete/', views.delete_cover, name='delete_cover'),
+    
     # Subscription management
     path('dashboard/store/<slug:slug>/subscription/', views.subscription_manage, name='subscription_manage'),
     path('dashboard/store/<slug:slug>/subscription/retry/', views.retry_payment, name='retry_payment'),

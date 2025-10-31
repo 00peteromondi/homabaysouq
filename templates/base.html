@@ -53,6 +53,7 @@
             --light-bg: #f8fafc;
             --light-navbar-bg: #ffffff;
             --light-text: #1e293b;
+            --light-icon: #1e293b;
             --light-sidebar-bg: #ffffff;
             --light-sidebar-link-hover: #f1f5f9;
             --light-sidebar-search-bg: #f1f5f9;
@@ -60,6 +61,7 @@
             --dark-bg: #0f172a;
             --dark-navbar-bg: #1e293b;
             --dark-text: #f1f5f9;
+            --dark-icon: #f1f5f9;
             --dark-sidebar-bg: #1e293b;
             --dark-sidebar-link-hover: #334155;
             --dark-sidebar-search-bg: #334155;
@@ -94,12 +96,30 @@
             --tag-text: var(--text-color);
             --danger-color: #ef4444;
             --text-muted: #64748b;
+            /* Theme-aware gradients and text colors */
+            --auth-header-text-dark: #ffffff;
+            --auth-header-text-light: #1e293b;
+            --auth-subtitle-dark: rgba(255,255,255,0.95);
+            --auth-subtitle-light: rgba(30,41,59,0.95);
+            --card-text-color: var(--text-color);
+            --alert-text-color: var(--text-color);
+            --toast-text-color: var(--text-color);
+            --badge-text-color: #ffffff;
+            --modal-text-color: var(--text-color);
+            --nav-link-color: var(--text-color);
+            --nav-link-hover-color: var(--accent-blue);
+            --auth-header-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            --alert-success-bg: rgba(16, 185, 129, 0.1);
+            --alert-danger-bg: rgba(239, 68, 68, 0.1); 
+            --alert-warning-bg: rgba(249, 115, 22, 0.1);
+            --alert-info-bg: rgba(59, 130, 246, 0.1);
         }
 
         [data-theme="light"] {
             --body-bg: var(--light-bg);
             --navbar-bg: var(--light-navbar-bg);
             --text-color: var(--light-text);
+            --icon-color: var(--light-icon);
             --sidebar-bg: var(--light-sidebar-bg);
             --sidebar-link-hover-bg: var(--light-sidebar-link-hover);
             --sidebar-search-bg: var(--light-sidebar-search-bg);
@@ -108,12 +128,17 @@
             --border-color: rgba(0, 0, 0, 0.08);
             --card-bg: #ffffff;
             --card-bg-hover: #f8fafc;
+            --auth-header-text-color: var(--light-text);
+            --auth-subtitle-color: rgba(30, 41, 59, 0.9);
+            --auth-icon-color: var(--light-icon);
+            --auth-header-shadow: none;
         }
 
         [data-theme="dark"] {
             --body-bg: var(--dark-bg);
             --navbar-bg: var(--dark-navbar-bg);
             --text-color: var(--dark-text);
+            --icon-color: var(--dark-icon);
             --sidebar-bg: var(--dark-sidebar-bg);
             --sidebar-link-hover-bg: var(--dark-sidebar-link-hover);
             --sidebar-search-bg: var(--dark-sidebar-search-bg);
@@ -122,6 +147,10 @@
             --border-color: rgba(255, 255, 255, 0.18);
             --card-bg: #1e293b;
             --card-bg-hover: #334155;
+            --auth-header-text-color: #ffffff;
+            --auth-subtitle-color: rgba(255, 255, 255, 0.9);
+            --auth-icon-color: #ffffff;
+            --auth-header-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
 
         body {
@@ -371,13 +400,42 @@
             border-radius: 12px;
             overflow: hidden;
             border-left: 4px solid;
+            color: var(--toast-text-color);
         }
-        
-        /* FIX: Correctly selects toasts based on Django message tags */
-        .toast.success { border-left-color: var(--accent-green); }
-        .toast.error { border-left-color: var(--accent-red); }
-        .toast.warning { border-left-color: var(--accent-orange); }
-        .toast.info { border-left-color: var(--accent-blue); }
+
+        /* Make toasts darker / fully opaque so messages are always readable */
+        .toast.success {
+            border-left-color: var(--accent-green);
+            background-color: var(--accent-green);
+            color: white;
+        }
+
+        .toast.error {
+            border-left-color: var(--accent-red);
+            background-color: var(--accent-red);
+            color: white;
+        }
+
+        .toast.warning {
+            border-left-color: var(--accent-orange);
+            background-color: var(--accent-orange);
+            color: white;
+        }
+
+        .toast.info {
+            border-left-color: var(--accent-blue);
+            background-color: var(--primary-gemini);
+            color: white;
+        }
+
+        .toast i {
+            color: inherit;
+        }
+
+        .toast.success i { color: var(--accent-green); }
+        .toast.error i { color: var(--accent-red); }
+        .toast.warning i { color: var(--accent-orange); }
+        .toast.info i { color: var(--accent-blue); }
         
         /* Modern Cart badge styling */
         .cart-badge {
@@ -657,7 +715,11 @@
                     {% if user.is_authenticated %}
                     <div class="dropdown">
                         <a href="#" class="nav-link dropdown-toggle d-flex align-items-center" role="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="{{ user.get_profile_picture|default:'https://placehold.co/40x40/c2c2c2/1f1f1f?text=HS' }}" alt="{{ user.username }}" class="rounded-circle me-2" style="width: 36px; height: 36px; border: 2px solid var(--accent-blue);">
+                            {% if user.get_profile_picture_url %}
+                                <img src="{{ user.get_profile_picture_url }}" alt="{{ user.username }}" class="rounded-circle me-2" style="width: 36px; height: 36px; border: 2px solid var(--accent-blue);" onerror="this.onerror=null;this.src={% static 'images/default_profile_pic.svg' %};">
+                            {% else %}
+                                <img src="{% static 'images/default_profile_pic.svg' %}" alt="{{ user.username }}" class="rounded-circle me-2" style="width: 36px; height: 36px; border: 2px solid var(--accent-blue);">
+                            {% endif %}
                             <span class="fw-bold d-none d-lg-block">{{ user.username }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="profileDropdown">

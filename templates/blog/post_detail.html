@@ -224,7 +224,7 @@
         <div class="col-lg-8">
             <article class="post-content">
                 {% if post.image %}
-                <img src="{{ post.image.url }}" alt="{{ post.title }}" class="post-featured-image">
+                <img src="{{ post.get_image_url }}" alt="{{ post.title }}" class="post-featured-image">
                 {% endif %}
 
                 <div class="post-body">
@@ -280,7 +280,7 @@
             <div class="card border-0 shadow-sm mb-4" style="background: var(--navbar-bg); backdrop-filter: blur(10px);">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
-                        <img src="{{ post.author.profile.profile_picture.url|default:'https://placehold.co/60x60/c2c2c2/1f1f1f?text=HS' }}" 
+                        <img src="{{ post.author.get_profile_picture_url }}" 
                              alt="{{ post.author.username }}" class="rounded-circle me-3" style="width: 60px; height: 60px;">
                         <div>
                             <h5 class="mb-1">{{ post.author.get_full_name|default:post.author.username }}</h5>
@@ -348,8 +348,8 @@
                         <a href="{{ related_post.get_absolute_url }}" 
                            class="list-group-item list-group-item-action border-0 px-0 py-3">
                             <div class="d-flex align-items-center">
-                                <img src="{{ related_post.image.url|default:'https://placehold.co/40x40/c2c2c2/1f1f1f?text=HS' }}" 
-                                     alt="{{ related_post.title }}" class="rounded me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                          <img src="{{ related_post.get_image_url }}" 
+                              alt="{{ related_post.title }}" class="rounded me-3" style="width: 40px; height: 40px; object-fit: cover;">
                                 <div>
                                     <h6 class="mb-1">{{ related_post.title|truncatewords:5 }}</h6>
                                     <small class="text-muted">{{ related_post.published_at|date:"M d, Y" }}</small>

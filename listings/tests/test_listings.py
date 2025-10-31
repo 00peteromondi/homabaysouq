@@ -18,6 +18,9 @@ class ListingCreatePermissionTests(TestCase):
         User = get_user_model()
         user = User.objects.create_user(username='seller1', password='testpass')
         self.client.login(username='seller1', password='testpass')
+        # Ensure the user has a store so the view allows access
+        from storefront.models import Store
+        Store.objects.create(owner=user, name='Seller1 Store', slug='seller1-store')
         url = reverse('listing-create')
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
