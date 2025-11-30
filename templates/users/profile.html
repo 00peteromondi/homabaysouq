@@ -1,0 +1,1038 @@
+
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}{{ profile_user.username }} - HomaBay Souq{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .profile-header {
+        /* A softer theme-aware header similar to profile_edit but reserved for profile view */
+        background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(124,58,237,0.08));
+        color: white;
+        border-radius: 2rem;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+        background-size: cover;
+        background-position: center;
+    }
+
+    /* Subtle overlay to keep text readable when a cover image is used */
+    .profile-header::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0,0,0,0.22), rgba(0,0,0,0.06));
+        pointer-events: none;
+    }
+
+    /* Dark theme tweak */
+    [data-theme="dark"] .profile-header {
+        background: linear-gradient(135deg, rgba(59,130,246,0.06), rgba(124,58,237,0.04));
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid white;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        background: var(--card-bg);
+    }
+
+    .profile-info {
+        position: relative;
+        z-index: 2;
+    }
+
+    .profile-name {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .profile-username {
+        font-size: 1.3rem;
+        opacity: 0.9;
+        margin-bottom: 1rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .profile-bio {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        max-width: 600px;
+        margin: 0 auto 1.5rem;
+        line-height: 1.6;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .profile-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .btn-modern {
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        font-size: 1rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary-modern {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-primary-modern:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .profile-content {
+        background: var(--card-bg);
+        border-radius: 2rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+
+    .profile-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--card-bg);
+        padding: 0 2rem;
+        overflow-x: auto;
+    }
+
+    .profile-tab {
+        padding: 1.5rem 2rem;
+        background: none;
+        border: none;
+        color: var(--text-color);
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-bottom: 3px solid transparent;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .profile-tab.active {
+        color: var(--vibrant-blue);
+        border-bottom-color: var(--vibrant-blue);
+    }
+
+    .profile-tab:hover {
+        color: var(--vibrant-blue);
+        background: rgba(59, 130, 246, 0.05);
+    }
+
+    .tab-badge {
+        background: var(--vibrant-blue);
+        color: white;
+        border-radius: 20px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .tab-content {
+        padding: 2rem;
+    }
+
+    .tab-pane {
+        display: none;
+    }
+
+    .tab-pane.active {
+        display: block;
+        animation: fadeInUp 0.5s ease-out;
+    }
+
+    .listings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .listing-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 1.5rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    .listing-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        border-color: var(--vibrant-blue);
+    }
+
+    .listing-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 1.5rem 1.5rem 0 0;
+    }
+
+    .listing-content {
+        padding: 1.5rem;
+    }
+
+    .listing-title {
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: var(--text-color);
+        font-size: 1.1rem;
+        line-height: 1.4;
+        font-family: 'Inter', sans-serif;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .listing-price {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--vibrant-blue);
+        margin-bottom: 1rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .listing-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .listing-location {
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--vibrant-blue);
+        padding: 0.4rem 0.8rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .listing-stock {
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 0.4rem 0.8rem;
+        border-radius: 12px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .in-stock {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--vibrant-green);
+    }
+
+    .low-stock {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--vibrant-yellow);
+    }
+
+    .out-of-stock {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--vibrant-red);
+    }
+
+    .listing-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .action-btn {
+        flex: 1;
+        padding: 0.75rem;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .view-btn {
+        background: var(--vibrant-blue);
+        color: white;
+    }
+
+    .view-btn:hover {
+        background: var(--vibrant-purple);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        color: white;
+    }
+
+    .contact-info {
+        background: rgba(59, 130, 246, 0.05);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+    }
+
+    .contact-item:last-child {
+        border-bottom: none;
+    }
+
+    .contact-icon {
+        width: 50px;
+        height: 50px;
+        background: var(--vibrant-blue);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .contact-details h4 {
+        margin: 0 0 0.25rem 0;
+        font-weight: 600;
+        color: var(--text-color);
+        font-family: 'Inter', sans-serif;
+    }
+
+    .contact-details p {
+        margin: 0;
+        color: var(--text-muted);
+        font-family: 'Inter', sans-serif;
+    }
+
+    .contact-details a {
+        color: var(--vibrant-blue);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .contact-details a:hover {
+        color: var(--vibrant-purple);
+        text-decoration: underline;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-muted);
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        opacity: 0.5;
+    }
+
+    .empty-title {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        color: var(--text-color);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .empty-description {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .verification-badge {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--vibrant-green);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    @media (max-width: 768px) {
+        .profile-header {
+            padding: 2rem 1.5rem;
+            border-radius: 1.5rem;
+        }
+
+        .profile-name {
+            font-size: 2rem;
+        }
+
+        .profile-stats {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .profile-tabs {
+            padding: 0 1rem;
+        }
+
+        .profile-tab {
+            padding: 1rem 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .tab-content {
+            padding: 1.5rem;
+        }
+
+        .listings-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .profile-actions {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn-modern {
+            width: 100%;
+            max-width: 300px;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .profile-container {
+            padding: 1rem 0.5rem;
+        }
+
+        .profile-header {
+            padding: 1.5rem 1rem;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+        }
+
+        .profile-name {
+            font-size: 1.75rem;
+        }
+
+        .profile-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .listings-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-tabs {
+            flex-direction: column;
+        }
+
+        .profile-tab {
+            justify-content: center;
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- Profile Header -->
+    <div class="profile-header text-center">
+        <div class="profile-info">
+                    {% if user == profile_user %}
+                    <a href="{% url 'profile-edit' profile_user.pk %}" title="Edit profile picture">
+                        <img src="{% if profile_user.get_profile_picture_url %}{{ profile_user.get_profile_picture_url }}{% else %}{% static 'images/default_profile_pic.svg' %}{% endif %}"
+                                data-default="{% static 'images/default_profile_pic.svg' %}"
+                                class="profile-avatar"
+                                alt="{{ profile_user.username }}"
+                                onerror="this.onerror=null;this.src=this.getAttribute('data-default');">
+                    </a>
+                    {% else %}
+                        <img src="{% if profile_user.get_profile_picture_url %}{{ profile_user.get_profile_picture_url }}{% else %}{% static 'images/default_profile_pic.svg' %}{% endif %}"
+                                data-default="{% static 'images/default_profile_pic.svg' %}"
+                                class="profile-avatar"
+                                alt="{{ profile_user.username }}"
+                                onerror="this.onerror=null;this.src=this.getAttribute('data-default');">
+                    {% endif %}
+                    {% if user == profile_user %}
+                        <p class="text-muted small mt-2">Tap your photo to edit it (JPG/PNG, up to 5MB). Preview follows your selected theme.</p>
+                    {% endif %}
+            
+            <h1 class="profile-name">
+                {% if profile_user.first_name and profile_user.last_name %}
+                    {{ profile_user.first_name }} {{ profile_user.last_name }}
+                {% elif profile_user.first_name %}
+                    {{ profile_user.first_name }}
+                {% else %}
+                    {{ profile_user.username }}
+                {% endif %}
+            </h1>
+            
+            <div class="profile-username">@{{ profile_user.username }}</div>
+            
+            {% if profile_user.is_verified %}
+            <div class="verification-badge">
+                <i class="bi bi-patch-check-fill"></i>
+                Verified Seller
+            </div>
+            {% endif %}
+            
+            {% if profile_user.bio %}
+            <div class="profile-bio">{{ profile_user.bio }}</div>
+            {% endif %}
+            
+            <div class="profile-stats">
+                <div class="stat-card">
+                    <div class="stat-value">{{ listing_count }}</div>
+                    <div class="stat-label">Listings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ saved_count }}</div>
+                    <div class="stat-label">Saved Items</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ rating_average|floatformat:1 }}</div>
+                    <div class="stat-label">Rating</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ member_since }}</div>
+                    <div class="stat-label">Member Since</div>
+                </div>
+            </div>
+            
+            {% if user == profile_user %}
+            <div class="profile-actions">
+                <a href="{% url 'profile-edit' profile_user.pk %}" class="btn-modern btn-primary-modern">
+                    <i class="bi bi-pencil"></i>
+                    Edit Profile
+                </a>
+                <a href="{% url 'listing-create' %}" class="btn-modern btn-primary-modern">
+                    <i class="bi bi-plus-circle"></i>
+                    Create Listing
+                </a>
+                <a href="{% url 'password_change' %}" class="btn-modern btn-primary-modern">
+                    <i class="bi bi-shield-lock"></i>
+                    Change Password
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Profile Content -->
+    <div class="profile-content">
+        <!-- Tabs -->
+        <div class="profile-tabs">
+            <button class="profile-tab active" data-tab="listings">
+                <i class="bi bi-grid"></i>
+                Listings
+                <span class="tab-badge">{{ listing_count }}</span>
+            </button>
+            
+            {% if user == profile_user %}
+            <button class="profile-tab" data-tab="saved">
+                <i class="bi bi-heart"></i>
+                Saved Items
+                <span class="tab-badge">{{ saved_count }}</span>
+            </button>
+            <button class="profile-tab" data-tab="contact">
+                <i class="bi bi-person-lines-fill"></i>
+                Contact Info
+            </button>
+            {% else %}
+            <button class="profile-tab" data-tab="contact">
+                <i class="bi bi-chat-dots"></i>
+                Contact Seller
+            </button>
+            {% endif %}
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Listings Tab -->
+            <div class="tab-pane active" id="listings-tab">
+                {% for store in stores %}
+                <div class="store-section mb-5">
+                    <div class="store-header d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h3 class="h4 fw-bold mb-2">{{ store.name }}</h3>
+                            <p class="text-muted mb-0">{{ store.description|truncatechars:100 }}</p>
+                        </div>
+                        <a href="{% url 'storefront:store_detail' slug=store.slug %}" class="btn btn-outline-primary rounded-pill">
+                            <i class="bi bi-shop"></i> View Store
+                        </a>
+                    </div>
+                    
+                    {% if store.listings.exists %}
+                    <div class="listings-grid">
+                        {% for listing in store.listings.all %}
+                        <div class="listing-card">
+                            <img src="{{ listing.get_image_url }}" class="listing-image" alt="{{ listing.title }}">
+                            <div class="listing-content">
+                                <h3 class="listing-title">{{ listing.title }}</h3>
+                                <div class="listing-price">KSh {{ listing.price|intcomma }}</div>
+                                <div class="listing-meta">
+                                    <span class="listing-location">{{ listing.get_location_display }}</span>
+                                    <span class="listing-stock {% if listing.stock > 10 %}in-stock{% elif listing.stock > 0 %}low-stock{% else %}out-of-stock{% endif %}">
+                                        {% if listing.stock > 10 %}
+                                            In Stock
+                                        {% elif listing.stock > 0 %}
+                                            Low Stock
+                                        {% else %}
+                                            Out of Stock
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="listing-actions">
+                                    <a href="{% url 'listing-detail' listing.pk %}" class="action-btn view-btn">
+                                        <i class="bi bi-eye"></i>
+                                        View
+                                    </a>
+                                    {% if user.is_authenticated and user != profile_user %}
+                                    <button class="action-btn cart-btn like-btn" data-listing-id="{{ listing.id }}">
+                                        <i class="bi bi-heart{% if listing.id in user_favorites %}-fill{% endif %}"></i>
+                                        Save
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-inboxes empty-icon"></i>
+                        <h3 class="empty-title">No listings in this store</h3>
+                        <p class="empty-description">This store doesn't have any active listings yet.</p>
+                        {% if user == profile_user %}
+                        <a href="{% url 'storefront:product_create' store_slug=store.slug %}" class="btn-modern btn-primary-modern">
+                            <i class="bi bi-plus-circle"></i>
+                            Add Your First Listing
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="bi bi-shop empty-icon"></i>
+                    <h3 class="empty-title">No stores yet</h3>
+                    <p class="empty-description">
+                        {% if user == profile_user %}
+                        You haven't created any stores yet.
+                        {% else %}
+                        This user hasn't created any stores yet.
+                        {% endif %}
+                    </p>
+                    {% if user == profile_user %}
+                    <a href="{% url 'storefront:store_create' %}" class="btn-modern btn-primary-modern">
+                        <i class="bi bi-plus-circle"></i>
+                        Create Your First Store
+                    </a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <div class="d-flex justify-content-center mt-4">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+                
+                {% if stores %}
+                    {# Pagination block above stays as is #}
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-inboxes empty-icon"></i>
+                    <h3 class="empty-title">No listings yet</h3>
+                    <p class="empty-description">
+                        {% if user == profile_user %}
+                        You haven't listed any items for sale yet.
+                        {% else %}
+                        This user hasn't listed any items for sale yet.
+                        {% endif %}
+                    </p>
+                    {% if user == profile_user %}
+                    <a href="{% url 'listing-create' %}" class="btn-modern btn-primary-modern">
+                        <i class="bi bi-plus-circle"></i>
+                        Create Your First Listing
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Saved Items Tab (only for profile owner) -->
+            {% if user == profile_user %}
+            <div class="tab-pane" id="saved-tab">
+                {% if saved_listings %}
+                <div class="listings-grid">
+                    {% for listing in saved_listings %}
+                    <div class="listing-card">
+                        <img src="{{ listing.get_image_url }}" class="listing-image" alt="{{ listing.title }}">
+                        <div class="listing-content">
+                            <h3 class="listing-title">{{ listing.title }}</h3>
+                            <div class="listing-price">KSh {{ listing.price|intcomma }}</div>
+                            <div class="listing-meta">
+                                <span class="listing-location">{{ listing.get_location_display }}</span>
+                                <span class="listing-stock {% if listing.stock > 10 %}in-stock{% elif listing.stock > 0 %}low-stock{% else %}out-of-stock{% endif %}">
+                                    {% if listing.stock > 10 %}
+                                        In Stock
+                                    {% elif listing.stock > 0 %}
+                                        Low Stock
+                                    {% else %}
+                                        Out of Stock
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="listing-actions">
+                                <a href="{% url 'listing-detail' listing.pk %}" class="action-btn view-btn">
+                                    <i class="bi bi-eye"></i>
+                                    View
+                                </a>
+                                <button class="action-btn cart-btn like-btn" data-listing-id="{{ listing.id }}">
+                                    <i class="bi bi-heart-fill" style="color: var(--vibrant-red);"></i>
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-bookmark-heart empty-icon"></i>
+                    <h3 class="empty-title">No saved items</h3>
+                    <p class="empty-description">Items you save will appear here for quick access.</p>
+                    <a href="{% url 'all-listings' %}" class="btn-modern btn-primary-modern">
+                        <i class="bi bi-search"></i>
+                        Browse Listings
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Contact Info Tab -->
+            <div class="tab-pane" id="contact-tab">
+                <div class="contact-info">
+                    {% if profile_user.phone_number or profile_user.email or profile_user.location %}
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h4>Name</h4>
+                            <p>
+                                {% if profile_user.first_name and profile_user.last_name %}
+                                    {{ profile_user.first_name }} {{ profile_user.last_name }}
+                                {% elif profile_user.first_name %}
+                                    {{ profile_user.first_name }}
+                                {% else %}
+                                    Not provided
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {% if profile_user.phone_number and profile_user.show_contact_info %}
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="bi bi-phone"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h4>Phone Number</h4>
+                            <p>
+                                {% if user == profile_user or profile_user.show_contact_info %}
+                                    <a href="tel:{{ profile_user.phone_number }}">{{ profile_user.phone_number }}</a>
+                                {% else %}
+                                    <em>Contact info hidden</em>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if profile_user.email and profile_user.show_contact_info %}
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="bi bi-envelope"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h4>Email Address</h4>
+                            <p>
+                                {% if user == profile_user or profile_user.show_contact_info %}
+                                    <a href="mailto:{{ profile_user.email }}">{{ profile_user.email }}</a>
+                                {% else %}
+                                    <em>Contact info hidden</em>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if profile_user.location %}
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="bi bi-geo-alt"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h4>Location</h4>
+                            <p>{{ profile_user.location }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if user == profile_user %}
+                    <div class="text-center mt-4">
+                        <a href="{% url 'profile-edit' profile_user.pk %}" class="btn-modern btn-primary-modern">
+                            <i class="bi bi-pencil"></i>
+                            Edit Contact Information
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-person-x empty-icon"></i>
+                        <h3 class="empty-title">No contact information</h3>
+                        <p class="empty-description">
+                            {% if user == profile_user %}
+                            You haven't added any contact information yet.
+                            {% else %}
+                            This user hasn't made their contact information available.
+                            {% endif %}
+                        </p>
+                        {% if user == profile_user %}
+                        <a href="{% url 'profile-edit' profile_user.pk %}" class="btn-modern btn-primary-modern">
+                            <i class="bi bi-plus-circle"></i>
+                            Add Contact Information
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tab functionality
+        const tabs = document.querySelectorAll('.profile-tab');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const targetTab = this.getAttribute('data-tab');
+                
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show target tab content
+                tabPanes.forEach(pane => {
+                    pane.classList.remove('active');
+                    if (pane.id === `${targetTab}-tab`) {
+                        pane.classList.add('active');
+                    }
+                });
+            });
+        });
+        
+        // Like button functionality
+        const likeButtons = document.querySelectorAll('.like-btn');
+        
+        likeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const listingId = this.getAttribute('data-listing-id');
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                
+                // Visual feedback
+                this.style.transform = 'scale(0.9)';
+                
+                fetch("{% url 'toggle_favorite' 0 %}".replace('0', listingId), {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrfToken
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 150);
+                    
+                    if (data.is_favorited) {
+                        this.innerHTML = '<i class="bi bi-heart-fill" style="color: var(--vibrant-red);"></i> Remove';
+                    } else {
+                        this.innerHTML = '<i class="bi bi-heart"></i> Save';
+                        // Remove from saved items view
+                        if (this.closest('#saved-tab')) {
+                            this.closest('.listing-card').style.opacity = '0';
+                            setTimeout(() => {
+                                this.closest('.listing-card').remove();
+                                // Update empty state if needed
+                                const savedItems = document.querySelectorAll('#saved-tab .listing-card');
+                                if (savedItems.length === 0) {
+                                    location.reload(); // Reload to show empty state
+                                }
+                            }, 300);
+                        }
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+        
+        // Smooth animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('.listing-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
+    });
+</script>
+{% endblock %}
